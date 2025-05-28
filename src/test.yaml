@@ -1,0 +1,47 @@
+# #creating a workspace for phi-3.5-mini model
+# apiVersion: kaito.sh/v1beta1
+# kind: Workspace
+# metadata:
+#   name: workspace-phi-3-5-mini 
+#   #can specify namespace here
+# resource:
+#   instanceType: "Standard_NC80adis_H100_v5" #virtual machine type
+#   count: 1
+#   labelSelector:
+#     matchLabels:
+#       kubernetes.azure.com/accelerator: nvidia #gpu node
+# inference:
+#   preset:
+#     name: phi-3.5-mini-instruct
+
+# # === resource === 
+# # yaml == desired state, 
+# #if current state matches desired state, no action is taken
+
+# #this yaml should be automatically created when user clicks intall to preset model
+
+# # ==== chat in the pod ===== 
+# #model api server always hosted in port 5000
+# #content == whaterver user wants to ask the model
+# #ask this in pod terminal, get json output
+# #experience is not good, doesn't preserve history automatically
+
+# curl -X POST "http://localhost:5000/v1/chat/completions" \
+#   -H "Content-Type: application/json" \
+#   --data '{
+#   "model": "phi-3.5-mini-instruct",
+#   "messages": [
+#    {
+#     "role": "user",
+#     "content": "what is your name?"
+#    },
+#    {
+#     "role": "assistant",
+#     "content": "I am Phi 3.5 Mini, a large language model developed by Google DeepMind."
+#    },
+#    {
+#     "role": "user",
+#     "content": "what was my first question?"
+#    }
+#   ]
+# }' | jq
