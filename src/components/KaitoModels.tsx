@@ -23,8 +23,40 @@ import { getListItemSecondaryActionClassesUtilityClass } from '@mui/material/ind
 
 //took inspiration from app catalog from plugin
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
-const sampleCharts = Array.from({ length: 12 }).map((_, i) => ({
-  name: `Model-${i + 1}`,
+const modelNames = [
+  'PresetDeepSeekR1DistillLlama8BModel',
+  'PresetDeepSeekR1DistillQwen14BModel',
+  'PresetFalcon7BModel',
+  'PresetFalcon40BModel',
+  'PresetFalcon7BInstructModel',
+  'PresetFalcon40BInstructModel',
+  'PresetLlama3_1_8BInstructModel',
+  'PresetMistral7BModel',
+  'PresetMistral7BInstructModel',
+  'PresetPhi2Model',
+  'PresetPhi3Mini4kModel',
+  'PresetPhi3Mini128kModel',
+  'PresetPhi3Medium4kModel',
+  'PresetPhi3Medium128kModel',
+  'PresetPhi3_5MiniInstruct',
+  'PresetPhi4Model',
+  'PresetPhi4MiniInstructModel',
+  'PresetQwen2_5Coder7BInstructModel',
+  'PresetQwen2_5Coder32BInstructModel',
+];
+
+const getLogo = name => {
+  if (name.includes('DeepSeek')) return '../logos/deepseek-logo.webp';
+  if (name.includes('Falcon')) return 'falcon-logo.png';
+  if (name.includes('Llama')) return 'llama-logo.png';
+  if (name.includes('Mistral')) return 'mistral-logo.png';
+  if (name.includes('Phi')) return 'phi-logo.png';
+  if (name.includes('Qwen')) return 'qwen-logo.png';
+  return 'default-logo.png';
+};
+
+const modelCharts = modelNames.map((name, i) => ({
+  name,
   version: `v${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}`,
   repository: {
     name: `Repo-${i + 1}`,
@@ -33,7 +65,7 @@ const sampleCharts = Array.from({ length: 12 }).map((_, i) => ({
   },
   official: i % 3 === 0,
   cncf: i % 4 === 0,
-  logo_image_id: '',
+  logo_image_id: getLogo(name),
   description:
     'this is a long description of the model which may be very long and spills over to the next line.',
 }));
@@ -51,7 +83,7 @@ const KaitoModels = () => {
   const [page, setPage] = useState(1);
 
   // convert search to lower case
-  const filteredCharts = sampleCharts.filter(c =>
+  const filteredCharts = modelCharts.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -82,7 +114,7 @@ const KaitoModels = () => {
         ]}
       />
 
-      <Box display="flex" flexWrap="wrap" justifyContent="center">
+      <Box display="flex" flexWrap="wrap" justifyContent="left">
         {paginatedCharts.map((chart, i) => (
           <Card
             key={i}
@@ -156,7 +188,7 @@ const KaitoModels = () => {
                 sx={{ backgroundColor: '#000', color: 'white', textTransform: 'none' }}
                 onClick={() => console.log('View details clicked')}
               >
-                View Details
+                Install
               </Button>
               <Link href={chart.repository.url} target="_blank">
                 Learn More
