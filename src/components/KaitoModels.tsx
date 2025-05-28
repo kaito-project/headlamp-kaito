@@ -19,8 +19,6 @@ import {
 } from '@mui/material';
 import { Autocomplete, Pagination } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { getListItemSecondaryActionClassesUtilityClass } from '@mui/material/index';
-
 //took inspiration from app catalog from plugin
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
 const modelNames = [

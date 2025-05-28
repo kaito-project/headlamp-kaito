@@ -22,7 +22,7 @@
 
 # # ==== chat in the pod ===== 
 # #model api server always hosted in port 5000
-# #content == whaterver user wants to ask the model
+# #content == whatever user wants to ask the model
 # #ask this in pod terminal, get json output
 # #experience is not good, doesn't preserve history automatically
 
