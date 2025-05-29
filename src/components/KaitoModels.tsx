@@ -28,8 +28,7 @@ import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import defaultLogo from '../logos/default-logo.webp';
 
-//took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
-// took inspiration from app catalog from plugin
+// took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
 interface ModelChart {
   name: string;
