@@ -43,7 +43,7 @@ const modelNames = [
   'PresetQwen2_5Coder32BInstructModel',
 ];
 
-const getLogo = name => {
+const getPresetModelLogo = name => {
   if (name.includes('DeepSeek')) return '../logos/deepseek-logo.webp';
   if (name.includes('Falcon')) return 'falcon-logo.png';
   if (name.includes('Llama')) return 'llama-logo.png';
