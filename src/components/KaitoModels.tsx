@@ -19,8 +19,30 @@ import {
 } from '@mui/material';
 import { Autocomplete, Pagination } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-//took inspiration from app catalog from plugin
+// Importing logos
+import falconLogo from '../logos/falcon-logo.webp';
+import deepseekLogo from '../logos/deepseek-logo.webp';
+import llamaLogo from '../logos/llama-logo.webp';
+import mistralLogo from '../logos/mistral-logo.webp';
+import phiLogo from '../logos/phi-logo.webp';
+import qwenLogo from '../logos/qwen-logo.webp';
+import defaultLogo from '../logos/default-logo.webp';
+
+//took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
+interface ModelChart {
+  name: string;
+  version: string;
+  repository: {
+    name: string;
+    url: string;
+    verified_publisher: boolean;
+  };
+  official: boolean;
+  cncf: boolean;
+  logo_image_id: string;
+  description: string;
+}
 const modelNames = [
   'PresetDeepSeekR1DistillLlama8BModel',
   'PresetDeepSeekR1DistillQwen14BModel',
@@ -43,17 +65,18 @@ const modelNames = [
   'PresetQwen2_5Coder32BInstructModel',
 ];
 
-const getLogo = name => {
-  if (name.includes('DeepSeek')) return '../logos/deepseek-logo.webp';
-  if (name.includes('Falcon')) return 'falcon-logo.png';
-  if (name.includes('Llama')) return 'llama-logo.png';
-  if (name.includes('Mistral')) return 'mistral-logo.png';
-  if (name.includes('Phi')) return 'phi-logo.png';
-  if (name.includes('Qwen')) return 'qwen-logo.png';
+const getLogo = (name: string): string => {
+  const lname = name.toLowerCase();
+  if (lname.includes('deepseek')) return deepseekLogo;
+  if (lname.includes('falcon')) return falconLogo;
+  if (lname.includes('llama')) return llamaLogo;
+  if (lname.includes('mistral')) return mistralLogo;
+  if (lname.includes('phi')) return phiLogo;
+  if (lname.includes('qwen')) return qwenLogo;
   return 'default-logo.png';
 };
 
-const modelCharts = modelNames.map((name, i) => ({
+const modelCharts: ModelChart[] = modelNames.map((name, i) => ({
   name,
   version: `v${Math.floor(Math.random() * 10)}.${Math.floor(Math.random() * 10)}`,
   repository: {
@@ -128,7 +151,7 @@ const KaitoModels = () => {
                 {chart.logo_image_id && (
                   <CardMedia
                     component="img"
-                    image={`https://artifacthub.io/image/${chart.logo_image_id}`}
+                    image={chart.logo_image_id}
                     alt={`${chart.name} logo`}
                     sx={{ width: 60, height: 60, objectFit: 'contain', marginRight: 1 }}
                   />
