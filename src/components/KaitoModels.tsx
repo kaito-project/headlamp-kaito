@@ -198,7 +198,7 @@ const modelCharts: ModelChart[] = modelInfo.map((model, i) => ({
   verified_publisher: true,
   official: i % 3 === 0,
   cncf: i % 4 === 0,
-  logo_image_id: getLogo(model.name),
+  logoImageId: getLogo(model.name),
   description: model.description || 'No description available for this model.',
 }));
 
