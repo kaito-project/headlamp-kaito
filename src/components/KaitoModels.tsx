@@ -195,10 +195,10 @@ const PresetModels: PresetModel[] = modelInfo.map((model, i) => ({
     name: getCompanyName(model.name),
     url: model.url || 'https://huggingface.co/',
   },
-  verified_publisher: true,
+  verifiedPublisher: true,
   official: i % 3 === 0,
   cncf: i % 4 === 0,
-  logoImageId: getLogo(model.name),
+  logo_image_id: getLogo(model.name),
   description: model.description || 'No description available for this model.',
 }));
 
@@ -279,7 +279,7 @@ const KaitoModels = () => {
                     <Icon icon="mdi:star-circle" style={{ fontSize: 22, marginLeft: '0.5em' }} />
                   </Tooltip>
                 )}
-                {chart.verified_publisher && (
+                {chart.verifiedPublisher && (
                   <Tooltip title="Verified Publisher">
                     <Icon icon="mdi:check-decagram" style={{ fontSize: 22, marginLeft: '0.5em' }} />
                   </Tooltip>
