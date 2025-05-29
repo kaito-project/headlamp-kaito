@@ -51,7 +51,7 @@ registerRoute({
 registerSidebarEntry({
   parent: 'Kaito',
   name: 'models',
-  label: 'Models',
+  label: 'Model Catalog',
   url: '/kaito/models',
 });
 
