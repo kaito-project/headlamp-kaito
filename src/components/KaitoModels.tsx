@@ -29,7 +29,7 @@ import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
-export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
+export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
 interface PresetModel {
   name: string;
   version: string;
@@ -40,7 +40,7 @@ interface PresetModel {
   verifiedPublisher: boolean;
   official: boolean;
   cncf: boolean;
-  logo_image_id: string;
+  logoImageId: string;
   description: string;
 }
 
@@ -198,7 +198,7 @@ const PresetModels: PresetModel[] = modelInfo.map((model, i) => ({
   verifiedPublisher: true,
   official: i % 3 === 0,
   cncf: i % 4 === 0,
-  logo_image_id: getLogo(model.name),
+  logoImageId: getLogo(model.name),
   description: model.description || 'No description available for this model.',
 }));
 
@@ -215,13 +215,13 @@ const KaitoModels = () => {
   const [page, setPage] = useState(1);
 
   // convert search to lower case
-  const filteredCharts = PresetModels.filter(c =>
+  const filteredModels = PresetModels.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const paginatedCharts = filteredCharts.slice(
-    (page - 1) * PAGE_OFFSET_COUNT_FOR_CHARTS,
-    page * PAGE_OFFSET_COUNT_FOR_CHARTS
+  const paginatedModels = filteredModels.slice(
+    (page - 1) * PAGE_OFFSET_COUNT_FOR_MODELS,
+    page * PAGE_OFFSET_COUNT_FOR_MODELS
   );
 
   return (
@@ -247,9 +247,9 @@ const KaitoModels = () => {
       />
 
       <Box display="flex" flexWrap="wrap" justifyContent="left">
-        {paginatedCharts.map(chart => (
+        {paginatedModels.map(model => (
           <Card
-            key={chart.name}
+            key={model.name}
             sx={{
               margin: '1rem',
               width: { md: '40%', lg: '30%' },
@@ -259,27 +259,27 @@ const KaitoModels = () => {
           >
             <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mx={2}>
               <Box display="flex" alignItems="center">
-                {chart.logo_image_id && (
+                {model.logoImageId && (
                   <CardMedia
                     component="img"
-                    image={chart.logo_image_id}
-                    alt={`${chart.name} logo`}
+                    image={model.logoImageId}
+                    alt={`${model.name} logo`}
                     sx={{ width: 60, height: 60, objectFit: 'contain', marginRight: 1 }}
                   />
                 )}
               </Box>
               <Box display="flex" alignItems="center">
-                {chart.cncf && (
+                {model.cncf && (
                   <Tooltip title="CNCF Project">
                     <Icon icon="simple-icons:cncf" style={{ fontSize: 20, marginLeft: '0.5em' }} />
                   </Tooltip>
                 )}
-                {chart.official && (
-                  <Tooltip title="Official Chart">
+                {model.official && (
+                  <Tooltip title="Official Model">
                     <Icon icon="mdi:star-circle" style={{ fontSize: 22, marginLeft: '0.5em' }} />
                   </Tooltip>
                 )}
-                {chart.verifiedPublisher && (
+                {model.verifiedPublisher && (
                   <Tooltip title="Verified Publisher">
                     <Icon icon="mdi:check-decagram" style={{ fontSize: 22, marginLeft: '0.5em' }} />
                   </Tooltip>
@@ -288,27 +288,27 @@ const KaitoModels = () => {
             </Box>
 
             <CardContent>
-              <Tooltip title={chart.name}>
+              <Tooltip title={model.name}>
                 <Typography component="h2" variant="h5" noWrap>
                   <RouterLink
                     routeName="/kaito/models/:modelName"
-                    params={{ modelName: chart.name }}
+                    params={{ modelName: model.name }}
                   >
-                    {chart.name}
+                    {model.name}
                   </RouterLink>
                 </Typography>
               </Tooltip>
               <Box display="flex" justifyContent="space-between" my={1}>
-                <Typography>{chart.version}</Typography>
-                <Tooltip title={chart.company.name}>
-                  <Typography noWrap>{chart.company.name}</Typography>
+                <Typography>{model.version}</Typography>
+                <Tooltip title={model.company.name}>
+                  <Typography noWrap>{model.company.name}</Typography>
                 </Tooltip>
               </Box>
               <Divider />
               <Typography mt={1}>
-                {chart.description.slice(0, 100)}
-                {chart.description.length > 100 && (
-                  <Tooltip title={chart.description}>
+                {model.description.slice(0, 100)}
+                {model.description.length > 100 && (
+                  <Tooltip title={model.description}>
                     <span>…</span>
                   </Tooltip>
                 )}
@@ -322,7 +322,7 @@ const KaitoModels = () => {
               >
                 Install
               </Button>
-              <Link href={chart.company.url} target="_blank">
+              <Link href={model.company.url} target="_blank">
                 Learn More
               </Link>
             </CardActions>
@@ -330,13 +330,13 @@ const KaitoModels = () => {
         ))}
       </Box>
 
-      {filteredCharts.length > PAGE_OFFSET_COUNT_FOR_CHARTS && (
+      {filteredModels.length > PAGE_OFFSET_COUNT_FOR_MODELS && (
         <Box mt={3} mx="auto" maxWidth="max-content">
           <Pagination
             size="large"
             shape="rounded"
             page={page}
-            count={Math.ceil(filteredCharts.length / PAGE_OFFSET_COUNT_FOR_CHARTS)}
+            count={Math.ceil(filteredModels.length / PAGE_OFFSET_COUNT_FOR_MODELS)}
             onChange={(e, val) => setPage(val)}
             color="primary"
           />
