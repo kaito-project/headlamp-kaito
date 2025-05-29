@@ -172,12 +172,19 @@ const getLogo = (name: string): string => {
 
 const getCompanyName = (name: string): string => {
   const lname = name.toLowerCase();
-  if (lname.includes('deepseek')) return 'deepseek-ai';
-  if (lname.includes('falcon')) return 'tiiuae';
-  if (lname.includes('llama')) return 'meta-llama';
-  if (lname.includes('mistral')) return 'mistralai';
-  if (lname.includes('phi')) return 'microsoft';
-  if (lname.includes('qwen')) return 'Qwen';
+  const companyMap: { [key: string]: string } = {
+    deepseek: 'deepseek-ai',
+    falcon: 'tiiuae',
+    llama: 'meta-llama',
+    mistral: 'mistralai',
+    phi: 'microsoft',
+    qwen: 'Qwen',
+  };
+  for (const key in companyMap) {
+    if (lname.includes(key)) {
+      return companyMap[key];
+    }
+  }
   return 'Hugging Face'; // default for Hugging Face or others
 };
 
