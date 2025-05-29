@@ -25,7 +25,7 @@ registerSidebarEntry({
     parent: '',
     name: 'Kaito',
     url: `/kaito/workspaces`,
-    label: 'Kaito',
+    label: 'KAITO',
     icon: 'mdi:kubernetes',
 });
 
