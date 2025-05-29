@@ -29,6 +29,7 @@ import qwenLogo from '../logos/qwen-logo.webp';
 import defaultLogo from '../logos/default-logo.webp';
 
 //took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
+// took inspiration from app catalog from plugin
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
 interface ModelChart {
   name: string;
@@ -75,6 +76,15 @@ const getLogo = (name: string): string => {
   if (lname.includes('qwen')) return qwenLogo;
   return 'default-logo.png';
 };
+const getPresetModelLogo = name => {
+  if (name.includes('DeepSeek')) return '../logos/deepseek-logo.webp';
+  if (name.includes('Falcon')) return '../logos/falcon-logo.png';
+  if (name.includes('Llama')) return '../logos/llama-logo.png';
+  if (name.includes('Mistral')) return '../logos/mistral-logo.png';
+  if (name.includes('Phi')) return '../logos/phi-logo.png';
+  if (name.includes('Qwen')) return '../logos/qwen-logo.png';
+  return '../logos/default-logo.png';
+};
 
 const modelCharts: ModelChart[] = modelNames.map((name, i) => ({
   name,
@@ -91,7 +101,7 @@ const modelCharts: ModelChart[] = modelNames.map((name, i) => ({
     'this is a long description of the model which may be very long and spills over to the next line.',
 }));
 
-//Will replace this with common filter categories
+// Will replace this with common filter categories
 const categories = [
   { title: 'All', value: 0 },
   { title: 'option2', value: 1 },
@@ -136,9 +146,9 @@ const KaitoModels = () => {
       />
 
       <Box display="flex" flexWrap="wrap" justifyContent="left">
-        {paginatedCharts.map((chart, i) => (
+        {paginatedCharts.map(chart => (
           <Card
-            key={i}
+            key={chart.name}
             sx={{
               margin: '1rem',
               width: { md: '40%', lg: '30%' },
