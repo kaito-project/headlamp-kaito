@@ -113,9 +113,9 @@ const KaitoModels = () => {
       />
 
       <Box display="flex" flexWrap="wrap" justifyContent="left">
-        {paginatedCharts.map((chart, i) => (
+        {paginatedCharts.map((chart) => (
           <Card
-            key={i}
+            key={chart.name}
             sx={{
               margin: '1rem',
               width: { md: '40%', lg: '30%' },
