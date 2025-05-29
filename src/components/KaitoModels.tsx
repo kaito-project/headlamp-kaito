@@ -338,7 +338,6 @@ const KaitoModels = () => {
 
       <Box textAlign="right" mt={2} mr={2}>
         {/* <Link href="https://artifacthub.io/" target="_blank"> */}
-        <Link>putting some text here</Link>
       </Box>
     </>
   );
