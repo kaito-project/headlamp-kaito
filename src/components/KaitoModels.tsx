@@ -37,7 +37,7 @@ interface ModelChart {
     name: string;
     url: string;
   };
-  verified_publisher: boolean;
+  verifiedPublisher: boolean;
   official: boolean;
   cncf: boolean;
   logo_image_id: string;
