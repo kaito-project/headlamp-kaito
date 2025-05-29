@@ -188,7 +188,7 @@ const modelCharts: ModelChart[] = modelInfo.map((model, i) => ({
     name: getCompanyName(model.name),
     url: model.url || 'https://huggingface.co/',
   },
-  verified_publisher: i % 1 == 0,
+  verified_publisher: true,
   official: i % 3 === 0,
   cncf: i % 4 === 0,
   logo_image_id: getLogo(model.name),
