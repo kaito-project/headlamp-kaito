@@ -28,8 +28,7 @@ import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import defaultLogo from '../logos/default-logo.webp';
 
-//took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
-// took inspiration from app catalog from plugin
+// took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
 interface ModelChart {
   name: string;
@@ -75,15 +74,6 @@ const getLogo = (name: string): string => {
   if (lname.includes('phi')) return phiLogo;
   if (lname.includes('qwen')) return qwenLogo;
   return 'default-logo.png';
-};
-const getPresetModelLogo = name => {
-  if (name.includes('DeepSeek')) return '../logos/deepseek-logo.webp';
-  if (name.includes('Falcon')) return '../logos/falcon-logo.png';
-  if (name.includes('Llama')) return '../logos/llama-logo.png';
-  if (name.includes('Mistral')) return '../logos/mistral-logo.png';
-  if (name.includes('Phi')) return '../logos/phi-logo.png';
-  if (name.includes('Qwen')) return '../logos/qwen-logo.png';
-  return '../logos/default-logo.png';
 };
 
 const modelCharts: ModelChart[] = modelNames.map((name, i) => ({
