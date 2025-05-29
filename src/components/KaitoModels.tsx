@@ -45,12 +45,12 @@ const modelNames = [
 
 const getPresetModelLogo = name => {
   if (name.includes('DeepSeek')) return '../logos/deepseek-logo.webp';
-  if (name.includes('Falcon')) return 'falcon-logo.png';
-  if (name.includes('Llama')) return 'llama-logo.png';
-  if (name.includes('Mistral')) return 'mistral-logo.png';
-  if (name.includes('Phi')) return 'phi-logo.png';
-  if (name.includes('Qwen')) return 'qwen-logo.png';
-  return 'default-logo.png';
+  if (name.includes('Falcon')) return '../logos/falcon-logo.png';
+  if (name.includes('Llama')) return '../logos/llama-logo.png';
+  if (name.includes('Mistral')) return '../logos/mistral-logo.png';
+  if (name.includes('Phi')) return '../logos/phi-logo.png';
+  if (name.includes('Qwen')) return '../logos/qwen-logo.png';
+  return '../logos/default-logo.png';
 };
 
 const modelCharts = modelNames.map((name, i) => ({
