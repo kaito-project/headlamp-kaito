@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { Autocomplete, Pagination } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-//took inspiration from app catalog from plugin
+// took inspiration from app catalog from plugin
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
 const modelNames = [
   'PresetDeepSeekR1DistillLlama8BModel',
@@ -68,7 +68,7 @@ const modelCharts = modelNames.map((name, i) => ({
     'this is a long description of the model which may be very long and spills over to the next line.',
 }));
 
-//Will replace this with common filter categories
+// Will replace this with common filter categories
 const categories = [
   { title: 'All', value: 0 },
   { title: 'option2', value: 1 },
