@@ -30,7 +30,7 @@ import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_CHARTS = 9;
-interface ModelChart {
+interface PresetModel {
   name: string;
   version: string;
   company: {
@@ -188,7 +188,7 @@ const getCompanyName = (name: string): string => {
   return 'Hugging Face'; // default for Hugging Face or others
 };
 
-const modelCharts: ModelChart[] = modelInfo.map((model, i) => ({
+const PresetModels: PresetModel[] = modelInfo.map((model, i) => ({
   name: model.name,
   version: model.name.includes('Mistral') ? 'v0.3' : '',
   company: {
@@ -215,7 +215,7 @@ const KaitoModels = () => {
   const [page, setPage] = useState(1);
 
   // convert search to lower case
-  const filteredCharts = modelCharts.filter(c =>
+  const filteredCharts = PresetModels.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
