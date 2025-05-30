@@ -3,7 +3,7 @@ import React from 'react';
 const KaitoWorkspaces: React.FC = () => {
   return (
     <div>
-      <h1>Hello Workspaces</h1>
+      <h1>Hello Workspaces!</h1>
     </div>
   );
 };
