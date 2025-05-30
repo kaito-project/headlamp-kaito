@@ -45,6 +45,7 @@ interface PresetModel {
   cncf: boolean;
   logoImageId: string;
   description: string;
+  instanceType: string;
 }
 
 const modelInfo = [
@@ -222,6 +223,7 @@ const PresetModels: PresetModel[] = modelInfo.map((model, i) => ({
   cncf: i % 4 === 0,
   logoImageId: getLogo(model.name),
   description: model.description || 'No description available for this model.',
+  instanceType: model.instanceType,
 }));
 
 // Will replace this with common filter categories
@@ -262,8 +264,8 @@ kind: Workspace
 metadata:
   name: workspace-${model.name.toLowerCase()}
 resource:
-  instanceType: "Standard_NC24ads_A100_v4" // replace this?
-  labelSelector: // keep labelSelector?
+  instanceType: ${model.instanceType}
+  labelSelector: 
     matchLabels:
       apps: ${model.name.toLowerCase()}
 inference:
