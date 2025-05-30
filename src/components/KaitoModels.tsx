@@ -238,14 +238,19 @@ const KaitoModels = () => {
 
   function generateWorkspaceYAML(model: PresetModel): string {
     return `
-apiVersion: owldb.rice.dev/v1alpha1
+apiVersion: kaito.sh/v1beta1
 kind: Workspace
 metadata:
-  name: ${model.name.toLowerCase()}-workspace
-spec:
+  name: workspace-${model.name.toLowerCase()}
+resource:
   model: ${model.name}
-  version: ${model.version}
-  description: "${model.description}"
+  instanceType: "Standard_NC24ads_A100_v4"
+  labelSelector:
+    matchLabels:
+      apps: ${model.name.toLowerCase()}
+inference:
+    preset:
+      name: ${model.name.toLowerCase()}
 `;
   }
 
