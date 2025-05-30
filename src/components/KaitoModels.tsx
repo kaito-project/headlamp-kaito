@@ -220,7 +220,7 @@ const KaitoModels = () => {
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
   const [editorValue, setEditorValue] = useState<string>('');
   const { enqueueSnackbar } = useSnackbar();
-  function handleInstall(model: PresetModel) {
+  function handleDeploy(model: PresetModel) {
     setEditorValue(generateWorkspaceYAML(model));
     setActiveModel(model);
     setOpenEditor(true);
@@ -237,15 +237,14 @@ const KaitoModels = () => {
   );
 
   function generateWorkspaceYAML(model: PresetModel): string {
-    return `
+    return `# model name: ${model.name}
 apiVersion: kaito.sh/v1beta1
 kind: Workspace
 metadata:
   name: workspace-${model.name.toLowerCase()}
 resource:
-  model: ${model.name}
-  instanceType: "Standard_NC24ads_A100_v4"
-  labelSelector:
+  instanceType: "Standard_NC24ads_A100_v4" // replace this?
+  labelSelector: // keep labelSelector?
     matchLabels:
       apps: ${model.name.toLowerCase()}
 inference:
@@ -348,9 +347,9 @@ inference:
             <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
               <Button
                 sx={{ backgroundColor: '#000', color: 'white', textTransform: 'none' }}
-                onClick={() => handleInstall(model)}
+                onClick={() => handleDeploy(model)}
               >
-                Install
+                Deploy
               </Button>
               <Link href={model.company.url} target="_blank">
                 Learn More
@@ -381,7 +380,7 @@ inference:
         onClose={() => setOpenEditor(false)}
         maxWidth="md"
         fullWidth
-        title={`Install: ${activeModel?.name}`}
+        title={`Deploy Model: ${activeModel?.name}`}
       >
         <Box p={2}>
           <Editor
@@ -396,11 +395,11 @@ inference:
             <Button
               sx={{ ml: 2, backgroundColor: '#000', color: 'white' }}
               onClick={() => {
-                enqueueSnackbar('Install triggered (not implemented)', { variant: 'info' });
+                enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
                 setOpenEditor(false);
               }}
             >
-              Install
+              Deploy
             </Button>
           </Box>
         </Box>
