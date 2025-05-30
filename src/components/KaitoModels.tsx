@@ -412,7 +412,18 @@ inference:
             theme="vs-dark"
           />
           <Box display="flex" justifyContent="flex-end" mt={2}>
-            <Button onClick={() => setOpenEditor(false)}>Cancel</Button>
+            <Button
+              style={{
+                backgroundColor: '#000',
+                color: 'white',
+                textTransform: 'none',
+              }}
+              onClick={() => {
+                setOpenEditor(false);
+              }}
+            >
+              Close
+            </Button>
             <Button
               sx={{ ml: 2, backgroundColor: '#000', color: 'white' }}
               onClick={() => {
