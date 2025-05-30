@@ -27,6 +27,9 @@ import mistralLogo from '../logos/mistral-logo.webp';
 import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
+import { Dialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import Editor from '@monaco-editor/react';
+import { useSnackbar } from 'notistack';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -213,6 +216,15 @@ const KaitoModels = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState(categories[0]);
   const [page, setPage] = useState(1);
+  const [openEditor, setOpenEditor] = useState(false);
+  const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
+  const [editorValue, setEditorValue] = useState<string>('');
+  const { enqueueSnackbar } = useSnackbar();
+  function handleInstall(model: PresetModel) {
+    setEditorValue(generateWorkspaceYAML(model));
+    setActiveModel(model);
+    setOpenEditor(true);
+  }
 
   // convert search to lower case
   const filteredModels = PresetModels.filter(c =>
@@ -223,6 +235,19 @@ const KaitoModels = () => {
     (page - 1) * PAGE_OFFSET_COUNT_FOR_MODELS,
     page * PAGE_OFFSET_COUNT_FOR_MODELS
   );
+
+  function generateWorkspaceYAML(model: PresetModel): string {
+    return `
+apiVersion: owldb.rice.dev/v1alpha1
+kind: Workspace
+metadata:
+  name: ${model.name.toLowerCase()}-workspace
+spec:
+  model: ${model.name}
+  version: ${model.version}
+  description: "${model.description}"
+`;
+  }
 
   return (
     <>
@@ -318,7 +343,7 @@ const KaitoModels = () => {
             <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
               <Button
                 sx={{ backgroundColor: '#000', color: 'white', textTransform: 'none' }}
-                onClick={() => console.log('View details clicked')}
+                onClick={() => handleInstall(model)}
               >
                 Install
               </Button>
@@ -346,6 +371,35 @@ const KaitoModels = () => {
       <Box textAlign="right" mt={2} mr={2}>
         {/* <Link href="https://artifacthub.io/" target="_blank"> */}
       </Box>
+      <Dialog
+        open={openEditor}
+        onClose={() => setOpenEditor(false)}
+        maxWidth="md"
+        fullWidth
+        title={`Install: ${activeModel?.name}`}
+      >
+        <Box p={2}>
+          <Editor
+            language="yaml"
+            value={editorValue}
+            onChange={val => val && setEditorValue(val)}
+            height="400px"
+            theme="vs-dark"
+          />
+          <Box display="flex" justifyContent="flex-end" mt={2}>
+            <Button onClick={() => setOpenEditor(false)}>Cancel</Button>
+            <Button
+              sx={{ ml: 2, backgroundColor: '#000', color: 'white' }}
+              onClick={() => {
+                enqueueSnackbar('Install triggered (not implemented)', { variant: 'info' });
+                setOpenEditor(false);
+              }}
+            >
+              Install
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
     </>
   );
 };
