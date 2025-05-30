@@ -52,113 +52,132 @@ const modelInfo = [
     name: 'DeepSeek-R1-Distill-Llama-8B',
     url: 'https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B',
     description: 'A distilled version of Llama 8B by DeepSeek.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'DeepSeek-R1-Distill-Qwen-14B',
     url: 'https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B',
     description: 'A distilled version of Qwen 14B by DeepSeek.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Falcon-7B',
     url: 'https://huggingface.co/tiiuae/falcon-7b',
     description:
       'Falcon-7B is a 7B parameters causal decoder-only model built by TII and trained on 1,500B tokens of RefinedWeb enhanced with curated corpora.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Falcon-40B',
     url: 'https://huggingface.co/tiiuae/falcon-40b',
     description:
       'Falcon-40B is a 40B parameters causal decoder-only model built by TII and trained on 1,000B tokens of RefinedWeb enhanced with curated corpora.',
+    instanceType: 'Standard_NC96ads_A100_v4',
   },
   {
     name: 'Falcon-7B-Instruct',
     url: 'https://huggingface.co/tiiuae/falcon-7b-instruct',
     description:
       'Falcon-7B-Instruct is a 7B parameters causal decoder-only model built by TII based on Falcon-7B and finetuned on a mixture of chat/instruct datasets.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Falcon-40B-Instruct',
     url: 'https://huggingface.co/tiiuae/falcon-40b-instruct',
     description:
       'Falcon-40B-Instruct is a 40B parameters causal decoder-only model built by TII based on Falcon-40B and finetuned on a mixture of Baize.',
+    instanceType: 'Standard_NC96ads_A100_v4',
   },
   {
     name: 'Llama-3.1-8B-Instruct',
     url: 'https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct',
     description:
       'The Meta Llama 3.1 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction tuned generative models in 8B, 70B and 405B sizes (text in/text out). The Llama 3.1 instruction tuned text only models (8B, 70B, 405B) are optimized for multilingual dialogue use cases and outperform many of the available open source and closed chat models on common industry benchmarks.',
+    instanceType: 'Standard_NC96ads_A100_v4',
   },
   {
     name: 'Mistral-7B',
     url: 'https://huggingface.co/mistralai/Mistral-7B-v0.3',
     description:
       'The Mistral-7B-v0.3 Large Language Model (LLM) is a Mistral-7B-v0.2 with extended vocabulary.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Mistral-7B-Instruct',
     url: 'https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3',
     description:
       'The Mistral-7B-Instruct-v0.3 Large Language Model (LLM) is an instruct fine-tuned version of the Mistral-7B-v0.3.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-2',
     url: 'https://huggingface.co/microsoft/Phi-2',
     description:
       'Phi-2 is a Transformer with 2.7 billion parameters. It was trained using the same data sources as Phi-1.5, augmented with a new data source that consists of various NLP synthetic texts and filtered websites (for safety and educational value).',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-3-Mini-4k-Instruct',
     url: 'https://huggingface.co/microsoft/Phi-3-Mini-4k-Instruct',
     description:
       'The Phi-3-Mini-4K-Instruct is a 3.8B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets that includes both synthetic data and the filtered publicly available websites data with a focus on high-quality and reasoning dense properties. The model belongs to the Phi-3 family with the Mini version in two variants 4K and 128K which is the context length (in tokens) that it can support.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-3-Mini-128k-Instruct',
     url: 'https://huggingface.co/microsoft/Phi-3-Mini-128k-Instruct',
     description:
       'The Phi-3-Mini-128K-Instruct is a 3.8 billion-parameter, lightweight, state-of-the-art open model trained using the Phi-3 datasets. This dataset includes both synthetic data and filtered publicly available website data, with an emphasis on high-quality and reasoning-dense properties. The model belongs to the Phi-3 family with the Mini version in two variants 4K and 128K which is the context length (in tokens) that it can support.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-3-Medium-4k-Instruct',
     url: 'https://huggingface.co/microsoft/Phi-3-Medium-4k-Instruct',
     description:
       'The Phi-3-Medium-4K-Instruct is a 14B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets that includes both synthetic data and the filtered publicly available websites data with a focus on high-quality and reasoning dense properties. The model belongs to the Phi-3 family with the Medium version in two variants 4K and 128K which is the context length (in tokens) that it can support.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-3-Medium-128k-Instruct',
     url: 'https://huggingface.co/microsoft/Phi-3-Medium-128k-Instruct',
     description:
       'The Phi-3-Medium-128K-Instruct is a 14B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets that includes both synthetic data and the filtered publicly available websites data with a focus on high-quality and reasoning dense properties. The model belongs to the Phi-3 family with the Medium version in two variants 4k and 128K which is the context length (in tokens) that it can support.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-3.5-Mini-Instruct',
     url: 'https://huggingface.co/microsoft/Phi-3.5-Mini-Instruct',
     description:
       'Phi-3.5-mini is a lightweight, state-of-the-art open model built upon datasets used for Phi-3 - synthetic data and filtered publicly available websites - with a focus on very high-quality, reasoning dense data. The model belongs to the Phi-3 model family and supports 128K token context length.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-4',
     url: 'https://huggingface.co/microsoft/Phi-4',
     description:
       'phi-4 is a state-of-the-art open model built upon a blend of synthetic datasets, data from filtered public domain websites, and acquired academic books and Q&A datasets. The goal of this approach was to ensure that small capable models were trained with data focused on high quality and advanced reasoning.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Phi-4-Mini-Instruct',
     url: 'https://huggingface.co/microsoft/Phi-4-Mini-Instruct',
     description:
       'Phi-4-mini-instruct is a lightweight open model built upon synthetic data and filtered publicly available websites - with a focus on high-quality, reasoning dense data. The model belongs to the Phi-4 model family and supports 128K token context length.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Qwen-2.5-Coder-7B-Instruct',
     url: 'https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct',
     description:
       'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models (formerly known as CodeQwen). Qwen2.5-Coder-7B has 7 billion parameters.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Qwen-2.5-Coder-32B-Instruct',
     url: 'https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct',
     description:
       'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models (formerly known as CodeQwen). As of now, Qwen2.5-Coder-32B has 32 billion parameters.',
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
 ];
 
