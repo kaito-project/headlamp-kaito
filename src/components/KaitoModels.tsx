@@ -27,9 +27,8 @@ import mistralLogo from '../logos/mistral-logo.webp';
 import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
-import { Dialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import Editor from '@monaco-editor/react';
 import { useSnackbar } from 'notistack';
+import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -237,15 +236,17 @@ const KaitoModels = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState(categories[0]);
   const [page, setPage] = useState(1);
-  const [openEditor, setOpenEditor] = useState(false);
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
-  const [editorValue, setEditorValue] = useState<string>('');
   const { enqueueSnackbar } = useSnackbar();
   function handleDeploy(model: PresetModel) {
-    setEditorValue(generateWorkspaceYAML(model));
+    const yaml = generateWorkspaceYAML(model);
+    setEditorValue(yaml);
     setActiveModel(model);
-    setOpenEditor(true);
+    setEditorDialogOpen(true);
   }
+
+  const [editorDialogOpen, setEditorDialogOpen] = useState(false);
+  const [editorValue, setEditorValue] = useState('');
 
   // convert search to lower case
   const filteredModels = PresetModels.filter(c =>
@@ -396,46 +397,21 @@ inference:
       <Box textAlign="right" mt={2} mr={2}>
         {/* <Link href="https://artifacthub.io/" target="_blank"> */}
       </Box>
-      <Dialog
-        open={openEditor}
-        onClose={() => setOpenEditor(false)}
-        maxWidth="md"
-        fullWidth
+
+      <EditorDialog
+        item={editorValue}
+        setOpen={setEditorDialogOpen}
+        onClose={() => setEditorDialogOpen(false)}
+        onEditorChanged={newVal => {
+          if (typeof newVal === 'string') setEditorValue(newVal);
+        }}
+        onSave={() => {
+          enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
+          setEditorDialogOpen(false);
+        }}
         title={`Deploy Model: ${activeModel?.name}`}
-      >
-        <Box p={2}>
-          <Editor
-            language="yaml"
-            value={editorValue}
-            onChange={val => val && setEditorValue(val)}
-            height="400px"
-            theme="vs-dark"
-          />
-          <Box display="flex" justifyContent="flex-end" mt={2}>
-            <Button
-              style={{
-                backgroundColor: '#000',
-                color: 'white',
-                textTransform: 'none',
-              }}
-              onClick={() => {
-                setOpenEditor(false);
-              }}
-            >
-              Close
-            </Button>
-            <Button
-              sx={{ ml: 2, backgroundColor: '#000', color: 'white' }}
-              onClick={() => {
-                enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
-                setOpenEditor(false);
-              }}
-            >
-              Deploy
-            </Button>
-          </Box>
-        </Box>
-      </Dialog>
+        saveLabel="Apply"
+      />
     </>
   );
 };
