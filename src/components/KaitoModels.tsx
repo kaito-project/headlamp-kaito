@@ -30,6 +30,7 @@ import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 import { useSnackbar } from 'notistack';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import yaml from 'js-yaml';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -239,8 +240,11 @@ const KaitoModels = () => {
   const [page, setPage] = useState(1);
   const { enqueueSnackbar } = useSnackbar();
   function handleDeploy(model: PresetModel) {
-    const yaml = generateWorkspaceYAML(model);
-    itemRef.current = yaml;
+    const yamlString = generateWorkspaceYAML(model);
+    const parsedYaml = yaml.load(yamlString);
+    console.log('Applying:', parsedYaml);
+
+    itemRef.current = parsedYaml;
     setActiveModel(model);
     setEditorDialogOpen(true);
   }
@@ -408,10 +412,11 @@ inference:
           onEditorChanged={newVal => {
             if (typeof newVal === 'string') setEditorValue(newVal);
           }}
-          onSave={() => {
-            enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
-            setEditorDialogOpen(false);
-          }}
+          // onSave={() => {
+          //   enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
+          //   setEditorDialogOpen(false);
+          // }}
+          onSave="default"
           title={`Deploy Model: ${activeModel?.name}`}
           saveLabel="Apply"
         />
