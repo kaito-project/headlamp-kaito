@@ -19,7 +19,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Autocomplete, Pagination } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 // Importing logos
 import falconLogo from '../logos/falcon-logo.webp';
 import deepseekLogo from '../logos/deepseek-logo.webp';
@@ -412,10 +412,6 @@ inference:
           onEditorChanged={newVal => {
             if (typeof newVal === 'string') setEditorValue(newVal);
           }}
-          // onSave={() => {
-          //   enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
-          //   setEditorDialogOpen(false);
-          // }}
           onSave="default"
           title={`Deploy Model: ${activeModel?.name}`}
           saveLabel="Apply"
