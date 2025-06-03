@@ -400,6 +400,7 @@ inference:
 
       <EditorDialog
         item={editorValue}
+        open={editorDialogOpen}
         setOpen={setEditorDialogOpen}
         onClose={() => setEditorDialogOpen(false)}
         onEditorChanged={newVal => {
