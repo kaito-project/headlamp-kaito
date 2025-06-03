@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Link as RouterLink,
   Loader,
@@ -236,16 +237,17 @@ const KaitoModels = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState(categories[0]);
   const [page, setPage] = useState(1);
-  const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
   const { enqueueSnackbar } = useSnackbar();
   function handleDeploy(model: PresetModel) {
     const yaml = generateWorkspaceYAML(model);
-    setEditorValue(yaml);
+    itemRef.current = yaml;
     setActiveModel(model);
     setEditorDialogOpen(true);
   }
 
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
+  const itemRef = React.useRef({});
+  const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
   const [editorValue, setEditorValue] = useState('');
 
   // convert search to lower case
@@ -259,8 +261,7 @@ const KaitoModels = () => {
   );
 
   function generateWorkspaceYAML(model: PresetModel): string {
-    return `# model name: ${model.name}
-apiVersion: kaito.sh/v1beta1
+    return `apiVersion: kaito.sh/v1beta1
 kind: Workspace
 metadata:
   name: workspace-${model.name.toLowerCase()}
@@ -398,21 +399,23 @@ inference:
         {/* <Link href="https://artifacthub.io/" target="_blank"> */}
       </Box>
 
-      <EditorDialog
-        item={editorValue}
-        open={editorDialogOpen}
-        setOpen={setEditorDialogOpen}
-        onClose={() => setEditorDialogOpen(false)}
-        onEditorChanged={newVal => {
-          if (typeof newVal === 'string') setEditorValue(newVal);
-        }}
-        onSave={() => {
-          enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
-          setEditorDialogOpen(false);
-        }}
-        title={`Deploy Model: ${activeModel?.name}`}
-        saveLabel="Apply"
-      />
+      {editorDialogOpen && (
+        <EditorDialog
+          item={itemRef.current}
+          open={editorDialogOpen}
+          setOpen={setEditorDialogOpen}
+          onClose={() => setEditorDialogOpen(false)}
+          onEditorChanged={newVal => {
+            if (typeof newVal === 'string') setEditorValue(newVal);
+          }}
+          onSave={() => {
+            enqueueSnackbar('Deploy triggered (not implemented)', { variant: 'info' });
+            setEditorDialogOpen(false);
+          }}
+          title={`Deploy Model: ${activeModel?.name}`}
+          saveLabel="Apply"
+        />
+      )}
     </>
   );
 };
