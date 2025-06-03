@@ -28,7 +28,6 @@ import mistralLogo from '../logos/mistral-logo.webp';
 import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
-import { useSnackbar } from 'notistack';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import yaml from 'js-yaml';
 
@@ -238,7 +237,6 @@ const KaitoModels = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState(categories[0]);
   const [page, setPage] = useState(1);
-  const { enqueueSnackbar } = useSnackbar();
   function handleDeploy(model: PresetModel) {
     const yamlString = generateWorkspaceYAML(model);
     const parsedYaml = yaml.load(yamlString);
