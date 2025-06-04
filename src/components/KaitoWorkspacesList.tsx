@@ -6,14 +6,14 @@ import {
 } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { useParams } from 'react-router-dom';
 import { ResourceListView } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import { KaitoWorkspace } from './resources/KaitoWorkspace';
+import { Workspace } from './resources/workspace';
 
 // const { name, namespace } = useParams<{ name: string; namespace: string }>();
 const KaitoWorkspaces: React.FC = () => {
   return (
     <ResourceListView
       title="Kaito Workspaces"
-      resourceClass={KaitoWorkspace}
+      resourceClass={Workspace}
       columns={[
         'name',
         'namespace',
