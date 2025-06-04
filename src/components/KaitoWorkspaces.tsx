@@ -5,16 +5,40 @@ import {
   SectionBox,
 } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { useParams } from 'react-router-dom';
+import { ResourceListView } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { KaitoWorkspace } from './resources/KaitoWorkspace';
 
 // const { name, namespace } = useParams<{ name: string; namespace: string }>();
 const KaitoWorkspaces: React.FC = () => {
   return (
-    <div>
-      <h1>Hello Workspaces!</h1>
-    </div>
+    <ResourceListView
+      title="Kaito Workspaces"
+      resourceClass={KaitoWorkspace}
+      columns={[
+        'name',
+        'namespace',
+        {
+          id: 'owner',
+          label: 'Owner',
+          getValue: ws => ws.owner,
+        },
+        {
+          id: 'models',
+          label: 'Models',
+          getValue: ws => ws.modelCount,
+        },
+        {
+          id: 'ready',
+          label: 'Ready',
+          getValue: ws => (ws.ready ? 'Yes' : 'No'),
+        },
+        'age',
+      ]}
+    />
   );
 };
 
-export default KaitoWorkspaces;
 //brainstorming some ideas for workspaces breadcrumb
 // workspaces
+
+export default KaitoWorkspaces;
