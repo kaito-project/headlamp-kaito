@@ -242,7 +242,7 @@ const KaitoModels = () => {
   function handleDeploy(model: PresetModel) {
     const yamlString = generateWorkspaceYAML(model);
     const parsedYaml = yaml.load(yamlString);
-    console.log('Applying:', parsedYaml);
+    // console.log('Applying:', parsedYaml);
 
     itemRef.current = parsedYaml;
     setActiveModel(model);
@@ -410,7 +410,7 @@ inference:
           setOpen={setEditorDialogOpen}
           onClose={() => setEditorDialogOpen(false)}
           onEditorChanged={newVal => {
-            if (typeof newVal === 'string') setEditorValue(newVal);
+            setEditorValue(newVal);
           }}
           onSave="default"
           title={`Deploy Model: ${activeModel?.name}`}
