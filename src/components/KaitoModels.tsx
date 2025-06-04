@@ -53,34 +53,34 @@ const modelInfo = [
     name: 'DeepSeek-R1-Distill-Llama-8B',
     url: 'https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B',
     description: 'A distilled version of Llama 8B by DeepSeek.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'DeepSeek-R1-Distill-Qwen-14B',
     url: 'https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B',
     description: 'A distilled version of Qwen 14B by DeepSeek.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Falcon-7B',
     url: 'https://huggingface.co/tiiuae/falcon-7b',
     description:
       'Falcon-7B is a 7B parameters causal decoder-only model built by TII and trained on 1,500B tokens of RefinedWeb enhanced with curated corpora.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Falcon-40B',
     url: 'https://huggingface.co/tiiuae/falcon-40b',
     description:
       'Falcon-40B is a 40B parameters causal decoder-only model built by TII and trained on 1,000B tokens of RefinedWeb enhanced with curated corpora.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC96ADS_A100_V4,
+    instanceType: 'Standard_NC96ads_A100_v4',
   },
   {
     name: 'Falcon-7B-Instruct',
     url: 'https://huggingface.co/tiiuae/falcon-7b-instruct',
     description:
       'Falcon-7B-Instruct is a 7B parameters causal decoder-only model built by TII based on Falcon-7B and finetuned on a mixture of chat/instruct datasets.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
+    instanceType: 'Standard_NC24ads_A100_v4',
   },
   {
     name: 'Falcon-40B-Instruct',
