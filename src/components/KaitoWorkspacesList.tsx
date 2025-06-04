@@ -1,15 +1,10 @@
 import React from 'react';
-import {
-  DetailsGrid,
-  NameValueTable,
-  SectionBox,
-} from '@kinvolk/headlamp-plugin/lib/components/common';
-import { useParams } from 'react-router-dom';
 import { ResourceListView } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { DateLabel } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { Workspace } from './resources/workspace';
 
 // const { name, namespace } = useParams<{ name: string; namespace: string }>();
-const KaitoWorkspaces: React.FC = () => {
+const KaitoWorkspacesList: React.FC = () => {
   return (
     <ResourceListView
       title="Kaito Workspaces"
@@ -18,21 +13,20 @@ const KaitoWorkspaces: React.FC = () => {
         'name',
         'namespace',
         {
-          id: 'owner',
-          label: 'Owner',
-          getValue: ws => ws.owner,
-        },
-        {
-          id: 'models',
-          label: 'Models',
-          getValue: ws => ws.modelCount,
-        },
-        {
           id: 'ready',
           label: 'Ready',
-          getValue: ws => (ws.ready ? 'Yes' : 'No'),
+          getValue: item => (item.ready ? 'Ready' : 'Not Ready'),
         },
-        'age',
+        {
+          id: 'secret',
+          label: 'Secret',
+          getValue: item => item.spec.secretName,
+        },
+        {
+          id: 'created',
+          label: 'Created',
+          getValue: item => <DateLabel date={item.metadata.creationTimestamp} />,
+        },
       ]}
     />
   );
@@ -41,4 +35,4 @@ const KaitoWorkspaces: React.FC = () => {
 //brainstorming some ideas for workspaces breadcrumb
 // workspaces
 
-export default KaitoWorkspaces;
+export default KaitoWorkspacesList;
