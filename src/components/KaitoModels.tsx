@@ -242,7 +242,6 @@ const KaitoModels = () => {
   function handleDeploy(model: PresetModel) {
     const yamlString = generateWorkspaceYAML(model);
     const parsedYaml = yaml.load(yamlString);
-    // console.log('Applying:', parsedYaml);
 
     itemRef.current = parsedYaml;
     setActiveModel(model);
