@@ -8,26 +8,7 @@ const KaitoWorkspacesList: React.FC = () => {
     <ResourceListView
       title="Kaito Workspaces"
       resourceClass={Workspace}
-      columns={[
-        'name',
-        'namespace',
-        'age',
-        // {
-        //   id: 'ready',
-        //   label: 'Ready',
-        //   getValue: item => (item.ready ? 'Ready' : 'Not Ready'),
-        // },
-        // {
-        //   id: 'secret',
-        //   label: 'Secret',
-        //   getValue: item => item.spec.secretName,
-        // },
-        // {
-        //   id: 'created',
-        //   label: 'Created',
-        //   getValue: item => <DateLabel date={item.metadata.creationTimestamp} />,
-        // },
-      ]}
+      columns={['name', 'namespace', 'age']}
     />
   );
 };
