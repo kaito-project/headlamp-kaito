@@ -91,7 +91,7 @@ export class Workspace extends KubeObject {
 
   // Note: This workaround is needed to make the plugin compatible with older versions of Headlamp
   static get detailsRoute() {
-    return '/kaito/workspaces/';
+    return '/kaito/workspaces/:namespace/:name';
   }
 
   get organizations(): string[] {
