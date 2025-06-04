@@ -6,7 +6,7 @@ import {
 } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { useParams } from 'react-router-dom';
 
-const { name, namespace } = useParams<{ name: string; namespace: string }>();
+// const { name, namespace } = useParams<{ name: string; namespace: string }>();
 const KaitoWorkspaces: React.FC = () => {
   return (
     <div>
