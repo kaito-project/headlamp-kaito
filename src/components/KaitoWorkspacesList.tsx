@@ -6,7 +6,7 @@ import { Workspace } from './resources/workspace';
 const KaitoWorkspacesList: React.FC = () => {
   return (
     <ResourceListView
-      title="Kaito Workspaces"
+      title="Workspaces"
       resourceClass={Workspace}
       columns={['name', 'namespace', 'age']}
     />
