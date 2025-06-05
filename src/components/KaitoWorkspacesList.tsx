@@ -8,7 +8,37 @@ const KaitoWorkspacesList: React.FC = () => {
     <ResourceListView
       title="Workspaces"
       resourceClass={Workspace}
-      columns={['name', 'namespace', 'age']}
+      columns={[
+        'name',
+        'namespace',
+        {
+          id: 'instanceType',
+          label: 'Instance Type',
+          getValue: item => item.instanceType,
+        },
+        {
+          id: 'resourceReady',
+          label: 'Resource Ready',
+          getValue: item => item.resourceReady,
+        },
+        {
+          id: 'inferenceReady',
+          label: 'Inference Ready',
+          getValue: item => item.inferenceReady,
+        },
+        {
+          id: 'jobStarted',
+          label: 'Job Started',
+          getValue: item => item.jobStarted,
+        },
+        {
+          id: 'workspaceSucceeded',
+          label: 'Workspace Succeeded',
+          getValue: item => item.workspaceSucceeded,
+        },
+
+        'age',
+      ]}
     />
   );
 };

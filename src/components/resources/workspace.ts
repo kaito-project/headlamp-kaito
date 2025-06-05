@@ -95,4 +95,55 @@ export class Workspace extends KubeObject {
   static get detailsRoute() {
     return '/kaito/workspaces/:namespace/:name';
   }
+
+  // helper methods for access in KaitoWorkspacesList.tsx
+  get status(): WorkspaceStatus | undefined {
+    return this.jsonData.status;
+  }
+
+  get resource() {
+    return this.jsonData.resource;
+  }
+  get inference() {
+    return this.jsonData.inference;
+  }
+  get tuning() {
+    return this.jsonData.tuning;
+  }
+  // get spec(): {
+  //   resource?: ResourceSpec;
+  //   inference?: InferenceSpec;
+  //   tuning?: TuningSpec;
+  // } {
+  //   return this.jsonData.spec;
+  // }
+
+  get resourceReady(): string {
+    const condition = this.status?.conditions?.find(
+      condition => condition.type === 'ResourceReady'
+    );
+    return condition?.status;
+  }
+  get inferenceReady(): string {
+    const condition = this.status?.conditions?.find(
+      condition => condition.type === 'InferenceReady'
+    );
+    return condition?.status;
+  }
+
+  get jobStarted(): string {
+    const condition = this.status?.conditions?.find(condition => condition.type === 'JobStarted');
+    return condition?.status;
+  }
+
+  get workspaceSucceeded(): string {
+    const condition = this.status?.conditions?.find(
+      condition => condition.type === 'WorkspaceSucceeded'
+    );
+    return condition?.status;
+  }
+
+  get instanceType(): string {
+    return this.resource?.instanceType;
+  }
 }
