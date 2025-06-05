@@ -8,6 +8,9 @@ import { Workspace } from './resources/workspace';
 
 const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.join(', ') : '');
 
+const getPresetName = (item: Workspace) =>
+  item.tuning?.preset?.name || item.inference?.preset?.name;
+
 export function WorkspaceDetail() {
   const { name, namespace } = useParams<{ name: string; namespace: string }>();
 
@@ -23,7 +26,7 @@ export function WorkspaceDetail() {
           item && [
             {
               name: 'Preset Name',
-              value: item.tuning?.preset?.name || item.inference?.preset?.name,
+              value: getPresetName(item),
             },
             {
               name: 'Preset Image',
@@ -58,7 +61,7 @@ export function WorkspaceDetail() {
                     },
                     {
                       name: 'Preferred Nodes',
-                      value: StringArray({ items: item.resource.preferredNodes }),
+                      value: <StringArray items={item.resource.preferredNodes} />,
                     },
                     {
                       name: 'Label Selector (matchLabels)',
