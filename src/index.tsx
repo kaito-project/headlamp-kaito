@@ -19,7 +19,7 @@ import KaitoModels from './components/KaitoModels';
 import KaitoWorkspacesList from './components/KaitoWorkspacesList';
 
 // Inspired by kompose plugin:
-//Main sidebar entry
+// Main sidebar entry
 registerSidebarEntry({
   parent: '',
   name: 'Kaito',

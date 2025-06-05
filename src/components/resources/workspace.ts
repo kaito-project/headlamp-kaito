@@ -87,7 +87,7 @@ export interface KaitoWorkspace extends KubeObjectInterface {
 
 export class Workspace extends KubeObject {
   static kind = 'Workspace';
-  static apiName = 'workspaces'; // lowercase(kind)+s
+  static apiName = 'workspaces';
   static apiVersion = 'kaito.sh/v1beta1';
   static isNamespaced = true;
 
