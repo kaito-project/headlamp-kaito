@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { KaitoWorkspace, Workspace } from './resources/workspace';
 import KaitoWorkspacesList from './KaitoWorkspacesList';
 
-const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.join(', ') : '-');
+const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.join(', ') : '');
 
 export function WorkspaceDetail() {
   const { name, namespace } = useParams<{ name: string; namespace: string }>();
@@ -18,33 +18,31 @@ export function WorkspaceDetail() {
       namespace={namespace}
       resourceType={Workspace}
       withEvents
+      // metadata section
       extraInfo={(item: KaitoWorkspace) =>
         item && [
           {
             name: 'Tuning Method',
-            value: item.tuning?.method || '-',
+            value: item.tuning?.method,
           },
           {
             name: 'Preset Name',
-            value: item.tuning?.preset?.name || item.inference?.preset?.name || '-',
+            value: item.tuning?.preset?.name || item.inference?.preset?.name,
           },
           {
             name: 'Preset Image',
             value:
               item.tuning?.preset?.presetOptions?.image ||
               item.inference?.preset?.presetOptions?.image ||
-              '-',
+              '',
           },
           {
             name: 'Config',
-            value: item.tuning?.config || item.inference?.config || '-',
-          },
-          {
-            name: 'Worker Nodes',
-            value: item.status?.workerNodes?.join(', ') || '-',
+            value: item.tuning?.config || item.inference?.config,
           },
         ]
       }
+      // Resources section
       extraSections={(item: KaitoWorkspace) =>
         item && [
           {
@@ -55,11 +53,11 @@ export function WorkspaceDetail() {
                   rows={[
                     {
                       name: 'Count',
-                      value: item.resource.count?.toString() || '-',
+                      value: item.resource.count?.toString(),
                     },
                     {
                       name: 'Instance Type',
-                      value: item.resource.instanceType || '-',
+                      value: item.resource.instanceType,
                     },
                     {
                       name: 'Preferred Nodes',
@@ -69,24 +67,99 @@ export function WorkspaceDetail() {
                       name: 'Label Selector (matchLabels)',
                       value: item.resource.labelSelector?.matchLabels
                         ? JSON.stringify(item.resource.labelSelector.matchLabels)
-                        : '-',
+                        : '',
                     },
                   ]}
                 />
               </SectionBox>
             ),
           },
+          // Status section
           {
             id: 'Status',
             section: item.status?.conditions && (
               <SectionBox title="Status Conditions">
                 <NameValueTable
-                  rows={item.status.conditions.map(c => ({
-                    name: c.type,
-                    value: `${c.status} ${c.reason ? `(${c.reason})` : ''} ${
-                      c.message ? `- ${c.message}` : ''
-                    }`,
-                  }))}
+                  rows={[
+                    {
+                      name: 'Worker Nodes',
+                      value: item.status.workerNodes?.join(', ') || '',
+                    },
+                    ...item.status.conditions.map(c => ({
+                      name: c.type,
+                      value: `${c.status} ${c.reason ? `(${c.reason})` : ''} ${
+                        c.message ? `- ${c.message}` : ''
+                      }`,
+                    })),
+                  ]}
+                />
+              </SectionBox>
+            ),
+          },
+          // Inference section
+          {
+            id: 'InferenceSpec',
+            section: item.inference && (
+              <SectionBox title="Inference">
+                <NameValueTable
+                  rows={[
+                    {
+                      name: 'Preset Name',
+                      value: item.inference.preset?.name,
+                    },
+                    {
+                      name: 'Preset Image',
+                      value: item.inference.preset?.presetOptions?.image,
+                    },
+                    {
+                      name: 'Config',
+                      value: item.inference.config,
+                    },
+                    {
+                      name: 'Adapters',
+                      value: item.inference.adapters
+                        ? item.inference.adapters
+                            .map(a => `${a.source?.name} (${a.strength})`)
+                            .join(', ')
+                        : '',
+                    },
+                  ]}
+                />
+              </SectionBox>
+            ),
+          },
+          // Tuning section
+          {
+            id: 'TuningSpec',
+            section: item.tuning && (
+              <SectionBox title="Tuning">
+                <NameValueTable
+                  rows={[
+                    {
+                      name: 'Preset Name',
+                      value: item.tuning.preset?.name,
+                    },
+                    {
+                      name: 'Preset Image',
+                      value: item.tuning.preset?.presetOptions?.image,
+                    },
+                    {
+                      name: 'Tuning Method',
+                      value: item.tuning.method,
+                    },
+                    {
+                      name: 'Config',
+                      value: item.tuning.config,
+                    },
+                    {
+                      name: 'Input Data Source',
+                      value: item.tuning.input?.name,
+                    },
+                    {
+                      name: 'Output Data Destination',
+                      value: item.tuning.output?.volumeSource ? 'Volume' : '',
+                    },
+                  ]}
                 />
               </SectionBox>
             ),
