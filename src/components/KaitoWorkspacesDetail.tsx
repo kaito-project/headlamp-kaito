@@ -43,7 +43,7 @@ export function WorkspaceDetail() {
                       value: <StringArray items={item.resource.preferredNodes} />,
                     },
                     {
-                      name: 'Label Selector (matchLabels)',
+                      name: 'Node Selector',
                       value: item.resource.labelSelector?.matchLabels && (
                         <MetadataDictGrid
                           dict={
