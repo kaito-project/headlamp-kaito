@@ -22,10 +22,6 @@ export function WorkspaceDetail() {
         return (
           item && [
             {
-              name: 'Tuning Method',
-              value: item.tuning?.method,
-            },
-            {
               name: 'Preset Name',
               value: item.tuning?.preset?.name || item.inference?.preset?.name,
             },
