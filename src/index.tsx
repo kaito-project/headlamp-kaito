@@ -16,17 +16,16 @@
 
 import { registerRoute, registerSidebarEntry } from '@kinvolk/headlamp-plugin/lib';
 import KaitoModels from './components/KaitoModels';
-import KaitoWorkspaces from './components/KaitoWorkspaces';
-
+import KaitoWorkspacesList from './components/KaitoWorkspacesList';
 
 // Inspired by kompose plugin:
-//Main sidebar entry 
+// Main sidebar entry
 registerSidebarEntry({
-    parent: '',
-    name: 'Kaito',
-    url: `/kaito/workspaces`,
-    label: 'KAITO',
-    icon: 'mdi:kubernetes',
+  parent: '',
+  name: 'Kaito',
+  url: `/kaito/workspaces`,
+  label: 'KAITO',
+  icon: 'mdi:kubernetes',
 });
 
 // Workspaces sidebar entry
@@ -37,14 +36,13 @@ registerSidebarEntry({
   url: '/kaito/workspaces',
 });
 
-
 registerRoute({
-    path: '/kaito/workspaces',
-    parent: 'Kaito',
-    sidebar: 'workspaces',
-    component: () => <KaitoWorkspaces/>,
-    exact: true,
-    name: 'workspaces',
+  path: '/kaito/workspaces',
+  parent: 'Kaito',
+  sidebar: 'workspaces',
+  component: () => <KaitoWorkspacesList />,
+  exact: true,
+  name: 'workspaces',
 });
 
 // Models sidebar entry
@@ -56,10 +54,10 @@ registerSidebarEntry({
 });
 
 registerRoute({
-    path: '/kaito/models',
-    parent: 'Kaito',
-    sidebar: 'models',
-    component: () => <KaitoModels/>,
-    exact: true,
-    name: 'models',
+  path: '/kaito/models',
+  parent: 'Kaito',
+  sidebar: 'models',
+  component: () => <KaitoModels />,
+  exact: true,
+  name: 'models',
 });
