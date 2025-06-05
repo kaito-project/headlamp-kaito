@@ -96,3 +96,4 @@ export function WorkspaceDetail() {
     />
   );
 }
+//detail page
