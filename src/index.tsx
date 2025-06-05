@@ -47,8 +47,9 @@ registerRoute({
   name: 'workspaces',
 });
 
+// Workspace detail route
 registerRoute({
-  path: `/kaito/workspaces/:namespace/:name}`,
+  path: `/kaito/workspaces/:namespace/:name`,
   parent: 'Kaito',
   sidebar: 'workspaces',
   name: 'workspace',
