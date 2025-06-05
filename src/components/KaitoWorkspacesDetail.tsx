@@ -4,8 +4,7 @@ import {
   SectionBox,
 } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { useParams } from 'react-router-dom';
-import { KaitoWorkspace, Workspace } from './resources/workspace';
-import KaitoWorkspacesList from './KaitoWorkspacesList';
+import { Workspace } from './resources/workspace';
 
 const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.join(', ') : '');
 
@@ -19,31 +18,37 @@ export function WorkspaceDetail() {
       resourceType={Workspace}
       withEvents
       // metadata section
-      extraInfo={(item: KaitoWorkspace) =>
-        item && [
-          {
-            name: 'Tuning Method',
-            value: item.tuning?.method,
-          },
-          {
-            name: 'Preset Name',
-            value: item.tuning?.preset?.name || item.inference?.preset?.name,
-          },
-          {
-            name: 'Preset Image',
-            value:
-              item.tuning?.preset?.presetOptions?.image ||
-              item.inference?.preset?.presetOptions?.image ||
-              '',
-          },
-          {
-            name: 'Config',
-            value: item.tuning?.config || item.inference?.config,
-          },
-        ]
-      }
+      extraInfo={(item: Workspace) => {
+        console.log('Workspace item:', item);
+        console.log('Item tuning:', item.tuning);
+        console.log('Item inference:', item.inference);
+        console.log('Item resource:', item.resource);
+        return (
+          item && [
+            {
+              name: 'Tuning Method',
+              value: item.tuning?.method,
+            },
+            {
+              name: 'Preset Name',
+              value: item.tuning?.preset?.name || item.inference?.preset?.name,
+            },
+            {
+              name: 'Preset Image',
+              value:
+                item.tuning?.preset?.presetOptions?.image ||
+                item.inference?.preset?.presetOptions?.image ||
+                '',
+            },
+            {
+              name: 'Config',
+              value: item.tuning?.config || item.inference?.config,
+            },
+          ]
+        );
+      }}
       // Resources section
-      extraSections={(item: KaitoWorkspace) =>
+      extraSections={(item: Workspace) =>
         item && [
           {
             id: 'ResourceSpec',
