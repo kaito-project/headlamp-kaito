@@ -17,6 +17,7 @@
 import { registerRoute, registerSidebarEntry } from '@kinvolk/headlamp-plugin/lib';
 import KaitoModels from './components/KaitoModels';
 import KaitoWorkspacesList from './components/KaitoWorkspacesList';
+import { WorkspaceDetail } from './components/KaitoWorkspacesDetail';
 
 // Inspired by kompose plugin:
 // Main sidebar entry
@@ -36,6 +37,7 @@ registerSidebarEntry({
   url: '/kaito/workspaces',
 });
 
+// List of workspaces
 registerRoute({
   path: '/kaito/workspaces',
   parent: 'Kaito',
@@ -43,6 +45,15 @@ registerRoute({
   component: () => <KaitoWorkspacesList />,
   exact: true,
   name: 'workspaces',
+});
+
+registerRoute({
+  path: `/kaito/workspaces/:namespace/:name}`,
+  parent: 'Kaito',
+  sidebar: 'workspaces',
+  name: 'workspace',
+  component: () => <WorkspaceDetail />,
+  exact: true,
 });
 
 // Models sidebar entry
