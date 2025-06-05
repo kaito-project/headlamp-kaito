@@ -36,7 +36,6 @@ const KaitoWorkspacesList: React.FC = () => {
           label: 'Workspace Succeeded',
           getValue: item => item.workspaceSucceeded,
         },
-
         'age',
       ]}
     />

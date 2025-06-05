@@ -19,10 +19,6 @@ export function WorkspaceDetail() {
       withEvents
       // metadata section
       extraInfo={(item: Workspace) => {
-        console.log('Workspace item:', item);
-        console.log('Item tuning:', item.tuning);
-        console.log('Item inference:', item.inference);
-        console.log('Item resource:', item.resource);
         return (
           item && [
             {
