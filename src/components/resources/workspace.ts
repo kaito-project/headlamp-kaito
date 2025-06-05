@@ -110,13 +110,6 @@ export class Workspace extends KubeObject {
   get tuning() {
     return this.jsonData.tuning;
   }
-  // get spec(): {
-  //   resource?: ResourceSpec;
-  //   inference?: InferenceSpec;
-  //   tuning?: TuningSpec;
-  // } {
-  //   return this.jsonData.spec;
-  // }
 
   get resourceReady(): string {
     const condition = this.status?.conditions?.find(
