@@ -6,6 +6,7 @@ import {
   ConditionsSection,
   ContainersSection,
   OwnedPodsSection,
+  ActionButton,
 } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { useParams } from 'react-router-dom';
 import { Workspace } from './resources/workspace';
@@ -15,12 +16,33 @@ const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.
 export function WorkspaceDetail() {
   const { name, namespace } = useParams<{ name: string; namespace: string }>();
 
+  const handleChat = (workspace: Workspace) => {
+    // TODO: Implement chat functionality
+    console.log('Start chat with workspace:', workspace.getName());
+    // This could open a chat interface or connect to the model's chat endpoint
+  };
+
   return (
     <DetailsGrid
       name={name}
       namespace={namespace}
       resourceType={Workspace}
       withEvents
+      actions={item =>
+        item && [
+          {
+            id: 'chat',
+            action: (
+              <ActionButton
+                description="Chat"
+                aria-label="chat"
+                icon="mdi:chat"
+                onClick={() => handleChat(item)}
+              />
+            ),
+          },
+        ]
+      }
       // Resources section
       extraSections={(item: Workspace) =>
         item && [
