@@ -3,6 +3,10 @@ import {
   MetadataDictGrid,
   NameValueTable,
   SectionBox,
+  ConditionsSection,
+  ContainersSection,
+  LogsButton,
+  OwnedPodsSection,
 } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { useParams } from 'react-router-dom';
 import { Workspace } from './resources/workspace';
@@ -129,7 +133,7 @@ export function WorkspaceDetail() {
           {
             id: 'Status',
             section: item.status?.conditions && (
-              <SectionBox title="Status Conditions">
+              <SectionBox title="Status">
                 <NameValueTable
                   rows={[
                     {
@@ -147,6 +151,23 @@ export function WorkspaceDetail() {
               </SectionBox>
             ),
           },
+          // Conditions sections (flattened)
+          ...(item.status?.conditions
+            ? [
+                {
+                  id: 'headlamp.workload-conditions',
+                  section: <ConditionsSection resource={item?.jsonData} />,
+                },
+                {
+                  id: 'headlamp.workload-owned-pods',
+                  section: <OwnedPodsSection resource={item} />,
+                },
+                {
+                  id: 'headlamp.workload-containers',
+                  section: <ContainersSection resource={item?.jsonData} />,
+                },
+              ]
+            : []),
         ]
       }
     />
