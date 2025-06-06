@@ -13,9 +13,6 @@ import { Workspace } from './resources/workspace';
 
 const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.join(', ') : '');
 
-const getPresetName = (item: Workspace) =>
-  item.tuning?.preset?.name || item.inference?.preset?.name;
-
 export function WorkspaceDetail() {
   const { name, namespace } = useParams<{ name: string; namespace: string }>();
 
