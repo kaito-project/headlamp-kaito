@@ -13,6 +13,7 @@ import { useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { DialogContent } from '@mui/material';
 import { Workspace } from './resources/workspace';
+import ChatUI from './ChatUI';
 
 const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.join(', ') : '');
 
@@ -30,6 +31,7 @@ export function WorkspaceDetail() {
     setChatOpen(false);
     setSelectedWorkspace(null);
   };
+
   return (
     <>
       <DetailsGrid
@@ -205,8 +207,9 @@ export function WorkspaceDetail() {
         onClose={handleCloseChat}
         title={`Chat with ${selectedWorkspace?.getName()}`}
       >
+        {' '}
         <DialogContent>
-          <p>Chat functionality will show here</p>
+          <ChatUI />
         </DialogContent>
       </Dialog>
     </>
