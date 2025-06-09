@@ -59,14 +59,32 @@ const MessageContainer = styled(Box)({
 });
 
 // Updated: Enhanced message styling and hover effects
+// const Message = styled(Paper)(({ isUser }) => ({
+//   padding: '16px 24px',
+//   maxWidth: '80%',
+//   alignSelf: isUser ? 'flex-end' : 'flex-start',
+//   // backgroundColor: isUser ? '#1976d2' : '#f8f9fa',
+//   // color: isUser ? '#fff' : '#000',
+//   backgroundColor: isUser ? '#2196f3' : '#f8f9fa', // lighter blue
+//   color: isUser ? '#ffffff' : '#000000',
+
+//   borderRadius: '16px',
+//   boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+//   transition: 'transform 0.2s ease',
+//   '&:hover': {
+//     transform: 'translateY(-2px)',
+//     boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+//   },
+// }));
 const Message = styled(Paper)(({ isUser }) => ({
-  padding: '16px 24px',
+  padding: '12px 18px',
   maxWidth: '80%',
   alignSelf: isUser ? 'flex-end' : 'flex-start',
-  backgroundColor: isUser ? '#1976d2' : '#f8f9fa',
-  color: isUser ? '#fff' : '#000',
+  backgroundColor: isUser ? '#e3f2fd' : '#f8f9fa',
+  color: isUser ? '#0d47a1' : '#000',
   borderRadius: '16px',
   boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+  textShadow: isUser ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
   transition: 'transform 0.2s ease',
   '&:hover': {
     transform: 'translateY(-2px)',
@@ -141,7 +159,7 @@ const ChatUI = () => {
           {/* <FaRobot size={24} /> */}
         </Avatar>
         <Box>
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" sx={{ color: '#212121' }}>
             AI Assistant
           </Typography>
           <Stack direction="row" spacing={1} alignItems="center">
