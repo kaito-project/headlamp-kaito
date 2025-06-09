@@ -177,7 +177,7 @@ const ChatUI = () => {
               backgroundColor: '#ffffff',
             },
             '& input::placeholder': {
-              color: '#757575',
+              color: '#616161',
               opacity: 1,
             },
           }}
