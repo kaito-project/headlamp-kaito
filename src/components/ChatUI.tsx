@@ -171,7 +171,7 @@ const ChatUI = () => {
                 bgcolor: '#4caf50',
               }}
             />
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: '#4a4a4a' }}>
               Ready to help
             </Typography>
           </Stack>
