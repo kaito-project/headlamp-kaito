@@ -12,10 +12,7 @@ import {
   Chip,
 } from '@mui/material';
 import { styled } from '@mui/system';
-// import { IoSend } from "react-icons/io5";
-// import { FaRobot } from "react-icons/fa";
 
-// Updated: Increased width and adjusted styling for desktop view
 const ChatContainer = styled(Card)(({ theme }) => ({
   maxWidth: '800px',
   width: '95%',
@@ -28,7 +25,6 @@ const ChatContainer = styled(Card)(({ theme }) => ({
   backgroundColor: '#ffffff',
 }));
 
-// Updated: Enhanced header styling
 const ChatHeader = styled(Box)({
   padding: '20px 32px',
   borderBottom: '1px solid rgba(0,0,0,0.1)',
@@ -38,7 +34,6 @@ const ChatHeader = styled(Box)({
   backgroundColor: '#f8f9fa',
 });
 
-// Updated: Added hover effects and adjusted padding
 const MessageContainer = styled(Box)({
   flex: 1,
   overflowY: 'auto',
@@ -58,24 +53,6 @@ const MessageContainer = styled(Box)({
   },
 });
 
-// Updated: Enhanced message styling and hover effects
-// const Message = styled(Paper)(({ isUser }) => ({
-//   padding: '16px 24px',
-//   maxWidth: '80%',
-//   alignSelf: isUser ? 'flex-end' : 'flex-start',
-//   // backgroundColor: isUser ? '#1976d2' : '#f8f9fa',
-//   // color: isUser ? '#fff' : '#000',
-//   backgroundColor: isUser ? '#2196f3' : '#f8f9fa', // lighter blue
-//   color: isUser ? '#ffffff' : '#000000',
-
-//   borderRadius: '16px',
-//   boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-//   transition: 'transform 0.2s ease',
-//   '&:hover': {
-//     transform: 'translateY(-2px)',
-//     boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-//   },
-// }));
 const Message = styled(Paper)(({ isUser }) => ({
   padding: '12px 18px',
   maxWidth: '80%',
@@ -92,7 +69,6 @@ const Message = styled(Paper)(({ isUser }) => ({
   },
 }));
 
-// Updated: Enhanced input container styling
 const InputContainer = styled(Box)({
   padding: '24px 32px',
   borderTop: '1px solid rgba(0,0,0,0.1)',
@@ -199,6 +175,10 @@ const ChatUI = () => {
             '& .MuiOutlinedInput-root': {
               borderRadius: '12px',
               backgroundColor: '#ffffff',
+            },
+            '& input::placeholder': {
+              color: '#757575',
+              opacity: 1,
             },
           }}
         />
