@@ -39,7 +39,7 @@ const ChatDialog = styled(Dialog)(() => ({
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
-    background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+    background: '#ffffff',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     border: '1px solid rgba(0,0,0,0.08)',
   },
@@ -49,7 +49,6 @@ const ChatHeader = styled(Box)(() => ({
   padding: '24px 32px 16px',
   borderBottom: '1px solid rgba(0,0,0,0.1)',
   background: 'rgba(0,0,0,0.02)',
-  backdropFilter: 'blur(10px)',
 }));
 
 const MessagesContainer = styled(Box)(() => ({
@@ -107,46 +106,22 @@ const InputContainer = styled(Box)(() => ({
   backdropFilter: 'blur(10px)',
 }));
 
-const StyledTextField = styled(TextField)(() => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '24px',
-    backgroundColor: '#ffffff',
-    transition: 'all 0.2s ease',
-    '& fieldset': {
-      border: '2px solid rgba(0,0,0,0.12)',
-      borderRadius: '24px',
-    },
-    '&:hover fieldset': {
-      border: '2px solid #3b82f6',
-    },
-    '&.Mui-focused fieldset': {
-      border: '2px solid #3b82f6',
-      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.2)',
-    },
+const StyledInputBox = styled(Box)(() => ({
+  borderRadius: '24px',
+  backgroundColor: '#ffffff',
+  border: '2px solid rgba(0,0,0,0.12)',
+  transition: 'all 0.2s ease',
+  padding: '14px 20px',
+  minHeight: '48px',
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'text',
+  '&:hover': {
+    border: '2px solid #3b82f6',
   },
-  '& .MuiOutlinedInput-input': {
-    padding: '14px 20px',
-    fontSize: '16px',
-    color: '#1e293b !important',
-    fontWeight: 400,
-    '&::placeholder': {
-      color: 'rgba(30,41,59,0.7) !important',
-      opacity: '1 !important',
-    },
-  },
-  '& .MuiOutlinedInput-inputMultiline': {
-    padding: '14px 20px',
-    fontSize: '16px',
-    color: '#1e293b !important',
-    fontWeight: 400,
-    lineHeight: 1.5,
-    '&::placeholder': {
-      color: 'rgba(30,41,59,0.7) !important',
-      opacity: '1 !important',
-    },
-  },
-  '& .MuiInputLabel-root': {
-    color: '#64748b',
+  '&:focus-within': {
+    border: '2px solid #3b82f6',
+    boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.2)',
   },
 }));
 
@@ -184,6 +159,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -193,6 +169,24 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
+  const handleInputChange = (e: React.FormEvent<HTMLDivElement>) => {
+    const text = (e.target as HTMLElement).textContent || '';
+    setInput(text);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const clearInput = () => {
+    if (inputRef.current) {
+      inputRef.current.textContent = '';
+      setInput('');
+    }
+  };
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -204,7 +198,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    clearInput();
     setIsLoading(true);
 
     try {
@@ -236,13 +230,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
     }
   };
 
@@ -302,19 +289,40 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
                 </Typography>
               </Stack>
             </Box>
-          </Stack>
-
+          </Stack>{' '}
           <Stack direction="row" spacing={1}>
             <Tooltip title="Clear conversation">
               <IconButton onClick={clearChat} size="small">
                 🗑️
               </IconButton>
-            </Tooltip>
+            </Tooltip>{' '}
             {onClose && (
               <Tooltip title="Close chat">
-                <IconButton onClick={onClose} size="small">
-                  ✕
-                </IconButton>
+                <Button
+                  onClick={onClose}
+                  variant="outlined"
+                  size="small"
+                  startIcon={<span style={{ fontSize: '14px' }}>✕</span>}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 2,
+                    py: 1,
+                    borderColor: '#ef4444',
+                    color: '#ef4444',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    borderWidth: '2px',
+                    '&:hover': {
+                      borderColor: '#dc2626',
+                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                      color: '#dc2626',
+                      transform: 'scale(1.05)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Exit
+                </Button>
               </Tooltip>
             )}
           </Stack>
@@ -399,21 +407,35 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
           )}
 
           <div ref={messagesEndRef} />
-        </MessagesContainer>
-
+        </MessagesContainer>{' '}
         <InputContainer>
           <Stack direction="row" spacing={2} alignItems="flex-end" width="100%">
-            {' '}
-            <StyledTextField
-              fullWidth
-              multiline
-              maxRows={4}
-              placeholder="Ask about Kubernetes, Kaito AI, or anything else..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={isLoading}
-            />
+            <StyledInputBox onClick={() => inputRef.current?.focus()} sx={{ flex: 1 }}>
+              <Typography
+                ref={inputRef}
+                component="div"
+                contentEditable
+                suppressContentEditableWarning
+                onInput={handleInputChange}
+                onKeyDown={handleKeyDown}
+                sx={{
+                  flex: 1,
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: 1.5,
+                  color: input.trim() ? '#1e293b' : '#64748b',
+                  outline: 'none',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  minHeight: '20px',
+                  '&:empty::before': {
+                    content: '"Ask about Kubernetes, Kaito AI, or anything else..."',
+                    color: '#64748b',
+                    fontStyle: 'normal',
+                  },
+                }}
+              />
+            </StyledInputBox>
             <SendButton onClick={handleSend} disabled={!input.trim() || isLoading}>
               {isLoading ? <CircularProgress size={20} color="inherit" /> : '🚀'}
             </SendButton>
@@ -466,6 +488,35 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               }}
             />
           </Stack>
+          {/* Bottom Exit Button */}
+          {onClose && (
+            <Stack direction="row" justifyContent="center" mt={3}>
+              <Button
+                onClick={onClose}
+                variant="contained"
+                startIcon={<span style={{ fontSize: '16px' }}>✕</span>}
+                sx={{
+                  bgcolor: '#ef4444',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#dc2626',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                Close Chat
+              </Button>
+            </Stack>
+          )}
         </InputContainer>
       </DialogContent>
     </ChatDialog>
