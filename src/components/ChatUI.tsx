@@ -19,6 +19,14 @@ import {
   Button,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import OpenAI from 'openai';
+import { OPENAI_CONFIG } from '../config/openai';
+
+const client = new OpenAI({
+  baseURL: OPENAI_CONFIG.baseURL,
+  apiKey: 'placeholder-key', // Custom endpoint doesn't need real API key
+  dangerouslyAllowBrowser: true, // Required for browser environment
+});
 
 // AI SDK-style interfaces
 interface Message {
@@ -180,11 +188,18 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
       handleSend();
     }
   };
-
   const clearInput = () => {
     if (inputRef.current) {
       inputRef.current.textContent = '';
       setInput('');
+    }
+  };
+
+  const handleChipClick = (text: string) => {
+    setInput(text);
+    if (inputRef.current) {
+      inputRef.current.textContent = text;
+      inputRef.current.focus();
     }
   };
   const handleSend = async () => {
@@ -200,12 +215,77 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     setMessages(prev => [...prev, userMessage]);
     clearInput();
     setIsLoading(true);
-
     try {
-      // Mock AI response for now - you can replace this with actual AI SDK calls
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      // Log the endpoint being used for debugging
+      console.log('Attempting to connect to:', OPENAI_CONFIG.baseURL);
 
-      const responses = [
+      // Prepare conversation context for AI
+      const conversationHistory = messages.concat(userMessage).map(msg => ({
+        role: msg.role as 'system' | 'user' | 'assistant',
+        content: msg.content,
+      }));
+
+      // Add system context for Kubernetes/Kaito assistance
+      const systemMessage = {
+        role: 'system' as const,
+        content: `You are a helpful AI assistant specialized in Kubernetes and Kaito AI workspace management. 
+        Kaito is a Kubernetes operator that automates the AI/ML inference model deployment in a Kubernetes cluster.
+        You can help with:
+        - Kubernetes cluster management and troubleshooting
+        - Kaito workspace creation and deployment
+        - AI model deployment using Kaito
+        - Pod troubleshooting and debugging
+        - Resource management and scaling
+        
+        Provide clear, practical advice and code examples when helpful. Keep responses concise but informative.`,
+      };
+
+      const messagesForAI = [systemMessage, ...conversationHistory];
+
+      // Call OpenAI API with timeout
+      const completion = (await Promise.race([
+        client.chat.completions.create({
+          model: OPENAI_CONFIG.model,
+          messages: messagesForAI,
+          temperature: OPENAI_CONFIG.temperature,
+          max_tokens: OPENAI_CONFIG.maxTokens,
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
+        ),
+      ])) as any;
+
+      const aiResponse =
+        completion.choices[0]?.message?.content ||
+        "I apologize, but I couldn't generate a response.";
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error fetching completion:', error);
+
+      // More specific error handling
+      let errorMessage = '';
+      if (error instanceof Error) {
+        if (error.message.includes('timeout') || error.message.includes('TIMEOUT')) {
+          errorMessage = 'Connection timed out. The AI service might be unavailable.';
+        } else if (error.message.includes('CONNECTION') || error.message.includes('ECONNREFUSED')) {
+          errorMessage = 'Cannot connect to AI service. Please check the endpoint configuration.';
+        } else {
+          errorMessage = `AI service error: ${error.message}`;
+        }
+      } else {
+        errorMessage = 'Unknown error occurred while connecting to AI service.';
+      }
+
+      // Fallback to mock responses if AI service fails
+      const fallbackResponses = [
         'I can help you with Kubernetes cluster management, pod troubleshooting, and Kaito AI workspace deployment.',
         'For Kaito workspaces, you can deploy models like Llama, Falcon, or Phi directly on your Kubernetes cluster.',
         'What specific Kubernetes or AI model deployment task would you like assistance with?',
@@ -215,19 +295,13 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content: `${errorMessage}\n\n${
+          fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
+        }\n\n(Using fallback response - please check AI service configuration)`,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'I apologize, but I encountered an error. Please try again.',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -446,7 +520,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               label="What is Kaito?"
               size="small"
               variant="outlined"
-              onClick={() => setInput('What is Kaito and how does it work?')}
+              onClick={() => handleChipClick('What is Kaito and how does it work?')}
               sx={{
                 fontSize: '12px',
                 color: '#374151',
@@ -461,7 +535,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               label="Deploy AI Model"
               size="small"
               variant="outlined"
-              onClick={() => setInput('How do I deploy an AI model using Kaito?')}
+              onClick={() => handleChipClick('How do I deploy an AI model using Kaito?')}
               sx={{
                 fontSize: '12px',
                 color: '#374151',
@@ -476,7 +550,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               label="Troubleshoot Pods"
               size="small"
               variant="outlined"
-              onClick={() => setInput('Help me troubleshoot a failing pod in Kubernetes')}
+              onClick={() => handleChipClick('Help me troubleshoot a failing pod in Kubernetes')}
               sx={{
                 fontSize: '12px',
                 color: '#374151',
