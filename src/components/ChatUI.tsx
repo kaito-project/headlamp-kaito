@@ -1,8 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   Typography,
   TextField,
   IconButton,
@@ -10,105 +11,179 @@ import {
   Paper,
   Stack,
   Chip,
-  useTheme,
+  Fab,
+  Slide,
+  CircularProgress,
+  Tooltip,
+  Divider,
+  Button,
 } from '@mui/material';
 import { styled } from '@mui/system';
 
-const ChatContainer = styled(Card)(({ theme }) => ({
-  maxWidth: '800px',
-  width: '95%',
-  margin: '20px auto',
-  boxShadow:
-    theme.palette?.mode === 'dark' ? '0 4px 12px rgba(0,0,0,0.5)' : '0 4px 12px rgba(0,0,0,0.1)',
-  borderRadius: '16px',
-  height: '80vh',
-  display: 'flex',
-  flexDirection: 'column',
-  backgroundColor:
-    theme.palette?.background?.paper || (theme.palette?.mode === 'dark' ? '#1e1e1e' : '#ffffff'),
+// AI SDK-style interfaces
+interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
+  isLoading?: boolean;
+}
+
+const ChatDialog = styled(Dialog)(() => ({
+  '& .MuiDialog-paper': {
+    borderRadius: '16px',
+    maxWidth: '900px',
+    width: '90vw',
+    height: '85vh',
+    maxHeight: '800px',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    border: '1px solid rgba(0,0,0,0.08)',
+  },
 }));
 
-const ChatHeader = styled(Box)(({ theme }) => ({
-  padding: '20px 32px',
-  borderBottom: `1px solid ${
-    theme.palette?.divider ||
-    (theme.palette?.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
-  }`,
-  display: 'flex',
-  alignItems: 'center',
-  gap: '16px',
-  backgroundColor:
-    theme.palette?.background?.paper || (theme.palette?.mode === 'dark' ? '#2d2d2d' : '#f8f9fa'),
+const ChatHeader = styled(Box)(() => ({
+  padding: '24px 32px 16px',
+  borderBottom: '1px solid rgba(0,0,0,0.1)',
+  background: 'rgba(0,0,0,0.02)',
+  backdropFilter: 'blur(10px)',
 }));
 
-const MessageContainer = styled(Box)(({ theme }) => ({
+const MessagesContainer = styled(Box)(() => ({
   flex: 1,
   overflowY: 'auto',
-  padding: '32px',
+  padding: '16px 0',
   display: 'flex',
   flexDirection: 'column',
-  gap: '16px',
-  backgroundColor:
-    theme.palette?.background?.paper || (theme.palette?.mode === 'dark' ? '#1e1e1e' : '#ffffff'),
   '&::-webkit-scrollbar': {
-    width: '8px',
+    width: '6px',
   },
   '&::-webkit-scrollbar-track': {
-    background: theme.palette.mode === 'light' ? '#f1f1f1' : '#424242',
+    background: 'transparent',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: theme.palette.mode === 'light' ? '#888' : '#666',
-    borderRadius: '4px',
+    background: 'rgba(0,0,0,0.2)',
+    borderRadius: '3px',
+    '&:hover': {
+      background: 'rgba(0,0,0,0.3)',
+    },
   },
 }));
 
-const Message = styled(Paper)(({ theme, isUser }) => ({
-  padding: '12px 18px',
-  maxWidth: '80%',
-  alignSelf: isUser ? 'flex-end' : 'flex-start',
-  backgroundColor: isUser
-    ? theme.palette?.primary?.main || (theme.palette?.mode === 'dark' ? '#1976d2' : '#1976d2')
-    : theme.palette?.background?.default ||
-      (theme.palette?.mode === 'dark' ? '#3a3a3a' : '#f5f5f5'),
-  color: isUser
-    ? theme.palette?.primary?.contrastText || '#ffffff'
-    : theme.palette?.text?.primary || (theme.palette?.mode === 'dark' ? '#ffffff' : '#212121'),
-  borderRadius: '16px',
-  boxShadow:
-    theme.palette?.mode === 'dark' ? '0 2px 4px rgba(0,0,0,0.3)' : '0 2px 4px rgba(0,0,0,0.05)',
-  transition: 'transform 0.2s ease',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow:
-      theme.palette?.mode === 'dark' ? '0 4px 8px rgba(0,0,0,0.4)' : '0 4px 8px rgba(0,0,0,0.1)',
-  },
-}));
-
-const InputContainer = styled(Box)(({ theme }) => ({
-  padding: '24px 32px',
-  borderTop: `1px solid ${
-    theme.palette?.divider ||
-    (theme.palette?.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
-  }`,
+const MessageBubble = styled(Box)(({ isUser }) => ({
   display: 'flex',
-  gap: '16px',
-  backgroundColor:
-    theme.palette?.background?.paper || (theme.palette?.mode === 'dark' ? '#2d2d2d' : '#f8f9fa'),
+  flexDirection: isUser ? 'row-reverse' : 'row',
+  alignItems: 'flex-start',
+  gap: '12px',
+  padding: '8px 32px',
+  marginBottom: '16px',
+  '&:hover': {
+    background: 'rgba(0,0,0,0.02)',
+  },
 }));
 
-const ChatUI = () => {
-  const theme = useTheme();
-  const [messages, setMessages] = useState([
-    { id: 1, text: 'Hello! How can I assist you today?', isUser: false },
-    { id: 2, text: 'I have a question about my order', isUser: true },
+const MessageContent = styled(Paper)(({ isUser }) => ({
+  maxWidth: '75%',
+  padding: '16px 20px',
+  borderRadius: isUser ? '20px 20px 6px 20px' : '20px 20px 20px 6px',
+  background: isUser ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : '#f8fafc',
+  color: isUser ? '#ffffff' : '#1e293b',
+  border: 'none',
+  boxShadow: isUser ? '0 4px 12px rgba(59, 130, 246, 0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    transform: 'translateY(-1px)',
+    boxShadow: isUser ? '0 6px 16px rgba(59, 130, 246, 0.4)' : '0 4px 12px rgba(0,0,0,0.15)',
+  },
+}));
+
+const InputContainer = styled(Box)(() => ({
+  padding: '20px 32px 28px',
+  borderTop: '1px solid rgba(0,0,0,0.1)',
+  background: 'rgba(255,255,255,0.8)',
+  backdropFilter: 'blur(10px)',
+}));
+
+const StyledTextField = styled(TextField)(() => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '24px',
+    backgroundColor: '#ffffff',
+    transition: 'all 0.2s ease',
+    '& fieldset': {
+      border: '2px solid rgba(0,0,0,0.12)',
+      borderRadius: '24px',
+    },
+    '&:hover fieldset': {
+      border: '2px solid #3b82f6',
+    },
+    '&.Mui-focused fieldset': {
+      border: '2px solid #3b82f6',
+      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.2)',
+    },
+  },
+  '& .MuiOutlinedInput-input': {
+    padding: '14px 20px',
+    fontSize: '16px',
+    color: '#1e293b !important',
+    fontWeight: 400,
+    '&::placeholder': {
+      color: 'rgba(30,41,59,0.7) !important',
+      opacity: '1 !important',
+    },
+  },
+  '& .MuiOutlinedInput-inputMultiline': {
+    padding: '14px 20px',
+    fontSize: '16px',
+    color: '#1e293b !important',
+    fontWeight: 400,
+    lineHeight: 1.5,
+    '&::placeholder': {
+      color: 'rgba(30,41,59,0.7) !important',
+      opacity: '1 !important',
+    },
+  },
+  '& .MuiInputLabel-root': {
+    color: '#64748b',
+  },
+}));
+
+const SendButton = styled(IconButton)(() => ({
+  width: '48px',
+  height: '48px',
+  marginLeft: '12px',
+  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+  color: '#ffffff',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+    transform: 'scale(1.05)',
+  },
+  '&:disabled': {
+    background: 'rgba(0,0,0,0.1)',
+    color: 'rgba(0,0,0,0.3)',
+  },
+  transition: 'all 0.2s ease',
+}));
+
+interface ChatUIProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
+  const [messages, setMessages] = useState<Message[]>([
     {
-      id: 3,
-      text: "I'd be happy to help you with your order. Could you please provide your order number?",
-      isUser: false,
+      id: 'welcome',
+      role: 'assistant',
+      content: "Hello! I'm your AI assistant for Kubernetes and Kaito. How can I help you today?",
+      timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
-  const messagesEndRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -118,147 +193,323 @@ const ChatUI = () => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
-    const newMessage = {
-      id: messages.length + 1,
-      text: input,
-      isUser: true,
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim(),
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse = {
-        id: messages.length + 2,
-        text: 'Thank you for your message. Our team will process your request shortly.',
-        isUser: false,
+    try {
+      // Mock AI response for now - you can replace this with actual AI SDK calls
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+
+      const responses = [
+        'I can help you with Kubernetes cluster management, pod troubleshooting, and Kaito AI workspace deployment.',
+        'For Kaito workspaces, you can deploy models like Llama, Falcon, or Phi directly on your Kubernetes cluster.',
+        'What specific Kubernetes or AI model deployment task would you like assistance with?',
+        'I can guide you through creating AI workspaces, managing resources, or troubleshooting deployments.',
+      ];
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: responses[Math.floor(Math.random() * responses.length)],
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
+
+      setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'I apologize, but I encountered an error. Please try again.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleKeyPress = e => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
+  const clearChat = () => {
+    setMessages([
+      {
+        id: 'welcome',
+        role: 'assistant',
+        content: "Hello! I'm your AI assistant for Kubernetes and Kaito. How can I help you today?",
+        timestamp: new Date(),
+      },
+    ]);
+  };
+
   return (
-    <ChatContainer>
-      {' '}
+    <ChatDialog
+      open={open}
+      onClose={onClose}
+      maxWidth={false}
+      PaperProps={{
+        sx: { m: 2 },
+      }}
+    >
       <ChatHeader>
-        {' '}
-        <Avatar
-          sx={{
-            bgcolor:
-              theme.palette?.primary?.main ||
-              (theme.palette?.mode === 'dark' ? '#90caf9' : '#1976d2'),
-            width: 48,
-            height: 48,
-          }}
-        >
-          {/* <FaRobot size={24} /> */}
-        </Avatar>
-        <Box>
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            sx={{
-              color: '#212121',
-            }}
-          >
-            AI Assistant
-          </Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
+          <Stack direction="row" alignItems="center" spacing={2}>
             {' '}
-            <Box
+            <Avatar
               sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                bgcolor: '#4caf50',
-              }}
-            />
-            <Typography
-              variant="body2"
-              sx={{
-                color: '#4a4a4a',
+                bgcolor: '#2563eb',
+                width: 40,
+                height: 40,
               }}
             >
-              Ready to help
-            </Typography>
+              🤖
+            </Avatar>
+            <Box>
+              <Typography variant="h6" fontWeight="600" color="black">
+                Kaito AI Assistant
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    bgcolor: '#10b981',
+                    animation: 'pulse 2s infinite',
+                    '@keyframes pulse': {
+                      '0%, 100%': { opacity: 1 },
+                      '50%': { opacity: 0.5 },
+                    },
+                  }}
+                />
+                <Typography variant="caption" color="black">
+                  Ready to help with Kubernetes & AI
+                </Typography>
+              </Stack>
+            </Box>
           </Stack>
-        </Box>
+
+          <Stack direction="row" spacing={1}>
+            <Tooltip title="Clear conversation">
+              <IconButton onClick={clearChat} size="small">
+                🗑️
+              </IconButton>
+            </Tooltip>
+            {onClose && (
+              <Tooltip title="Close chat">
+                <IconButton onClick={onClose} size="small">
+                  ✕
+                </IconButton>
+              </Tooltip>
+            )}
+          </Stack>
+        </Stack>
       </ChatHeader>
-      <MessageContainer>
-        {messages.map(message => (
-          <Message key={message.id} isUser={message.isUser}>
-            <Typography variant="body1">{message.text}</Typography>
-          </Message>
-        ))}
-        <div ref={messagesEndRef} />
-      </MessageContainer>{' '}
-      <InputContainer>
-        {' '}
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Send a message..."
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '12px',
-              backgroundColor:
-                theme.palette?.background?.paper ||
-                (theme.palette?.mode === 'dark' ? '#3a3a3a' : '#ffffff'),
-              '& input': {
-                color:
-                  theme.palette?.text?.primary ||
-                  (theme.palette?.mode === 'dark' ? '#ffffff' : '#212121'),
-              },
-              '& fieldset': {
-                borderColor:
-                  theme.palette?.divider ||
-                  (theme.palette?.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'),
-              },
-              '&:hover fieldset': {
-                borderColor:
-                  theme.palette?.primary?.main ||
-                  (theme.palette?.mode === 'dark' ? '#90caf9' : '#1976d2'),
-              },
-            },
-            '& input::placeholder': {
-              color:
-                theme.palette?.text?.secondary ||
-                (theme.palette?.mode === 'dark' ? '#b0bec5' : '#757575'),
-              opacity: 0.7,
-            },
-          }}
-        />
-        <IconButton
-          color="primary"
-          onClick={handleSend}
-          disabled={!input.trim()}
-          sx={{
-            width: '48px',
-            height: '48px',
-            '&.Mui-disabled': {
-              opacity: 0.5,
-            },
-          }}
-        >
-          {/* <IoSend size={24} /> */}
-        </IconButton>
-      </InputContainer>
-    </ChatContainer>
+
+      <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <MessagesContainer>
+          {messages.map(message => (
+            <MessageBubble key={message.id} isUser={message.role === 'user'}>
+              {' '}
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                }}
+              >
+                {message.role === 'user' ? '👤' : '🤖'}
+              </Avatar>
+              <MessageContent isUser={message.role === 'user'}>
+                {' '}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    color: 'inherit',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                  }}
+                >
+                  {message.content}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    mt: 1,
+                    opacity: 0.8,
+                    fontSize: '11px',
+                    color: 'inherit',
+                  }}
+                >
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Typography>
+              </MessageContent>
+            </MessageBubble>
+          ))}
+
+          {isLoading && (
+            <MessageBubble isUser={false}>
+              {' '}
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: '#64748b',
+                  color: '#ffffff',
+                }}
+              >
+                🤖
+              </Avatar>{' '}
+              <MessageContent isUser={false}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CircularProgress size={16} />{' '}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#374151',
+                    }}
+                  >
+                    AI is thinking...
+                  </Typography>
+                </Stack>
+              </MessageContent>
+            </MessageBubble>
+          )}
+
+          <div ref={messagesEndRef} />
+        </MessagesContainer>
+
+        <InputContainer>
+          <Stack direction="row" spacing={2} alignItems="flex-end" width="100%">
+            {' '}
+            <StyledTextField
+              fullWidth
+              multiline
+              maxRows={4}
+              placeholder="Ask about Kubernetes, Kaito AI, or anything else..."
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={isLoading}
+            />
+            <SendButton onClick={handleSend} disabled={!input.trim() || isLoading}>
+              {isLoading ? <CircularProgress size={20} color="inherit" /> : '🚀'}
+            </SendButton>
+          </Stack>{' '}
+          <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
+            {' '}
+            <Chip
+              label="What is Kaito?"
+              size="small"
+              variant="outlined"
+              onClick={() => setInput('What is Kaito and how does it work?')}
+              sx={{
+                fontSize: '12px',
+                color: '#374151',
+                borderColor: 'rgba(0,0,0,0.2)',
+                '&:hover': {
+                  borderColor: '#3b82f6',
+                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                },
+              }}
+            />{' '}
+            <Chip
+              label="Deploy AI Model"
+              size="small"
+              variant="outlined"
+              onClick={() => setInput('How do I deploy an AI model using Kaito?')}
+              sx={{
+                fontSize: '12px',
+                color: '#374151',
+                borderColor: 'rgba(0,0,0,0.2)',
+                '&:hover': {
+                  borderColor: '#3b82f6',
+                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                },
+              }}
+            />{' '}
+            <Chip
+              label="Troubleshoot Pods"
+              size="small"
+              variant="outlined"
+              onClick={() => setInput('Help me troubleshoot a failing pod in Kubernetes')}
+              sx={{
+                fontSize: '12px',
+                color: '#374151',
+                borderColor: 'rgba(0,0,0,0.2)',
+                '&:hover': {
+                  borderColor: '#3b82f6',
+                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                },
+              }}
+            />
+          </Stack>
+        </InputContainer>
+      </DialogContent>
+    </ChatDialog>
+  );
+};
+
+// Floating Chat Button Component
+const ChatFAB = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <Fab
+      onClick={onClick}
+      sx={{
+        position: 'fixed',
+        bottom: 24,
+        right: 24,
+        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+        color: '#ffffff',
+        width: 64,
+        height: 64,
+        boxShadow: '0 8px 32px rgba(59, 130, 246, 0.3)',
+        '&:hover': {
+          transform: 'scale(1.1)',
+          boxShadow: '0 12px 40px rgba(59, 130, 246, 0.4)',
+        },
+        transition: 'all 0.3s ease',
+        zIndex: 1000,
+      }}
+    >
+      <Typography fontSize={24}>🤖</Typography>
+    </Fab>
+  );
+};
+
+// Main Chat Component with FAB
+const ChatWithFAB = () => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <ChatFAB onClick={() => setOpen(true)} />
+      <ChatUI open={open} onClose={() => setOpen(false)} />
+    </>
   );
 };
 
 export default ChatUI;
+export { ChatWithFAB };
