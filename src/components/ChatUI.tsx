@@ -216,16 +216,13 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     clearInput();
     setIsLoading(true);
     try {
-      // Log the endpoint being used for debugging
       console.log('Attempting to connect to:', OPENAI_CONFIG.baseURL);
 
-      // Prepare conversation context for AI
       const conversationHistory = messages.concat(userMessage).map(msg => ({
         role: msg.role as 'system' | 'user' | 'assistant',
         content: msg.content,
       }));
 
-      // Add system context for Kubernetes/Kaito assistance
       const systemMessage = {
         role: 'system' as const,
         content: `You are a helpful AI assistant specialized in Kubernetes and Kaito AI workspace management. 
@@ -597,7 +594,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
   );
 };
 
-// Floating Chat Button Component
 const ChatFAB = ({ onClick }: { onClick: () => void }) => {
   return (
     <Fab
@@ -624,7 +620,6 @@ const ChatFAB = ({ onClick }: { onClick: () => void }) => {
   );
 };
 
-// Main Chat Component with FAB
 const ChatWithFAB = () => {
   const [open, setOpen] = useState(false);
 
