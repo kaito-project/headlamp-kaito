@@ -223,6 +223,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
         content: msg.content,
       }));
 
+      // Add system context for Kubernetes/Kaito assistance
       const systemMessage = {
         role: 'system' as const,
         content: `You are a helpful AI assistant specialized in Kubernetes and Kaito AI workspace management. 
@@ -242,7 +243,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
       // Call OpenAI API with timeout
       const completion = (await Promise.race([
         client.chat.completions.create({
-          model: OPENAI_CONFIG.model,
+          // model: OPENAI_CONFIG.model,
           messages: messagesForAI,
           temperature: OPENAI_CONFIG.temperature,
           max_tokens: OPENAI_CONFIG.maxTokens,
@@ -251,7 +252,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
           setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
         ),
       ])) as any;
-
       const aiResponse =
         completion.choices[0]?.message?.content ||
         "I apologize, but I couldn't generate a response.";
@@ -267,7 +267,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     } catch (error) {
       console.error('Error fetching completion:', error);
 
-      // More specific error handling
       let errorMessage = '';
       if (error instanceof Error) {
         if (error.message.includes('timeout') || error.message.includes('TIMEOUT')) {
@@ -559,35 +558,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               }}
             />
           </Stack>
-          {/* Bottom Exit Button */}
-          {onClose && (
-            <Stack direction="row" justifyContent="center" mt={3}>
-              <Button
-                onClick={onClose}
-                variant="contained"
-                startIcon={<span style={{ fontSize: '16px' }}>✕</span>}
-                sx={{
-                  bgcolor: '#ef4444',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: '12px',
-                  textTransform: 'none',
-                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-                  '&:hover': {
-                    bgcolor: '#dc2626',
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 6px 16px rgba(239, 68, 68, 0.4)',
-                  },
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                Close Chat
-              </Button>
-            </Stack>
-          )}
         </InputContainer>
       </DialogContent>
     </ChatDialog>

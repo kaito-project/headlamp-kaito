@@ -1,11 +1,8 @@
 export const OPENAI_CONFIG = {
-  baseURL: 'http://20.167.105.235:80', // Current
-  // baseURL: 'http://20.167.105.235:443',   // Alternative 1
-  // baseURL: 'http://20.167.105.235:80',    // Alternative 2
-  // baseURL: 'http://20.167.105.235:3000',  // Alternative 3
-  // baseURL: 'http://20.167.105.235:8000',  // Alternative 4
+  // Using kubectl port-forward: kubectl port-forward service/workspace-phi-4-mini-instruct 8080:80
+  // This creates a tunnel: localhost:8080 -> service:80 -> pod:5000
+  baseURL: 'http://localhost:8080/v1', // vLLM OpenAI-compatible API endpoint
 
-  model: 'gpt-4',
   temperature: 0.7,
   maxTokens: 1000,
 };
