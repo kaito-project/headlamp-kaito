@@ -365,34 +365,26 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               <IconButton onClick={clearChat} size="small">
                 🗑️
               </IconButton>
-            </Tooltip>{' '}
-            {onClose && (
+            </Tooltip>{' '}            {onClose && (
               <Tooltip title="Close chat">
-                <Button
+                <IconButton
                   onClick={onClose}
-                  variant="outlined"
                   size="small"
-                  startIcon={<span style={{ fontSize: '14px' }}>✕</span>}
                   sx={{
-                    minWidth: 'auto',
-                    px: 2,
-                    py: 1,
-                    borderColor: '#ef4444',
                     color: '#ef4444',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    borderWidth: '2px',
+                    fontSize: '18px',
+                    width: 32,
+                    height: 32,
                     '&:hover': {
-                      borderColor: '#dc2626',
                       backgroundColor: 'rgba(239, 68, 68, 0.1)',
                       color: '#dc2626',
-                      transform: 'scale(1.05)',
+                      transform: 'scale(1.1)',
                     },
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  Exit
-                </Button>
+                  ✕
+                </IconButton>
               </Tooltip>
             )}
           </Stack>

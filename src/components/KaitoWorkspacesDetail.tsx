@@ -200,8 +200,7 @@ export function WorkspaceDetail() {
           ]
         }
       />
-
-      {/* Chat Dialog */}
+      {/* Chat Dialog */}{' '}
       <Dialog
         open={chatOpen}
         onClose={handleCloseChat}
@@ -209,7 +208,7 @@ export function WorkspaceDetail() {
       >
         {' '}
         <DialogContent>
-          <ChatUI />
+          <ChatUI onClose={handleCloseChat} />
         </DialogContent>
       </Dialog>
     </>
