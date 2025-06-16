@@ -2,21 +2,16 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Dialog,
-  DialogTitle,
   DialogContent,
   Typography,
-  TextField,
   IconButton,
   Avatar,
   Paper,
   Stack,
   Chip,
   Fab,
-  Slide,
   CircularProgress,
   Tooltip,
-  Divider,
-  Button,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import OpenAI from 'openai';
