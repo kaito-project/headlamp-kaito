@@ -12,7 +12,10 @@ import {
   Fab,
   CircularProgress,
   Tooltip,
+  TextField,
+  Autocomplete,
 } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 import { styled } from '@mui/system';
 import OpenAI from 'openai';
 import { OPENAI_CONFIG } from '../config/openai';
@@ -166,6 +169,11 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
+  const models = [
+    { title: 'OpenAI', value: 'openai' },
+    { title: 'DeepSeek', value: 'deepseek' },
+  ];
+  const [selectedModel, setSelectedModel] = useState(models[0]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -213,6 +221,8 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     setMessages(prev => [...prev, userMessage]);
     clearInput();
     setIsLoading(true);
+
+    console.log('Using model:', selectedModel.title);
 
     const aiMessageId = (Date.now() + 1).toString();
     const aiMessage: Message = {
@@ -506,54 +516,93 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
             </StyledInputBox>
             <SendButton onClick={handleSend} disabled={!input.trim() || isLoading}>
               {isLoading ? <CircularProgress size={20} color="inherit" /> : '🚀'}
-            </SendButton>
+            </SendButton>{' '}
           </Stack>{' '}
-          <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
-            {' '}
-            <Chip
-              label="What is Kaito?"
-              size="small"
-              variant="outlined"
-              onClick={() => handleChipClick('What is Kaito and how does it work?')}
+          <Stack
+            direction="row"
+            spacing={1}
+            mt={2}
+            flexWrap="wrap"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Box display="flex" flexWrap="wrap" gap={1}>
+              <Chip
+                label="What is Kaito?"
+                size="small"
+                variant="outlined"
+                onClick={() => handleChipClick('What is Kaito and how does it work?')}
+                sx={{
+                  fontSize: '12px',
+                  color: '#374151',
+                  borderColor: 'rgba(0,0,0,0.2)',
+                  '&:hover': {
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                  },
+                }}
+              />{' '}
+              <Chip
+                label="Deploy AI Model"
+                size="small"
+                variant="outlined"
+                onClick={() => handleChipClick('How do I deploy an AI model using Kaito?')}
+                sx={{
+                  fontSize: '12px',
+                  color: '#374151',
+                  borderColor: 'rgba(0,0,0,0.2)',
+                  '&:hover': {
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                  },
+                }}
+              />{' '}
+              <Chip
+                label="Troubleshoot Pods"
+                size="small"
+                variant="outlined"
+                onClick={() => handleChipClick('Help me troubleshoot a failing pod in Kubernetes')}
+                sx={{
+                  fontSize: '12px',
+                  color: '#374151',
+                  borderColor: 'rgba(0,0,0,0.2)',
+                  '&:hover': {
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                  },
+                }}
+              />
+            </Box>
+            <Autocomplete
+              options={models}
+              getOptionLabel={opt => opt.title}
+              value={selectedModel}
+              onChange={(e, val) => setSelectedModel(val || models[0])}
               sx={{
-                fontSize: '12px',
-                color: '#374151',
-                borderColor: 'rgba(0,0,0,0.2)',
-                '&:hover': {
-                  borderColor: '#3b82f6',
-                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                width: '150px',
+                '& .MuiInputBase-root': {
+                  color: '#000000',
+                  fontSize: '12px',
+                  height: '32px',
+                  backgroundColor: '#ffffff',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(0,0,0,0.2)',
                 },
               }}
-            />{' '}
-            <Chip
-              label="Deploy AI Model"
-              size="small"
-              variant="outlined"
-              onClick={() => handleChipClick('How do I deploy an AI model using Kaito?')}
-              sx={{
-                fontSize: '12px',
-                color: '#374151',
-                borderColor: 'rgba(0,0,0,0.2)',
-                '&:hover': {
-                  borderColor: '#3b82f6',
-                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                },
-              }}
-            />{' '}
-            <Chip
-              label="Troubleshoot Pods"
-              size="small"
-              variant="outlined"
-              onClick={() => handleChipClick('Help me troubleshoot a failing pod in Kubernetes')}
-              sx={{
-                fontSize: '12px',
-                color: '#374151',
-                borderColor: 'rgba(0,0,0,0.2)',
-                '&:hover': {
-                  borderColor: '#3b82f6',
-                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                },
-              }}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  label="Model"
+                  variant="outlined"
+                  sx={{
+                    '& .MuiInputLabel-root': {
+                      color: '#000000',
+                      fontSize: '12px',
+                    },
+                  }}
+                />
+              )}
             />
           </Stack>
         </InputContainer>
