@@ -24,11 +24,10 @@ import { OPENAI_CONFIG } from '../config/openai';
 
 const client = new OpenAI({
   baseURL: OPENAI_CONFIG.baseURL,
-  apiKey: 'placeholder-key', // Custom endpoint doesn't need real API key
+  apiKey: 'placeholder-key',
   dangerouslyAllowBrowser: true, // Required for browser environment
 });
 
-// AI SDK-style interfaces
 interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -50,6 +49,10 @@ const ChatDialog = styled(Dialog)(() => ({
     background: '#ffffff',
     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     border: '1px solid rgba(0,0,0,0.08)',
+  },
+  '@keyframes blink': {
+    '0%, 50%': { opacity: 1 },
+    '51%, 100%': { opacity: 0 },
   },
 }));
 
@@ -215,6 +218,18 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     setMessages(prev => [...prev, userMessage]);
     clearInput();
     setIsLoading(true);
+
+    const aiMessageId = (Date.now() + 1).toString();
+    const aiMessage: Message = {
+      id: aiMessageId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      isLoading: true,
+    };
+
+    setMessages(prev => [...prev, aiMessage]);
+
     try {
       console.log('Attempting to connect to:', OPENAI_CONFIG.baseURL);
 
@@ -223,7 +238,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
         content: msg.content,
       }));
 
-      // Add system context for Kubernetes/Kaito assistance
       const systemMessage = {
         role: 'system' as const,
         content: `You are a helpful AI assistant specialized in Kubernetes and Kaito AI workspace management. 
@@ -240,30 +254,42 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
 
       const messagesForAI = [systemMessage, ...conversationHistory];
 
-      // Call OpenAI API with timeout
-      const completion = (await Promise.race([
-        client.chat.completions.create({
-          // model: OPENAI_CONFIG.model,
-          messages: messagesForAI,
-          temperature: OPENAI_CONFIG.temperature,
-          max_tokens: OPENAI_CONFIG.maxTokens,
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000)
-        ),
-      ])) as any;
-      const aiResponse =
-        completion.choices[0]?.message?.content ||
-        "I apologize, but I couldn't generate a response.";
+      // Call OpenAI API with streaming
+      const stream = await client.chat.completions.create({
+        messages: messagesForAI,
+        temperature: OPENAI_CONFIG.temperature,
+        max_tokens: OPENAI_CONFIG.maxTokens,
+        stream: true,
+      });
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: aiResponse,
-        timestamp: new Date(),
-      };
+      let accumulatedContent = '';
 
-      setMessages(prev => [...prev, aiMessage]);
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          accumulatedContent += content;
+
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === aiMessageId
+                ? { ...msg, content: accumulatedContent, isLoading: false }
+                : msg
+            )
+          );
+        }
+      }
+
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === aiMessageId
+            ? {
+                ...msg,
+                content: accumulatedContent || "I apologize, but I couldn't generate a response.",
+                isLoading: false,
+              }
+            : msg
+        )
+      );
     } catch (error) {
       console.error('Error fetching completion:', error);
 
@@ -288,16 +314,15 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
         'I can guide you through creating AI workspaces, managing resources, or troubleshooting deployments.',
       ];
 
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `${errorMessage}\n\n${
-          fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
-        }\n\n(Using fallback response - please check AI service configuration)`,
-        timestamp: new Date(),
-      };
+      const fallbackContent = `${errorMessage}\n\n${
+        fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
+      }\n\n(Using fallback response - please check AI service configuration)`;
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === aiMessageId ? { ...msg, content: fallbackContent, isLoading: false } : msg
+        )
+      );
     } finally {
       setIsLoading(false);
     }
@@ -365,7 +390,8 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               <IconButton onClick={clearChat} size="small">
                 🗑️
               </IconButton>
-            </Tooltip>{' '}            {onClose && (
+            </Tooltip>{' '}
+            {onClose && (
               <Tooltip title="Close chat">
                 <IconButton
                   onClick={onClose}
@@ -422,6 +448,18 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
                   }}
                 >
                   {message.content}
+                  {message.isLoading && (
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: '2px',
+                        height: '18px',
+                        backgroundColor: message.role === 'user' ? '#ffffff' : '#64748b',
+                        marginLeft: '2px',
+                        animation: 'blink 1s infinite',
+                      }}
+                    />
+                  )}
                 </Typography>
                 <Typography
                   variant="caption"
@@ -437,37 +475,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
                 </Typography>
               </MessageContent>
             </MessageBubble>
-          ))}
-
-          {isLoading && (
-            <MessageBubble isUser={false}>
-              {' '}
-              <Avatar
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: '#64748b',
-                  color: '#ffffff',
-                }}
-              >
-                🤖
-              </Avatar>{' '}
-              <MessageContent isUser={false}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <CircularProgress size={16} />{' '}
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: '#374151',
-                    }}
-                  >
-                    AI is thinking...
-                  </Typography>
-                </Stack>
-              </MessageContent>
-            </MessageBubble>
-          )}
-
+          ))}{' '}
           <div ref={messagesEndRef} />
         </MessagesContainer>{' '}
         <InputContainer>
