@@ -130,44 +130,44 @@ function getHuggingFaceUrl(name: string): string {
 
 function getModelDescription(name: string): string {
   const descriptions: { [key: string]: string } = {
-    'deepseek-r1-distill-llama-8b': 'A distilled version of Llama 8B by DeepSeek.',
-    'deepseek-r1-distill-qwen-14b': 'A distilled version of Qwen 14B by DeepSeek.',
+    'deepseek-r1-distill-llama-8b':
+      'Distilled Llama 8B model by DeepSeek for efficient inference and strong performance.',
+    'deepseek-r1-distill-qwen-14b':
+      'Distilled Qwen 14B model by DeepSeek, optimized for speed and accuracy.',
     'falcon-7b':
-      'Falcon-7B is a 7B parameters causal decoder-only model built by TII and trained on 1,500B tokens of RefinedWeb enhanced with curated corpora.',
+      '7B parameter language model by TII, trained on RefinedWeb for high-quality text generation.',
     'falcon-7b-instruct':
-      'Falcon-7B-Instruct is a 7B parameters causal decoder-only model built by TII based on Falcon-7B and finetuned on a mixture of chat/instruct datasets.',
+      'Instruction-tuned Falcon-7B model for conversational and task-oriented outputs.',
     'falcon-40b':
-      'Falcon-40B is a 40B parameters causal decoder-only model built by TII and trained on 1,000B tokens of RefinedWeb enhanced with curated corpora.',
+      '40B parameter model by TII, designed for advanced language understanding and generation.',
     'falcon-40b-instruct':
-      'Falcon-40B-Instruct is a 40B parameters causal decoder-only model built by TII based on Falcon-40B and finetuned on a mixture of Baize.',
+      'Instruction-tuned Falcon-40B model for chat and instruction-based tasks.',
     'llama-3.1-8b-instruct':
-      'The Meta Llama 3.1 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction tuned generative models in 8B, 70B and 405B sizes (text in/text out).',
+      'Meta Llama 3.1 8B, instruction-tuned for multilingual and general-purpose tasks.',
     'llama-3.3-70b-instruct':
-      'Meta Llama 3.3 multilingual large language model, an instruction-tuned generative model in 70B size optimized for multilingual dialogue use cases.',
+      'Meta Llama 3.3 70B, optimized for multilingual dialogue and instruction following.',
     'mistral-7b':
-      'The Mistral-7B-v0.3 Large Language Model (LLM) is a Mistral-7B-v0.2 with extended vocabulary.',
-    'mistral-7b-instruct':
-      'The Mistral-7B-Instruct-v0.3 Large Language Model (LLM) is an instruct fine-tuned version of the Mistral-7B-v0.3.',
+      'Mistral-7B is a fast, open-weight language model with strong performance on benchmarks.',
+    'mistral-7b-instruct': 'Instruction-tuned Mistral-7B for chat and task-oriented applications.',
     'phi-2':
-      'Phi-2 is a Transformer with 2.7 billion parameters. It was trained using the same data sources as Phi-1.5, augmented with a new data source that consists of various NLP synthetic texts and filtered websites.',
+      'Phi-2 is a 2.7B parameter model by Microsoft, trained on synthetic and filtered web data.',
     'phi-3-mini-4k-instruct':
-      'The Phi-3-Mini-4K-Instruct is a 3.8B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets that includes both synthetic data and the filtered publicly available websites data.',
+      'Phi-3 Mini 4K is a 3.8B parameter model with 4K context, optimized for efficiency.',
     'phi-3-mini-128k-instruct':
-      'The Phi-3-Mini-128K-Instruct is a 3.8 billion-parameter, lightweight, state-of-the-art open model trained using the Phi-3 datasets with 128K context length support.',
+      'Phi-3 Mini 128K supports 128K context length for long document understanding.',
     'phi-3-medium-4k-instruct':
-      'The Phi-3-Medium-4K-Instruct is a 14B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets.',
+      'Phi-3 Medium 4K is a 14B parameter model for advanced language tasks.',
     'phi-3-medium-128k-instruct':
-      'The Phi-3-Medium-128K-Instruct is a 14B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets with 128K context length support.',
+      'Phi-3 Medium 128K supports 128K context for extended input handling.',
     'phi-3.5-mini-instruct':
-      'Phi-3.5-mini is a lightweight, state-of-the-art open model built upon datasets used for Phi-3 with support for 128K token context length.',
-    'phi-4':
-      'phi-4 is a state-of-the-art open model built upon a blend of synthetic datasets, data from filtered public domain websites, and acquired academic books and Q&A datasets.',
+      'Phi-3.5 Mini is a lightweight, 128K context model for efficient language tasks.',
+    'phi-4': 'Phi-4 is a state-of-the-art open model trained on diverse, high-quality datasets.',
     'phi-4-mini-instruct':
-      'Phi-4-mini-instruct is a lightweight open model built upon synthetic data and filtered publicly available websites with support for 128K token context length.',
+      'Phi-4 Mini Instruct is a compact model with 128K context for instruction tasks.',
     'qwen2.5-coder-7b-instruct':
-      'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models. Qwen2.5-Coder-7B has 7 billion parameters.',
+      'Qwen2.5-Coder 7B is a code-specialized model for programming tasks.',
     'qwen2.5-coder-32b-instruct':
-      'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models. Qwen2.5-Coder-32B has 32 billion parameters.',
+      'Qwen2.5-Coder 32B is a large code model for advanced programming assistance.',
   };
 
   return descriptions[name.toLowerCase()] || 'No description available for this model.';
