@@ -12,10 +12,6 @@ import {
   CardActions,
   CardContent,
   CardMedia,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Divider,
   Link,
   TextField,
@@ -435,7 +431,7 @@ inference:
             </Box>
           )}
         </>
-      )}{' '}
+      )}
       <Box textAlign="right" mt={2} mr={2}>
         {/* <Link href="https://artifacthub.io/" target="_blank"> */}
       </Box>{' '}
