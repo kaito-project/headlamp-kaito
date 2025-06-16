@@ -254,15 +254,15 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
 
       const messagesForAI = [systemMessage, ...conversationHistory];
 
-      // Call OpenAI API with streaming
       const stream = await client.chat.completions.create({
         messages: messagesForAI,
         temperature: OPENAI_CONFIG.temperature,
         max_tokens: OPENAI_CONFIG.maxTokens,
         stream: true,
       });
-
       let accumulatedContent = '';
+
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
@@ -276,6 +276,9 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
                 : msg
             )
           );
+
+          const delayTime = Math.max(30, content.length * 15);
+          await delay(delayTime);
         }
       }
 
