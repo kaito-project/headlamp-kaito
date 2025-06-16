@@ -15,7 +15,6 @@ import {
   TextField,
   Autocomplete,
 } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
 import { styled } from '@mui/system';
 import OpenAI from 'openai';
 import { OPENAI_CONFIG } from '../config/openai';
