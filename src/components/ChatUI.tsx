@@ -16,15 +16,15 @@ import {
   Autocomplete,
 } from '@mui/material';
 import { styled } from '@mui/system';
-import OpenAI from 'openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateText } from 'ai';
 import { OPENAI_CONFIG } from '../config/openai';
+import React from 'react';
 
-const client = new OpenAI({
+const openAICompatibleProvider = createOpenAICompatible({
   baseURL: OPENAI_CONFIG.baseURL,
   apiKey: 'placeholder-key',
-  dangerouslyAllowBrowser: true,
+  name: 'openai-compatible',
 });
 
 interface Message {
@@ -157,7 +157,7 @@ interface ChatUIProps {
   onClose?: () => void;
 }
 
-const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
+const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -255,41 +255,19 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
       };
 
       const messagesForAI = [systemMessage, ...conversationHistory];
-
-      const stream = await client.chat.completions.create({
+      const { text } = await generateText({
+        model: openAICompatibleProvider.chatModel('phi-4-mini-instruct'),
         messages: messagesForAI,
         temperature: OPENAI_CONFIG.temperature,
-        max_tokens: OPENAI_CONFIG.maxTokens,
-        stream: true,
+        maxTokens: OPENAI_CONFIG.maxTokens,
       });
-      let accumulatedContent = '';
-
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-      for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        if (content) {
-          accumulatedContent += content;
-
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === aiMessageId
-                ? { ...msg, content: accumulatedContent, isLoading: false }
-                : msg
-            )
-          );
-
-          const delayTime = Math.max(30, content.length * 10);
-          await delay(delayTime);
-        }
-      }
 
       setMessages(prev =>
         prev.map(msg =>
           msg.id === aiMessageId
             ? {
                 ...msg,
-                content: accumulatedContent || "I apologize, but I couldn't generate a response.",
+                content: text || "I apologize, but I couldn't generate a response.",
                 isLoading: false,
               }
             : msg
@@ -606,7 +584,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
   );
 };
 
-const ChatFAB = ({ onClick }: { onClick: () => void }) => {
+const ChatFAB: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
     <Fab
       onClick={onClick}
@@ -632,7 +610,7 @@ const ChatFAB = ({ onClick }: { onClick: () => void }) => {
   );
 };
 
-const ChatWithFAB = () => {
+const ChatWithFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
 
   return (
