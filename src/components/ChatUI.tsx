@@ -176,6 +176,28 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
   ];
   const [selectedModel, setSelectedModel] = useState(models[0]);
 
+  const simulateTyping = async (text: string, messageId: string) => {
+    let currentText = '';
+    const words = text.split(/(\s+)/);
+    for (let i = 0; i < words.length; i++) {
+      currentText += words[i];
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId
+            ? {
+                ...msg,
+                content: currentText,
+                isLoading: i < words.length - 1,
+              }
+            : msg
+        )
+      );
+
+      const delay = 30;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  };
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -267,12 +289,14 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
           msg.id === aiMessageId
             ? {
                 ...msg,
-                content: text || "I apologize, but I couldn't generate a response.",
-                isLoading: false,
+                content: '',
+                isLoading: true,
               }
             : msg
         )
       );
+
+      await simulateTyping(text || "I apologize, but I couldn't generate a response.", aiMessageId);
     } catch (error) {
       console.error('Error fetching completion:', error);
 
@@ -299,11 +323,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
         fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
       }\n\n(Using fallback response - please check AI service configuration)`;
 
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.id === aiMessageId ? { ...msg, content: fallbackContent, isLoading: false } : msg
-        )
-      );
+      await simulateTyping(fallbackContent, aiMessageId);
     } finally {
       setIsLoading(false);
     }
