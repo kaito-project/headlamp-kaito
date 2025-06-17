@@ -524,10 +524,10 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
           >
             <Box display="flex" flexWrap="wrap" gap={1}>
               <Chip
-                label="What is Kaito?"
+                label="What is KAITO?"
                 size="small"
                 variant="outlined"
-                onClick={() => handleChipClick('What is Kaito and how does it work?')}
+                onClick={() => handleChipClick('What is KAITO and how does it work?')}
                 sx={{
                   fontSize: '12px',
                   color: '#374151',
