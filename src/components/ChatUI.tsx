@@ -255,31 +255,16 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     };
 
     setMessages(prev => [...prev, aiMessage]);
-
     try {
+      // Use conversation history without system prompts as Kaito has built-in system prompts
       const conversationHistory = messages.concat(userMessage).map(msg => ({
-        role: msg.role as 'system' | 'user' | 'assistant',
+        role: msg.role as 'user' | 'assistant',
         content: msg.content,
       }));
 
-      const systemMessage = {
-        role: 'system' as const,
-        content: `You are a helpful AI assistant specialized in Kubernetes and Kaito AI workspace management. 
-        Kaito is a Kubernetes operator that automates the AI/ML inference model deployment in a Kubernetes cluster.
-        You can help with:
-        - Kubernetes cluster management and troubleshooting
-        - Kaito workspace creation and deployment
-        - AI model deployment using Kaito
-        - Pod troubleshooting and debugging
-        - Resource management and scaling
-        
-        Provide clear, practical advice and code examples when helpful. Keep responses concise but informative.`,
-      };
-
-      const messagesForAI = [systemMessage, ...conversationHistory];
       const { text } = await generateText({
         model: openAICompatibleProvider.chatModel('phi-4-mini-instruct'),
-        messages: messagesForAI,
+        messages: conversationHistory,
         temperature: OPENAI_CONFIG.temperature,
         maxTokens: OPENAI_CONFIG.maxTokens,
       });
