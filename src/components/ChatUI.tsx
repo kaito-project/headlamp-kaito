@@ -384,7 +384,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
                   }}
                 />
                 <Typography variant="caption" color="black">
-                  Ready to help with Kubernetes & AI
+                  Ready to help
                 </Typography>
               </Stack>
             </Box>
