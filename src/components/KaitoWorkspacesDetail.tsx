@@ -200,18 +200,6 @@ export function WorkspaceDetail() {
           ]
         }
       />
-
-      {/* <Dialog
-        open={chatOpen}
-        onClose={handleCloseChat}
-        title={`Chat with ${selectedWorkspace?.getName()}`}
-      >
-        {' '}
-        <DialogContent>
-          <ChatUI />
-        </DialogContent>
-      </Dialog>
-    </> */}
       {chatOpen && <ChatUI open={chatOpen} onClose={handleCloseChat} />}
     </>
   );
