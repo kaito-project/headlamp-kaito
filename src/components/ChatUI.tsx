@@ -256,7 +256,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
 
     setMessages(prev => [...prev, aiMessage]);
     try {
-      // Use conversation history without system prompts as Kaito has built-in system prompts
       const conversationHistory = messages.concat(userMessage).map(msg => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
@@ -319,7 +318,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
       {
         id: 'welcome',
         role: 'assistant',
-        content: "Hello! I'm your AI assistant for Kubernetes and Kaito. How can I help you today?",
+        content: "Hello! I'm your AI assistant. How can I help you today?",
         timestamp: new Date(),
       },
     ]);
