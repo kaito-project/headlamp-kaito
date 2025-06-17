@@ -17,6 +17,8 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import OpenAI from 'openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { generateText } from 'ai';
 import { OPENAI_CONFIG } from '../config/openai';
 
 const client = new OpenAI({
@@ -365,7 +367,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
             </Avatar>
             <Box>
               <Typography variant="h6" fontWeight="600" color="black">
-                Kaito AI Assistant
+                Chat with {selectedModel.title}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Box

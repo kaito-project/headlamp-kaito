@@ -35,5 +35,9 @@
   },
   "devDependencies": {
     "@kinvolk/headlamp-plugin": "^0.12.0"
+  },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "^0.2.14",
+    "openai": "^5.5.1"
   }
 }
