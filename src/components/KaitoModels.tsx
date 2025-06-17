@@ -107,19 +107,12 @@ function getHuggingFaceUrl(name: string): string {
   const formattedName = name
     .split('-')
     .map(part => {
-      if (companyName === 'Qwen') {
-        return part.charAt(0).toUpperCase() + part.slice(1);
-      }
       return part.charAt(0).toUpperCase() + part.slice(1);
     })
     .join('-');
 
   let huggingFacePath = '';
-  if (companyName === 'Qwen') {
-    huggingFacePath = `${companyName}/${formattedName.replace(/\./g, '')}`;
-  } else {
-    huggingFacePath = `${companyName}/${formattedName}`;
-  }
+  huggingFacePath = `${companyName}/${formattedName}`;
 
   return `https://huggingface.co/${huggingFacePath}`;
 }
