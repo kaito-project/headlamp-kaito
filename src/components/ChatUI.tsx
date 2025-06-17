@@ -277,7 +277,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
             )
           );
 
-          const delayTime = Math.max(30, content.length * 15);
+          const delayTime = Math.max(30, content.length * 10);
           await delay(delayTime);
         }
       }
@@ -509,7 +509,7 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
               />
             </StyledInputBox>
             <SendButton onClick={handleSend} disabled={!input.trim() || isLoading}>
-              {isLoading ? <CircularProgress size={20} color="inherit" /> : '🚀'}
+              {isLoading ? <CircularProgress size={20} color="inherit" /> : '➤'}
             </SendButton>{' '}
           </Stack>{' '}
           <Stack
