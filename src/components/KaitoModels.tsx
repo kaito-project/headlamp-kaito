@@ -434,8 +434,7 @@ inference:
       )}
       <Box textAlign="right" mt={2} mr={2}>
         {/* <Link href="https://artifacthub.io/" target="_blank"> */}
-      </Box>{' '}
-      {console.log('editorDialogOpen state:', editorDialogOpen)}
+      </Box>
       {editorDialogOpen && (
         <EditorDialog
           item={itemRef.current}
