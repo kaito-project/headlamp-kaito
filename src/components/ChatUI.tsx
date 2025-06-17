@@ -22,7 +22,7 @@ import { OPENAI_CONFIG } from '../config/openai';
 const client = new OpenAI({
   baseURL: OPENAI_CONFIG.baseURL,
   apiKey: 'placeholder-key',
-  dangerouslyAllowBrowser: true, // Required for browser environment
+  dangerouslyAllowBrowser: true,
 });
 
 interface Message {
@@ -309,7 +309,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
         errorMessage = 'Unknown error occurred while connecting to AI service.';
       }
 
-      // Fallback to mock responses if AI service fails
       const fallbackResponses = [
         'I can help you with Kubernetes cluster management, pod troubleshooting, and Kaito AI workspace deployment.',
         'For Kaito workspaces, you can deploy models like Llama, Falcon, or Phi directly on your Kubernetes cluster.',
