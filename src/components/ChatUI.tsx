@@ -312,10 +312,9 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
       }
 
       const fallbackResponses = [
-        'I can help you with Kubernetes cluster management, pod troubleshooting, and Kaito AI workspace deployment.',
-        'For Kaito workspaces, you can deploy models like Llama, Falcon, or Phi directly on your Kubernetes cluster.',
-        'What specific Kubernetes or AI model deployment task would you like assistance with?',
-        'I can guide you through creating AI workspaces, managing resources, or troubleshooting deployments.',
+        'I can help you with a wide range of technical questions or general inquiries.',
+        'Feel free to ask about software development, troubleshooting, or best practices.',
+        'What specific topic or problem would you like assistance with?',
       ];
 
       const fallbackContent = `${errorMessage}\n\n${
