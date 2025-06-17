@@ -523,10 +523,10 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
           >
             <Box display="flex" flexWrap="wrap" gap={1}>
               <Chip
-                label="What is KAITO?"
+                label="What can you do?"
                 size="small"
                 variant="outlined"
-                onClick={() => handleChipClick('What is KAITO and how does it work?')}
+                onClick={() => handleChipClick('What can you help me with?')}
                 sx={{
                   fontSize: '12px',
                   color: '#374151',
@@ -538,10 +538,10 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
                 }}
               />{' '}
               <Chip
-                label="Deploy AI Model"
+                label="Deploy an app"
                 size="small"
                 variant="outlined"
-                onClick={() => handleChipClick('How do I deploy an AI model using Kaito?')}
+                onClick={() => handleChipClick('How do I deploy an application?')}
                 sx={{
                   fontSize: '12px',
                   color: '#374151',
@@ -553,10 +553,10 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
                 }}
               />{' '}
               <Chip
-                label="Troubleshoot Pods"
+                label="Troubleshoot issues"
                 size="small"
                 variant="outlined"
-                onClick={() => handleChipClick('Help me troubleshoot a failing pod in Kubernetes')}
+                onClick={() => handleChipClick('Can you help me troubleshoot a problem?')}
                 sx={{
                   fontSize: '12px',
                   color: '#374151',
