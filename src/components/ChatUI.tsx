@@ -221,8 +221,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     clearInput();
     setIsLoading(true);
 
-    console.log('Using model:', selectedModel.title);
-
     const aiMessageId = (Date.now() + 1).toString();
     const aiMessage: Message = {
       id: aiMessageId,
@@ -235,8 +233,6 @@ const ChatUI = ({ open = true, onClose }: ChatUIProps) => {
     setMessages(prev => [...prev, aiMessage]);
 
     try {
-      console.log('Attempting to connect to:', OPENAI_CONFIG.baseURL);
-
       const conversationHistory = messages.concat(userMessage).map(msg => ({
         role: msg.role as 'system' | 'user' | 'assistant',
         content: msg.content,
