@@ -19,7 +19,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Autocomplete, Pagination } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // Importing logos
 import falconLogo from '../logos/falcon-logo.webp';
 import deepseekLogo from '../logos/deepseek-logo.webp';
@@ -35,6 +35,20 @@ import yaml from 'js-yaml';
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
 export const INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4 = 'Standard_NC24ads_A100_v4';
 export const INSTANCE_TYPE_STANDARD_NC96ADS_A100_V4 = 'Standard_NC96ads_A100_v4';
+
+interface SupportedModel {
+  name: string;
+  type: string;
+  version: string;
+  runtime: string;
+  tag: string;
+  downloadAtRuntime?: boolean;
+}
+
+interface SupportedModelsYaml {
+  models: SupportedModel[];
+}
+
 interface PresetModel {
   name: string;
   version: string;
@@ -50,140 +64,26 @@ interface PresetModel {
   instanceType: string;
 }
 
-const modelInfo = [
-  {
-    name: 'DeepSeek-R1-Distill-Llama-8B',
-    url: 'https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-8B',
-    description: 'A distilled version of Llama 8B by DeepSeek.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'DeepSeek-R1-Distill-Qwen-14B',
-    url: 'https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B',
-    description: 'A distilled version of Qwen 14B by DeepSeek.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Falcon-7B',
-    url: 'https://huggingface.co/tiiuae/falcon-7b',
-    description:
-      'Falcon-7B is a 7B parameters causal decoder-only model built by TII and trained on 1,500B tokens of RefinedWeb enhanced with curated corpora.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Falcon-40B',
-    url: 'https://huggingface.co/tiiuae/falcon-40b',
-    description:
-      'Falcon-40B is a 40B parameters causal decoder-only model built by TII and trained on 1,000B tokens of RefinedWeb enhanced with curated corpora.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC96ADS_A100_V4,
-  },
-  {
-    name: 'Falcon-7B-Instruct',
-    url: 'https://huggingface.co/tiiuae/falcon-7b-instruct',
-    description:
-      'Falcon-7B-Instruct is a 7B parameters causal decoder-only model built by TII based on Falcon-7B and finetuned on a mixture of chat/instruct datasets.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Falcon-40B-Instruct',
-    url: 'https://huggingface.co/tiiuae/falcon-40b-instruct',
-    description:
-      'Falcon-40B-Instruct is a 40B parameters causal decoder-only model built by TII based on Falcon-40B and finetuned on a mixture of Baize.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC96ADS_A100_V4,
-  },
-  {
-    name: 'Llama-3.1-8B-Instruct',
-    url: 'https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct',
-    description:
-      'The Meta Llama 3.1 collection of multilingual large language models (LLMs) is a collection of pretrained and instruction tuned generative models in 8B, 70B and 405B sizes (text in/text out). The Llama 3.1 instruction tuned text only models (8B, 70B, 405B) are optimized for multilingual dialogue use cases and outperform many of the available open source and closed chat models on common industry benchmarks.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC96ADS_A100_V4,
-  },
-  {
-    name: 'Mistral-7B',
-    url: 'https://huggingface.co/mistralai/Mistral-7B-v0.3',
-    description:
-      'The Mistral-7B-v0.3 Large Language Model (LLM) is a Mistral-7B-v0.2 with extended vocabulary.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Mistral-7B-Instruct',
-    url: 'https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.3',
-    description:
-      'The Mistral-7B-Instruct-v0.3 Large Language Model (LLM) is an instruct fine-tuned version of the Mistral-7B-v0.3.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-2',
-    url: 'https://huggingface.co/microsoft/Phi-2',
-    description:
-      'Phi-2 is a Transformer with 2.7 billion parameters. It was trained using the same data sources as Phi-1.5, augmented with a new data source that consists of various NLP synthetic texts and filtered websites (for safety and educational value).',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-3-Mini-4k-Instruct',
-    url: 'https://huggingface.co/microsoft/Phi-3-Mini-4k-Instruct',
-    description:
-      'The Phi-3-Mini-4K-Instruct is a 3.8B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets that includes both synthetic data and the filtered publicly available websites data with a focus on high-quality and reasoning dense properties. The model belongs to the Phi-3 family with the Mini version in two variants 4K and 128K which is the context length (in tokens) that it can support.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-3-Mini-128k-Instruct',
-    url: 'https://huggingface.co/microsoft/Phi-3-Mini-128k-Instruct',
-    description:
-      'The Phi-3-Mini-128K-Instruct is a 3.8 billion-parameter, lightweight, state-of-the-art open model trained using the Phi-3 datasets. This dataset includes both synthetic data and filtered publicly available website data, with an emphasis on high-quality and reasoning-dense properties. The model belongs to the Phi-3 family with the Mini version in two variants 4K and 128K which is the context length (in tokens) that it can support.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-3-Medium-4k-Instruct',
-    url: 'https://huggingface.co/microsoft/Phi-3-Medium-4k-Instruct',
-    description:
-      'The Phi-3-Medium-4K-Instruct is a 14B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets that includes both synthetic data and the filtered publicly available websites data with a focus on high-quality and reasoning dense properties. The model belongs to the Phi-3 family with the Medium version in two variants 4K and 128K which is the context length (in tokens) that it can support.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-3-Medium-128k-Instruct',
-    url: 'https://huggingface.co/microsoft/Phi-3-Medium-128k-Instruct',
-    description:
-      'The Phi-3-Medium-128K-Instruct is a 14B parameters, lightweight, state-of-the-art open model trained with the Phi-3 datasets that includes both synthetic data and the filtered publicly available websites data with a focus on high-quality and reasoning dense properties. The model belongs to the Phi-3 family with the Medium version in two variants 4k and 128K which is the context length (in tokens) that it can support.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-3.5-Mini-Instruct',
-    url: 'https://huggingface.co/microsoft/Phi-3.5-Mini-Instruct',
-    description:
-      'Phi-3.5-mini is a lightweight, state-of-the-art open model built upon datasets used for Phi-3 - synthetic data and filtered publicly available websites - with a focus on very high-quality, reasoning dense data. The model belongs to the Phi-3 model family and supports 128K token context length.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-4',
-    url: 'https://huggingface.co/microsoft/Phi-4',
-    description:
-      'phi-4 is a state-of-the-art open model built upon a blend of synthetic datasets, data from filtered public domain websites, and acquired academic books and Q&A datasets. The goal of this approach was to ensure that small capable models were trained with data focused on high quality and advanced reasoning.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Phi-4-Mini-Instruct',
-    url: 'https://huggingface.co/microsoft/Phi-4-Mini-Instruct',
-    description:
-      'Phi-4-mini-instruct is a lightweight open model built upon synthetic data and filtered publicly available websites - with a focus on high-quality, reasoning dense data. The model belongs to the Phi-4 model family and supports 128K token context length.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Qwen-2.5-Coder-7B-Instruct',
-    url: 'https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct',
-    description:
-      'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models (formerly known as CodeQwen). Qwen2.5-Coder-7B has 7 billion parameters.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-  {
-    name: 'Qwen-2.5-Coder-32B-Instruct',
-    url: 'https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct',
-    description:
-      'Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models (formerly known as CodeQwen). As of now, Qwen2.5-Coder-32B has 32 billion parameters.',
-    instanceType: INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4,
-  },
-];
+// Function to fetch and parse the YAML file from GitHub
+async function fetchSupportedModels(): Promise<SupportedModel[]> {
+  try {
+    const response = await fetch(
+      'https://raw.githubusercontent.com/kaito-project/kaito/main/presets/workspace/models/supported_models.yaml'
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const yamlText = await response.text();
+    const parsedYaml = yaml.load(yamlText) as SupportedModelsYaml;
+    return parsedYaml.models || [];
+  } catch (error) {
+    console.error('Failed to fetch supported models:', error);
+    // Return empty array if fetch fails
+    return [];
+  }
+}
 
+// Function to get appropriate logo for model
 const getLogo = (name: string): string => {
   const lname = name.toLowerCase();
   if (lname.includes('deepseek')) return deepseekLogo;
@@ -194,6 +94,100 @@ const getLogo = (name: string): string => {
   if (lname.includes('qwen')) return qwenLogo;
   return huggingfaceLogo; // default logo for Hugging Face or others
 };
+
+function formatModelName(name: string): string {
+  return name
+    .split('-')
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('-');
+}
+
+function getHuggingFaceUrl(name: string): string {
+  const companyName = getCompanyName(name);
+  const formattedName = name
+    .split('-')
+    .map(part => {
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    })
+    .join('-');
+
+  let huggingFacePath = '';
+  huggingFacePath = `${companyName}/${formattedName}`;
+
+  return `https://huggingface.co/${huggingFacePath}`;
+}
+
+function getModelDescription(name: string): string {
+  const descriptions: { [key: string]: string } = {
+    'deepseek-r1-distill-llama-8b':
+      'Distilled Llama 8B model by DeepSeek for efficient inference and strong performance.',
+    'deepseek-r1-distill-qwen-14b':
+      'Distilled Qwen 14B model by DeepSeek, optimized for speed and accuracy.',
+    'falcon-7b':
+      '7B parameter language model by TII, trained on RefinedWeb for high-quality text generation.',
+    'falcon-7b-instruct':
+      'Instruction-tuned Falcon-7B model for conversational and task-oriented outputs.',
+    'falcon-40b':
+      '40B parameter model by TII, designed for advanced language understanding and generation.',
+    'falcon-40b-instruct':
+      'Instruction-tuned Falcon-40B model for chat and instruction-based tasks.',
+    'llama-3.1-8b-instruct':
+      'Meta Llama 3.1 8B, instruction-tuned for multilingual and general-purpose tasks.',
+    'llama-3.3-70b-instruct':
+      'Meta Llama 3.3 70B, optimized for multilingual dialogue and instruction following.',
+    'mistral-7b':
+      'Mistral-7B is a fast, open-weight language model with strong performance on benchmarks.',
+    'mistral-7b-instruct': 'Instruction-tuned Mistral-7B for chat and task-oriented applications.',
+    'phi-2':
+      'Phi-2 is a 2.7B parameter model by Microsoft, trained on synthetic and filtered web data.',
+    'phi-3-mini-4k-instruct':
+      'Phi-3 Mini 4K is a 3.8B parameter model with 4K context, optimized for efficiency.',
+    'phi-3-mini-128k-instruct':
+      'Phi-3 Mini 128K supports 128K context length for long document understanding.',
+    'phi-3-medium-4k-instruct':
+      'Phi-3 Medium 4K is a 14B parameter model for advanced language tasks.',
+    'phi-3-medium-128k-instruct':
+      'Phi-3 Medium 128K supports 128K context for extended input handling.',
+    'phi-3.5-mini-instruct':
+      'Phi-3.5 Mini is a lightweight, 128K context model for efficient language tasks.',
+    'phi-4': 'Phi-4 is a state-of-the-art open model trained on diverse, high-quality datasets.',
+    'phi-4-mini-instruct':
+      'Phi-4 Mini Instruct is a compact model with 128K context for instruction tasks.',
+    'qwen2.5-coder-7b-instruct':
+      'Qwen2.5-Coder 7B is a code-specialized model for programming tasks.',
+    'qwen2.5-coder-32b-instruct':
+      'Qwen2.5-Coder 32B is a large code model for advanced programming assistance.',
+  };
+
+  return descriptions[name.toLowerCase()] || 'No description available for this model.';
+}
+
+function getInstanceType(name: string): string {
+  const lname = name.toLowerCase();
+  if (lname.includes('40b') || lname.includes('70b') || lname.includes('32b')) {
+    return INSTANCE_TYPE_STANDARD_NC96ADS_A100_V4;
+  }
+  return INSTANCE_TYPE_STANDARD_NC24ADS_A100_V4;
+}
+
+function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[] {
+  return supportedModels
+    .filter(model => model.name !== 'base')
+    .map((model, i) => ({
+      name: formatModelName(model.name),
+      version: model.tag || '',
+      company: {
+        name: getCompanyName(model.name),
+        url: getHuggingFaceUrl(model.name),
+      },
+      verifiedPublisher: true,
+      official: i % 3 === 0,
+      cncf: i % 4 === 0,
+      logoImageId: getLogo(model.name),
+      description: getModelDescription(model.name),
+      instanceType: getInstanceType(model.name),
+    }));
+}
 
 const getCompanyName = (name: string): string => {
   const lname = name.toLowerCase();
@@ -213,21 +207,6 @@ const getCompanyName = (name: string): string => {
   return 'Hugging Face'; // default for Hugging Face or others
 };
 
-const PresetModels: PresetModel[] = modelInfo.map((model, i) => ({
-  name: model.name,
-  version: model.name.includes('Mistral') ? 'v0.3' : '',
-  company: {
-    name: getCompanyName(model.name),
-    url: model.url || 'https://huggingface.co/',
-  },
-  verifiedPublisher: true,
-  official: i % 3 === 0,
-  cncf: i % 4 === 0,
-  logoImageId: getLogo(model.name),
-  description: model.description || 'No description available for this model.',
-  instanceType: model.instanceType,
-}));
-
 // Will replace this with common filter categories
 const categories = [
   { title: 'All', value: 0 },
@@ -239,12 +218,35 @@ const KaitoModels = () => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState(categories[0]);
   const [page, setPage] = useState(1);
+  const [presetModels, setPresetModels] = useState<PresetModel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const supportedModels = await fetchSupportedModels();
+        const presetModels = convertToPresetModels(supportedModels);
+        setPresetModels(presetModels);
+      } catch (err) {
+        setError('Failed to load models. Please try again later.');
+        console.error('Error loading models:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadModels();
+  }, []);
   function handleDeploy(model: PresetModel) {
     const yamlString = generateWorkspaceYAML(model);
     const parsedYaml = yaml.load(yamlString);
 
     itemRef.current = parsedYaml;
     setActiveModel(model);
+    setEditorValue(yamlString);
     setEditorDialogOpen(true);
   }
 
@@ -253,8 +255,7 @@ const KaitoModels = () => {
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
   const [editorValue, setEditorValue] = useState('');
 
-  // convert search to lower case
-  const filteredModels = PresetModels.filter(c =>
+  const filteredModels = presetModels.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -278,7 +279,6 @@ inference:
       name: ${model.name.toLowerCase()}
 `;
   }
-
   return (
     <>
       <SectionHeader
@@ -300,108 +300,134 @@ inference:
           />,
         ]}
       />
-
-      <Box display="flex" flexWrap="wrap" justifyContent="left">
-        {paginatedModels.map(model => (
-          <Card
-            key={model.name}
-            sx={{
-              margin: '1rem',
-              width: { md: '40%', lg: '30%' },
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} mx={2}>
-              <Box display="flex" alignItems="center">
-                {model.logoImageId && (
-                  <CardMedia
-                    component="img"
-                    image={model.logoImageId}
-                    alt={`${model.name} logo`}
-                    sx={{ width: 60, height: 60, objectFit: 'contain', marginRight: 1 }}
-                  />
-                )}
-              </Box>
-              <Box display="flex" alignItems="center">
-                {model.cncf && (
-                  <Tooltip title="CNCF Project">
-                    <Icon icon="simple-icons:cncf" style={{ fontSize: 20, marginLeft: '0.5em' }} />
-                  </Tooltip>
-                )}
-                {model.official && (
-                  <Tooltip title="Official Model">
-                    <Icon icon="mdi:star-circle" style={{ fontSize: 22, marginLeft: '0.5em' }} />
-                  </Tooltip>
-                )}
-                {model.verifiedPublisher && (
-                  <Tooltip title="Verified Publisher">
-                    <Icon icon="mdi:check-decagram" style={{ fontSize: 22, marginLeft: '0.5em' }} />
-                  </Tooltip>
-                )}
-              </Box>
-            </Box>
-
-            <CardContent>
-              <Tooltip title={model.name}>
-                <Typography component="h2" variant="h5" noWrap>
-                  <RouterLink
-                    routeName="/kaito/models/:modelName"
-                    params={{ modelName: model.name }}
-                  >
-                    {model.name}
-                  </RouterLink>
-                </Typography>
-              </Tooltip>
-              <Box display="flex" justifyContent="space-between" my={1}>
-                <Typography>{model.version}</Typography>
-                <Tooltip title={model.company.name}>
-                  <Typography noWrap>{model.company.name}</Typography>
-                </Tooltip>
-              </Box>
-              <Divider />
-              <Typography mt={1}>
-                {model.description.slice(0, 100)}
-                {model.description.length > 100 && (
-                  <Tooltip title={model.description}>
-                    <span>…</span>
-                  </Tooltip>
-                )}
-              </Typography>
-            </CardContent>
-
-            <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
-              <Button
-                sx={{ backgroundColor: '#000', color: 'white', textTransform: 'none' }}
-                onClick={() => handleDeploy(model)}
-              >
-                Deploy
-              </Button>
-              <Link href={model.company.url} target="_blank">
-                Learn More
-              </Link>
-            </CardActions>
-          </Card>
-        ))}
-      </Box>
-
-      {filteredModels.length > PAGE_OFFSET_COUNT_FOR_MODELS && (
-        <Box mt={3} mx="auto" maxWidth="max-content">
-          <Pagination
-            size="large"
-            shape="rounded"
-            page={page}
-            count={Math.ceil(filteredModels.length / PAGE_OFFSET_COUNT_FOR_MODELS)}
-            onChange={(e, val) => setPage(val)}
-            color="primary"
-          />
+      {loading && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <Loader />
         </Box>
       )}
+      {error && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <Typography color="error">{error}</Typography>
+        </Box>
+      )}
+      {!loading && !error && (
+        <>
+          <Box display="flex" flexWrap="wrap" justifyContent="left">
+            {paginatedModels.map(model => (
+              <Card
+                key={model.name}
+                sx={{
+                  margin: '1rem',
+                  width: { md: '40%', lg: '30%' },
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mt={2}
+                  mx={2}
+                >
+                  <Box display="flex" alignItems="center">
+                    {model.logoImageId && (
+                      <CardMedia
+                        component="img"
+                        image={model.logoImageId}
+                        alt={`${model.name} logo`}
+                        sx={{ width: 60, height: 60, objectFit: 'contain', marginRight: 1 }}
+                      />
+                    )}
+                  </Box>
+                  <Box display="flex" alignItems="center">
+                    {model.cncf && (
+                      <Tooltip title="CNCF Project">
+                        <Icon
+                          icon="simple-icons:cncf"
+                          style={{ fontSize: 20, marginLeft: '0.5em' }}
+                        />
+                      </Tooltip>
+                    )}
+                    {model.official && (
+                      <Tooltip title="Official Model">
+                        <Icon
+                          icon="mdi:star-circle"
+                          style={{ fontSize: 22, marginLeft: '0.5em' }}
+                        />
+                      </Tooltip>
+                    )}
+                    {model.verifiedPublisher && (
+                      <Tooltip title="Verified Publisher">
+                        <Icon
+                          icon="mdi:check-decagram"
+                          style={{ fontSize: 22, marginLeft: '0.5em' }}
+                        />
+                      </Tooltip>
+                    )}
+                  </Box>
+                </Box>
 
+                <CardContent>
+                  <Tooltip title={model.name}>
+                    <Typography component="h2" variant="h5" noWrap>
+                      <RouterLink
+                        routeName="/kaito/models/:modelName"
+                        params={{ modelName: model.name }}
+                      >
+                        {model.name}
+                      </RouterLink>
+                    </Typography>
+                  </Tooltip>
+                  <Box display="flex" justifyContent="space-between" my={1}>
+                    <Typography>{model.version}</Typography>
+                    <Tooltip title={model.company.name}>
+                      <Typography noWrap>{model.company.name}</Typography>
+                    </Tooltip>
+                  </Box>
+                  <Divider />
+                  <Typography mt={1}>
+                    {model.description.slice(0, 100)}
+                    {model.description.length > 100 && (
+                      <Tooltip title={model.description}>
+                        <span>…</span>
+                      </Tooltip>
+                    )}
+                  </Typography>
+                </CardContent>
+
+                <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
+                  <Button
+                    sx={{ backgroundColor: '#000', color: 'white', textTransform: 'none' }}
+                    onClick={() => handleDeploy(model)}
+                  >
+                    Deploy
+                  </Button>
+                  <Link href={model.company.url} target="_blank">
+                    Learn More
+                  </Link>
+                </CardActions>
+              </Card>
+            ))}
+          </Box>
+
+          {filteredModels.length > PAGE_OFFSET_COUNT_FOR_MODELS && (
+            <Box mt={3} mx="auto" maxWidth="max-content">
+              <Pagination
+                size="large"
+                shape="rounded"
+                page={page}
+                count={Math.ceil(filteredModels.length / PAGE_OFFSET_COUNT_FOR_MODELS)}
+                onChange={(e, val) => setPage(val)}
+                color="primary"
+              />
+            </Box>
+          )}
+        </>
+      )}
       <Box textAlign="right" mt={2} mr={2}>
         {/* <Link href="https://artifacthub.io/" target="_blank"> */}
       </Box>
-
       {editorDialogOpen && (
         <EditorDialog
           item={itemRef.current}
