@@ -177,28 +177,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
   ];
   const [selectedModel, setSelectedModel] = useState(models[0]);
 
-  const simulateTyping = async (text: string, messageId: string) => {
-    let currentText = '';
-    const words = text.split(/(\s+)/);
-    for (let i = 0; i < words.length; i++) {
-      currentText += words[i];
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.id === messageId
-            ? {
-                ...msg,
-                content: currentText,
-                isLoading: i < words.length - 1,
-              }
-            : msg
-        )
-      );
-
-      const delay = 30;
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  };
-
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
