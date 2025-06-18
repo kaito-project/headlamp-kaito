@@ -187,14 +187,6 @@ export function WorkspaceDetail() {
                     id: 'headlamp.workload-conditions',
                     section: <ConditionsSection resource={item?.jsonData} />,
                   },
-                  {
-                    id: 'headlamp.workload-owned-pods',
-                    section: <OwnedPodsSection resource={item} />,
-                  },
-                  {
-                    id: 'headlamp.workload-containers',
-                    section: <ContainersSection resource={item?.jsonData} />,
-                  },
                 ]
               : []),
           ]
