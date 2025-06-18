@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { generateText } from 'ai';
+import { streamText } from 'ai';
 import { OPENAI_CONFIG } from '../config/openai';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -254,7 +254,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
       timestamp: new Date(),
       isLoading: true,
     };
-
     setMessages(prev => [...prev, aiMessage]);
     try {
       const conversationHistory = messages.concat(userMessage).map(msg => ({
@@ -262,26 +261,40 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
         content: msg.content,
       }));
 
-      const { text } = await generateText({
+      const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel('phi-4-mini-instruct'),
         messages: conversationHistory,
         temperature: OPENAI_CONFIG.temperature,
         maxTokens: OPENAI_CONFIG.maxTokens,
       });
 
+      let streamedText = '';
+
+      for await (const textChunk of textStream) {
+        streamedText += textChunk;
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  content: streamedText,
+                  isLoading: true,
+                }
+              : msg
+          )
+        );
+      }
+
       setMessages(prev =>
         prev.map(msg =>
           msg.id === aiMessageId
             ? {
                 ...msg,
-                content: '',
-                isLoading: true,
+                isLoading: false,
               }
             : msg
         )
       );
-
-      await simulateTyping(text || "I apologize, but I couldn't generate a response.", aiMessageId);
     } catch (error) {
       console.error('Error fetching completion:', error);
 
@@ -308,7 +321,17 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
         fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
       }\n\n(Using fallback response - please check AI service configuration)`;
 
-      await simulateTyping(fallbackContent, aiMessageId);
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === aiMessageId
+            ? {
+                ...msg,
+                content: fallbackContent,
+                isLoading: false,
+              }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
     }
