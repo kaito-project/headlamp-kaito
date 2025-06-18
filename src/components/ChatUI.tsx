@@ -20,6 +20,7 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateText } from 'ai';
 import { OPENAI_CONFIG } from '../config/openai';
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 const openAICompatibleProvider = createOpenAICompatible({
   baseURL: OPENAI_CONFIG.baseURL,
@@ -418,11 +419,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                 }}
               >
                 {message.role === 'user' ? '👤' : '🤖'}
-              </Avatar>
+              </Avatar>{' '}
               <MessageContent isUser={message.role === 'user'}>
                 {' '}
-                <Typography
-                  variant="body1"
+                <Box
                   sx={{
                     lineHeight: 1.6,
                     whiteSpace: 'pre-wrap',
@@ -430,9 +430,21 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                     color: 'inherit',
                     fontSize: '14px',
                     fontWeight: 400,
+                    '& p': { margin: 0, padding: 0 },
+                    '& strong': { fontWeight: 600 },
+                    '& em': { fontStyle: 'italic' },
+                    '& code': {
+                      backgroundColor:
+                        message.role === 'user'
+                          ? 'rgba(255, 255, 255, 0.2)'
+                          : 'rgba(0, 0, 0, 0.05)',
+                      padding: '2px 4px',
+                      borderRadius: '4px',
+                      fontFamily: 'monospace',
+                    },
                   }}
                 >
-                  {message.content}
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
                   {message.isLoading && (
                     <span
                       style={{
@@ -445,7 +457,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                       }}
                     />
                   )}
-                </Typography>
+                </Box>
                 <Typography
                   variant="caption"
                   sx={{

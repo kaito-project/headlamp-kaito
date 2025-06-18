@@ -39,6 +39,7 @@
   "dependencies": {
     "@ai-sdk/openai-compatible": "^0.2.14",
     "ai": "^4.3.16",
-    "openai": "^5.5.1"
+    "openai": "^5.5.1",
+    "react-markdown": "^10.1.0"
   }
 }
