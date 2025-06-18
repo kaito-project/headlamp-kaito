@@ -14,6 +14,7 @@ import {
   Tooltip,
   TextField,
   Autocomplete,
+  Button,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
@@ -21,6 +22,7 @@ import { streamText } from 'ai';
 import { OPENAI_CONFIG } from '../config/openai';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { startPortForward, stopOrDeletePortForward } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 
 const openAICompatibleProvider = createOpenAICompatible({
   baseURL: OPENAI_CONFIG.baseURL,
@@ -169,6 +171,9 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isPortForwardRunning, setIsPortForwardRunning] = useState(false);
+  const [portForwardId, setPortForwardId] = useState<string | null>(null);
+  const [portForwardStatus, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const models = [
@@ -315,6 +320,103 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     }
   };
 
+  // Port forwarding functions
+  const startAIPortForward = async () => {
+    try {
+      setPortForwardStatus('Starting port forward...');
+
+      // kubectl port-forward service/workspace-phi-4-mini-instruct 8080:80
+      const cluster = '';
+      const namespace = 'default'; // Update with your actual Kaito workspace namespace
+      const serviceName = 'workspace-phi-4-mini-instruct';
+      const serviceNamespace = namespace;
+      const podName = '';
+      const targetPort = '80';
+      const localPort = '8080';
+      const address = 'localhost';
+      const portForwardId = `${serviceName}-${Date.now()}`;
+
+      // Call the startPortForward function from the Headlamp API
+      await startPortForward(
+        cluster,
+        namespace,
+        podName,
+        targetPort,
+        serviceName,
+        serviceNamespace,
+        localPort,
+        address,
+        portForwardId
+      );
+
+      setIsPortForwardRunning(true);
+      setPortForwardId(portForwardId);
+      setPortForwardStatus('Port forward running on localhost:8080');
+
+      // if it works
+      const successMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content:
+          'Port forwarding started successfully! The AI service is now accessible at localhost:8080.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, successMessage]);
+    } catch (error) {
+      console.error('Failed to start port forward:', error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      setPortForwardStatus(`Error: ${errorMsg}`);
+
+      // error message
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Failed to start port forwarding: ${errorMsg}`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
+  const stopAIPortForward = async () => {
+    if (!portForwardId) return;
+
+    try {
+      setPortForwardStatus('Stopping port forward...');
+
+      const cluster = '';
+
+      // call stopOrDeletePortForward function from the Headlamp API
+      await stopOrDeletePortForward(cluster, portForwardId, true);
+
+      setIsPortForwardRunning(false);
+      setPortForwardId(null);
+      setPortForwardStatus('Port forward stopped');
+
+      // stop message in chat
+      const stopMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'Port forwarding stopped successfully.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, stopMessage]);
+    } catch (error) {
+      console.error('Failed to stop port forward:', error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      setPortForwardStatus(`Error stopping: ${errorMsg}`);
+
+      // error message in chat
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Failed to stop port forwarding: ${errorMsg}`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+  };
+
   const clearChat = () => {
     setMessages([
       {
@@ -369,6 +471,26 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                 <Typography variant="caption" color="black">
                   Ready to help
                 </Typography>
+
+                {/* Open Service Button when port forwarding is active */}
+                {isPortForwardRunning && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="primary"
+                    startIcon={<Box sx={{ fontSize: '14px' }}>🚀</Box>}
+                    onClick={() => window.open('http://localhost:8080', '_blank')}
+                    sx={{
+                      ml: 2,
+                      height: 24,
+                      fontSize: '0.75rem',
+                      textTransform: 'none',
+                      padding: '2px 8px',
+                    }}
+                  >
+                    Open Service
+                  </Button>
+                )}
               </Stack>
             </Box>
           </Stack>{' '}
@@ -398,6 +520,41 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                 >
                   ✕
                 </IconButton>
+              </Tooltip>
+            )}
+            {/* Port Forwarding Controls */}
+            {isPortForwardRunning ? (
+              <Tooltip title="Stop Port Forward">
+                <IconButton
+                  onClick={stopAIPortForward}
+                  size="small"
+                  color="error"
+                  disabled={!portForwardId || !isPortForwardRunning}
+                >
+                  <Box sx={{ fontSize: '18px' }}>🛑</Box>
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Start Port Forward">
+                <IconButton
+                  onClick={startAIPortForward}
+                  size="small"
+                  color="primary"
+                  disabled={isPortForwardRunning}
+                >
+                  <Box sx={{ fontSize: '18px' }}>🔄</Box>
+                </IconButton>
+              </Tooltip>
+            )}
+            {/* Port Forward Status */}
+            {portForwardStatus && (
+              <Tooltip title={portForwardStatus}>
+                <Chip
+                  label={isPortForwardRunning ? 'Connected' : 'Disconnected'}
+                  size="small"
+                  color={isPortForwardRunning ? 'success' : 'default'}
+                  sx={{ height: 24, fontSize: '0.75rem' }}
+                />
               </Tooltip>
             )}
           </Stack>
