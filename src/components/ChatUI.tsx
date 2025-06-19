@@ -22,8 +22,13 @@ import { streamText } from 'ai';
 import { OPENAI_CONFIG } from '../config/openai';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { startPortForward, stopOrDeletePortForward } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
+import {
+  request,
+  startPortForward,
+  stopOrDeletePortForward,
+} from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { getCluster } from '@kinvolk/headlamp-plugin/lib/lib/cluster';
+import { getClusterDefaultNamespace } from '@kinvolk/headlamp-plugin/lib/lib/k8s/api/v1/clusterApi';
 
 const openAICompatibleProvider = createOpenAICompatible({
   baseURL: OPENAI_CONFIG.baseURL,
@@ -161,6 +166,53 @@ interface ChatUIProps {
   onClose?: () => void;
 }
 
+// fetch pod name and resolved target port dynamically
+async function resolvePodAndPort(serviceName: string, namespace: string) {
+  const service = await request(`/api/v1/namespaces/${namespace}/services/${serviceName}`);
+  const selector = service?.spec?.selector;
+  const targetPort = service?.spec?.ports?.[0]?.targetPort;
+
+  if (!selector || !targetPort) return null;
+
+  const labelSelector = Object.entries(selector)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(',');
+
+  const podsResp = await request(
+    `/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`
+  );
+  const pod = podsResp?.items?.[0];
+  if (!pod) return null;
+
+  let resolvedPort = targetPort;
+  if (typeof targetPort === 'string' && isNaN(Number(targetPort))) {
+    const containers = pod.spec.containers || [];
+    for (const container of containers) {
+      const portObj = container.ports?.find((p: any) => p.name === targetPort);
+      if (portObj) {
+        resolvedPort = portObj.containerPort.toString();
+        break;
+      }
+    }
+  }
+
+  return {
+    podName: pod.metadata.name,
+    resolvedTargetPort: resolvedPort.toString(),
+  };
+}
+async function getFirstMatchingService(namespace: string, labelSelector: string) {
+  const response = await request(
+    `/api/v1/namespaces/${namespace}/services?labelSelector=${labelSelector}`,
+    { method: 'GET' }
+  );
+
+  const services = response?.items || [];
+  if (services.length === 0) return null;
+
+  return services[0];
+}
+
 const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -171,6 +223,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     },
   ]);
   const [input, setInput] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
   const [isPortForwardRunning, setIsPortForwardRunning] = useState(false);
   const [portForwardId, setPortForwardId] = useState<string | null>(null);
@@ -336,74 +389,53 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
 
     startPortForwardProcess();
   };
-
   const startPortForwardProcess = () => {
     setIsPortForwardRunning(true);
     setPortForwardStatus('Starting port forward...');
+
     (async () => {
       try {
         const cluster = getCluster() || '';
+        const namespace = getClusterDefaultNamespace(cluster) || 'default';
+        const service = await getFirstMatchingService(namespace, 'app=phi-4-mini-instruct');
+        if (!service) throw new Error('No service found matching label');
 
-        const namespace = 'default';
-        const serviceName = 'workspace-phi-4-mini-instruct';
+        const serviceName = service.metadata.name;
         const serviceNamespace = namespace;
-        const podName = 'workspace-phi-4-mini-instruct-58cbf5474f-dg52r';
-        const targetPort = '5000';
+
+        const resolved = await resolvePodAndPort(serviceName, namespace);
+        if (!resolved) {
+          throw new Error(`Could not resolve pod or target port for ${serviceName}`);
+        }
+
+        const { podName, resolvedTargetPort } = resolved;
         const localPort = '8080';
         const address = 'localhost';
         const newPortForwardId = `${serviceName}-${Date.now()}`;
 
-        try {
-          await startPortForward(
-            cluster,
-            namespace,
-            podName,
-            targetPort,
-            serviceName,
-            serviceNamespace,
-            localPort,
-            address,
-            newPortForwardId
-          );
+        await startPortForward(
+          cluster,
+          namespace,
+          podName,
+          resolvedTargetPort,
+          serviceName,
+          serviceNamespace,
+          localPort,
+          address,
+          newPortForwardId
+        );
 
-          setPortForwardId(newPortForwardId);
-          setPortForwardStatus('Port forward running on localhost:8080');
-
-          if (!document.getElementById('port-forward-success-message')) {
-            const successMessage: Message = {
-              id: 'port-forward-success-message',
-              role: 'assistant',
-              content:
-                'Port forwarding started successfully! The AI service is now accessible at localhost:8080.',
-              timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, successMessage]);
-          }
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-
-          const isJsonParseError =
-            errorMsg.includes('Unexpected token') &&
-            (errorMsg.includes('portforwar') || errorMsg.includes('not valid json'));
-
-          if (isJsonParseError) {
-            setPortForwardId(`existing-port-forward-${Date.now()}`);
-            setPortForwardStatus('Port forward running on localhost:8080');
-          } else {
-            console.error('Failed to start port forward:', error);
-            setPortForwardStatus(`Error: ${errorMsg}`);
-            setIsPortForwardRunning(false);
-            setPortForwardId(null);
-          }
-        }
+        setPortForwardId(newPortForwardId);
+        setPortForwardStatus(`Port forward running on localhost:${localPort}`);
       } catch (error) {
-        console.error('Error in port forward setup:', error);
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        setPortForwardStatus(`Setup error: ${errorMsg}`);
+        console.error('Port forward error:', error);
+        setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
         setIsPortForwardRunning(false);
+        setPortForwardId(null);
       }
     })();
   };
+
   const stopAIPortForward = () => {
     if (!portForwardId) {
       setIsPortForwardRunning(false);
