@@ -273,8 +273,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     if (!input.trim() || isLoading) return;
 
     if (!isPortForwardRunning) {
-      startAIPortForward();
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await startAIPortForward();
     }
 
     const userMessage: Message = {
