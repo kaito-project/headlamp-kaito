@@ -543,25 +543,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                   color={isPortForwardRunning ? 'success' : 'warning'}
                   sx={{ ml: 1, height: 24, fontSize: '0.7rem' }}
                 />
-                {/* Open Service Button when port forwarding is active */}
-                {isPortForwardRunning && (
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    color="primary"
-                    startIcon={<Box sx={{ fontSize: '14px' }}>🚀</Box>}
-                    onClick={() => window.open('http://localhost:8080', '_blank')}
-                    sx={{
-                      ml: 2,
-                      height: 24,
-                      fontSize: '0.75rem',
-                      textTransform: 'none',
-                      padding: '2px 8px',
-                    }}
-                  >
-                    Open Service
-                  </Button>
-                )}
               </Stack>
             </Box>
           </Stack>{' '}
