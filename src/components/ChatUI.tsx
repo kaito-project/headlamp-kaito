@@ -332,19 +332,15 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
       setIsLoading(false);
     }
   };
-  // port forwarding functions
   const startAIPortForward = () => {
-    // If a port forward is already running, stop it first
     if (portForwardId) {
       stopAIPortForward();
-      // After stopping, wait a moment and try to start again
       setTimeout(() => {
         startPortForwardProcess();
       }, 1000);
       return;
     }
 
-    // No existing port forward, start one directly
     startPortForwardProcess();
   };
 
@@ -364,74 +360,89 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
         const address = 'localhost';
         const newPortForwardId = `${serviceName}-${Date.now()}`;
 
-        console.log('Starting port forwarding...', {
-          cluster,
-          namespace,
-          serviceName,
-          localPort,
-          targetPort,
-        });
+        // console.log('Starting port forwarding...', {
+        //   cluster,
+        //   namespace,
+        //   serviceName,
+        //   localPort,
+        //   targetPort,
+        // });
 
-        startPortForward(
-          cluster,
-          namespace,
-          podName,
-          targetPort,
-          serviceName,
-          serviceNamespace,
-          localPort,
-          address,
-          newPortForwardId
-        )
-          .then(() => {
-            setPortForwardId(newPortForwardId);
-            setPortForwardStatus('Port forward running on localhost:8080');
+        try {
+          await startPortForward(
+            cluster,
+            namespace,
+            podName,
+            targetPort,
+            serviceName,
+            serviceNamespace,
+            localPort,
+            address,
+            newPortForwardId
+          );
 
+          setPortForwardId(newPortForwardId);
+          setPortForwardStatus('Port forward running on localhost:8080');
+
+          if (!document.getElementById('port-forward-success-message')) {
             const successMessage: Message = {
-              id: Date.now().toString(),
+              id: 'port-forward-success-message',
               role: 'assistant',
               content:
                 'Port forwarding started successfully! The AI service is now accessible at localhost:8080.',
               timestamp: new Date(),
             };
             setMessages(prev => [...prev, successMessage]);
-          })
-          .catch(error => {
+          }
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+
+          const isJsonParseError =
+            errorMsg.includes('Unexpected token') &&
+            (errorMsg.includes('portforwar') || errorMsg.includes('not valid json'));
+
+          if (isJsonParseError) {
+            //console.log('Received port forwarding JSON parse error - likely already running.');
+            setPortForwardId(`existing-port-forward-${Date.now()}`);
+            setPortForwardStatus('Port forward running on localhost:8080');
+          } else {
             console.error('Failed to start port forward:', error);
-            const errorMsg = error instanceof Error ? error.message : String(error);
             setPortForwardStatus(`Error: ${errorMsg}`);
             setIsPortForwardRunning(false);
             setPortForwardId(null);
 
-            // error message to chat
-            const errorMessage: Message = {
-              id: Date.now().toString(),
-              role: 'assistant',
-              content: `Failed to start port forwarding: ${errorMsg}`,
-              timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, errorMessage]);
-          });
+            if (!document.getElementById('port-forward-error-message')) {
+              const errorMessage: Message = {
+                id: 'port-forward-error-message',
+                role: 'assistant',
+                content: `Failed to start port forwarding: ${errorMsg}`,
+                timestamp: new Date(),
+              };
+              setMessages(prev => [...prev, errorMessage]);
+            }
+          }
+        }
       } catch (error) {
         console.error('Error in port forward setup:', error);
         const errorMsg = error instanceof Error ? error.message : String(error);
         setPortForwardStatus(`Setup error: ${errorMsg}`);
         setIsPortForwardRunning(false);
 
-        // error message to chat
-        const errorMessage: Message = {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: `Error setting up port forwarding: ${errorMsg}`,
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, errorMessage]);
+        if (!document.getElementById('port-forward-setup-error-message')) {
+          const errorMessage: Message = {
+            id: 'port-forward-setup-error-message',
+            role: 'assistant',
+            content: `Error setting up port forwarding: ${errorMsg}`,
+            timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, errorMessage]);
+        }
       }
     })();
   };
   const stopAIPortForward = () => {
     if (!portForwardId) {
-      console.log('No port forward ID found, skipping stop operation');
+      //console.log('No port forward ID found, skipping stop operation');
       setIsPortForwardRunning(false);
       setPortForwardStatus('Port forward not running');
       return;
@@ -439,10 +450,8 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
 
     setPortForwardStatus('Stopping port forward...');
 
-    // Store ID before clearing state
     const idToStop = portForwardId;
 
-    // Clear state immediately to prevent race conditions
     setIsPortForwardRunning(false);
     setPortForwardId(null);
 
@@ -450,7 +459,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
 
     stopOrDeletePortForward(cluster, idToStop, true)
       .then(() => {
-        console.log(`Port forward with ID ${idToStop} stopped successfully`);
+        //console.log(`Port forward with ID ${idToStop} stopped successfully`);
         setPortForwardStatus('Port forward stopped');
 
         const stopMessage: Message = {
@@ -488,18 +497,25 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
   };
 
   useEffect(() => {
-    // Auto-start port forwarding when component mounts
-    console.log('Auto-starting port forwarding on component mount');
-    startAIPortForward();
+    //console.log('Auto-starting port forwarding on component mount');
 
-    // Cleanup function when component unmounts
+    const checkPortForwardStatus = async () => {
+      try {
+        startAIPortForward();
+      } catch (error) {
+        console.error('Error checking port forward status:', error);
+      }
+    };
+
+    checkPortForwardStatus();
+
     return () => {
       if (portForwardId) {
-        console.log(`Cleanup: stopping port forward with ID: ${portForwardId}`);
+        //console.log(`Cleanup: stopping port forward with ID: ${portForwardId}`);
         const cluster = '';
         stopOrDeletePortForward(cluster, portForwardId, true)
           .then(() => {
-            console.log(`Cleanup: Port forward stopped successfully`);
+            //console.log(`Cleanup: Port forward stopped successfully`);
           })
           .catch(error => {
             console.error(`Cleanup: Failed to stop port forward:`, error);
@@ -552,13 +568,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                 <Typography variant="caption" color="black">
                   {isPortForwardRunning ? 'Connected' : 'Connection needed'}
                 </Typography>
-                {/* Port Forward Status Chip */}
-                <Chip
-                  size="small"
-                  label={portForwardStatus || 'Port forwarding not started'}
-                  color={isPortForwardRunning ? 'success' : 'warning'}
-                  sx={{ ml: 1, height: 24, fontSize: '0.7rem' }}
-                />
               </Stack>
             </Box>
           </Stack>{' '}
@@ -567,12 +576,13 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
               <IconButton onClick={clearChat} size="small">
                 🗑️
               </IconButton>
-            </Tooltip>
-
+            </Tooltip>{' '}
             {onClose && (
               <Tooltip title="Close chat">
                 <IconButton
-                  onClick={onClose}
+                  onClick={() => {
+                    onClose();
+                  }}
                   size="small"
                   sx={{
                     color: '#ef4444',
@@ -591,41 +601,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                 </IconButton>
               </Tooltip>
             )}
-            {/* Port Forwarding Controls */}
-            {isPortForwardRunning ? (
-              <Tooltip title="Stop Port Forward">
-                <IconButton
-                  onClick={stopAIPortForward}
-                  size="small"
-                  color="error"
-                  disabled={!portForwardId || !isPortForwardRunning}
-                >
-                  <Box sx={{ fontSize: '18px' }}>🛑</Box>
-                </IconButton>
-              </Tooltip>
-            ) : (
-              <Tooltip title="Start Port Forward">
-                <IconButton
-                  onClick={startAIPortForward}
-                  size="small"
-                  color="primary"
-                  disabled={isPortForwardRunning}
-                >
-                  <Box sx={{ fontSize: '18px' }}>🔄</Box>
-                </IconButton>
-              </Tooltip>
-            )}
-            {/* Port Forward Status */}
-            {portForwardStatus && (
-              <Tooltip title={portForwardStatus}>
-                <Chip
-                  label={isPortForwardRunning ? 'Connected' : 'Disconnected'}
-                  size="small"
-                  color={isPortForwardRunning ? 'success' : 'default'}
-                  sx={{ height: 24, fontSize: '0.75rem' }}
-                />
-              </Tooltip>
-            )}
           </Stack>
         </Stack>
       </ChatHeader>
@@ -634,7 +609,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
         <MessagesContainer>
           {messages.map(message => (
             <MessageBubble key={message.id} isUser={message.role === 'user'}>
-              {' '}
               <Avatar
                 sx={{
                   width: 32,
@@ -855,11 +829,18 @@ const ChatFAB: React.FC<{ onClick: () => void }> = ({ onClick }) => {
 
 const ChatWithFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [portForwardAttempted, setPortForwardAttempted] = useState(false);
 
   return (
     <>
       <ChatFAB onClick={() => setOpen(true)} />
-      <ChatUI open={open} onClose={() => setOpen(false)} />
+      <ChatUI
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setPortForwardAttempted(true);
+        }}
+      />
     </>
   );
 };
