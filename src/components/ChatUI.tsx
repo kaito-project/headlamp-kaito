@@ -662,7 +662,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                   wordBreak: 'break-word',
                   minHeight: '20px',
                   '&:empty::before': {
-                    content: '"Ask about Kubernetes, Kaito AI, or anything else..."',
+                    content: '"Ask me a question..."',
                     color: '#64748b',
                     fontStyle: 'normal',
                   },
