@@ -450,7 +450,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     setIsPortForwardRunning(false);
     setPortForwardId(null);
 
-    const cluster = '';
+    const cluster = getCluster() || '';
 
     stopOrDeletePortForward(cluster, idToStop, true)
       .then(() => {
