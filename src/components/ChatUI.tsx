@@ -530,9 +530,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                     },
                   }}
                 />
-                <Typography variant="caption" color="black">
-                  {isPortForwardRunning ? 'Connected' : 'Connection needed'}
-                </Typography>
               </Stack>
             </Box>
           </Stack>{' '}
