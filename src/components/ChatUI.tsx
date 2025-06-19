@@ -519,7 +519,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
           });
       }
     };
-  }, []);
+  }, [portForwardId]);
 
   return (
     <ChatDialog
