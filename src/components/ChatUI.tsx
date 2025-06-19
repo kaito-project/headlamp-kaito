@@ -396,10 +396,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
       try {
         const cluster = getCluster() || '';
         const namespace = getClusterDefaultNamespace(cluster) || 'default';
-        const service = await getFirstMatchingService(namespace, 'app=phi-4-mini-instruct');
-        if (!service) throw new Error('No service found matching label');
-
-        const serviceName = service.metadata.name;
+        const serviceName = selectedModel.value;
         const serviceNamespace = namespace;
 
         const resolved = await resolvePodAndPort(serviceName, namespace);
