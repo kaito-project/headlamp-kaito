@@ -23,6 +23,7 @@ import { OPENAI_CONFIG } from '../config/openai';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { startPortForward, stopOrDeletePortForward } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
+import { getCluster } from '@kinvolk/headlamp-plugin/lib/lib/cluster';
 
 const openAICompatibleProvider = createOpenAICompatible({
   baseURL: OPENAI_CONFIG.baseURL,
@@ -350,7 +351,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
 
     (async () => {
       try {
-        const cluster = 'ernestwong';
+        const cluster = getCluster() || 'ernestwong';
         const namespace = 'default';
         const serviceName = 'workspace-phi-4-mini-instruct';
         const serviceNamespace = namespace;
