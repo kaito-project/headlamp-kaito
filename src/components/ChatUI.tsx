@@ -27,7 +27,7 @@ import {
   startPortForward,
   stopOrDeletePortForward,
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/lib/cluster';
+import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 import { getClusterDefaultNamespace } from '@kinvolk/headlamp-plugin/lib/lib/k8s/api/v1/clusterApi';
 
 const openAICompatibleProvider = createOpenAICompatible({
