@@ -326,11 +326,11 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
       setPortForwardStatus('Starting port forward...');
 
       // kubectl port-forward service/workspace-phi-4-mini-instruct 8080:80
-      const cluster = '';
+      const cluster = 'ernestwong';
       const namespace = 'default'; // Update with your actual Kaito workspace namespace
       const serviceName = 'workspace-phi-4-mini-instruct';
       const serviceNamespace = namespace;
-      const podName = '';
+      const podName = 'workspace-phi-4-mini-instruct-58cbf5474f-dg52r';
       const targetPort = '80';
       const localPort = '8080';
       const address = 'localhost';
