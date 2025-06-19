@@ -166,7 +166,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hello! I'm your AI assistant for Kubernetes and Kaito. How can I help you today?",
+      content: "Hello! I'm your AI assistant. How can I help you today?",
       timestamp: new Date(),
     },
   ]);
