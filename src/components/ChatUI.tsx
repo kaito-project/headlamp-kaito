@@ -547,7 +547,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                 Chat with {selectedModel.title}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
-                {' '}
                 <Box
                   sx={{
                     width: 8,
