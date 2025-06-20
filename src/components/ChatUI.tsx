@@ -367,10 +367,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     if (isPortForwardRunning) return;
 
     if (portForwardId) {
-      stopAIPortForward();
-      setTimeout(() => {
+      (async () => {
+        await stopAIPortForward();
         startPortForwardProcess();
-      }, 1000);
+      })();
       return;
     }
 
