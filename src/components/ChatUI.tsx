@@ -231,7 +231,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const models = [
-    { title: 'OpenAI', value: 'openai' },
+    { title: 'OpenAI', value: 'workspace-phi-4-mini-instruct' },
     { title: 'DeepSeek', value: 'deepseek' },
   ];
   const [selectedModel, setSelectedModel] = useState(models[0]);
@@ -394,8 +394,30 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
 
     (async () => {
       try {
-        const cluster = getCluster() || '';
-        const namespace = getClusterDefaultNamespace(cluster) || 'default';
+        // Get cluster with a fallback to empty string
+        let cluster = '';
+        try {
+          const clusterValue = getCluster();
+          if (clusterValue !== null && clusterValue !== undefined) {
+            cluster = clusterValue;
+          }
+        } catch (clusterError) {
+          console.log('Could not get cluster, using empty string');
+        }
+
+        // Get namespace with a fallback to 'default'
+        let namespace = 'default';
+        try {
+          if (cluster && typeof getClusterDefaultNamespace === 'function') {
+            const namespaceValue = getClusterDefaultNamespace(cluster);
+            if (namespaceValue) {
+              namespace = namespaceValue;
+            }
+          }
+        } catch (namespaceError) {
+          console.log('Could not get namespace, using default');
+        }
+
         const serviceName = selectedModel.value;
         const serviceNamespace = namespace;
 
@@ -446,7 +468,16 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     setIsPortForwardRunning(false);
     setPortForwardId(null);
 
-    const cluster = getCluster() || '';
+    // Get cluster with a fallback to empty string
+    let cluster = '';
+    try {
+      const clusterValue = getCluster();
+      if (clusterValue !== null && clusterValue !== undefined) {
+        cluster = clusterValue;
+      }
+    } catch (clusterError) {
+      console.log('Could not get cluster for stopping port forward, using empty string');
+    }
 
     stopOrDeletePortForward(cluster, idToStop, true)
       .then(() => {
