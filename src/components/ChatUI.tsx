@@ -416,7 +416,21 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         const { podName, resolvedTargetPort } = resolved;
         const localPort = '8080';
         const address = 'localhost';
-        const newPortForwardId = `${serviceName}-${Date.now()}`;
+        // reproducible port forward ID based on workspaceName and namespace
+        const newPortForwardId = workspaceName && namespace;
+
+        // log all args passed to startPortForward
+        console.log('startPortForward args:', {
+          cluster,
+          namespace,
+          podName,
+          resolvedTargetPort,
+          serviceName,
+          serviceNamespace,
+          localPort,
+          address,
+          newPortForwardId,
+        });
 
         await startPortForward(
           cluster,
