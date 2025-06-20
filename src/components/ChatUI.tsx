@@ -375,6 +375,8 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     }
   };
   const startAIPortForward = () => {
+    if (isPortForwardRunning) return;
+
     if (portForwardId) {
       stopAIPortForward();
       setTimeout(() => {
@@ -410,8 +412,9 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         }
 
         const { podName, resolvedTargetPort } = resolved;
-        const localPort = '8080';
+        const localPort = '0';
         const address = 'localhost';
+
         // reproducible port forward ID based on workspaceName and namespace
         const newPortForwardId = workspaceName && namespace;
 
@@ -523,6 +526,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     };
 
     checkPortForwardStatus();
+
     return () => {
       if (portForwardId) {
         let cluster = '';
@@ -542,7 +546,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
           });
       }
     };
-  }, [portForwardId]);
+  }, []);
 
   return (
     <ChatDialog
