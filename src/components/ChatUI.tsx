@@ -232,7 +232,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const models = [
-    { title: 'OpenAI', value: 'workspace-phi-4-mini-instruct' },
+    { title: 'workspace-phi-4-mini-instruct', value: 'workspace-phi-4-mini-instruct' },
     { title: 'DeepSeek', value: 'deepseek' },
   ];
   const [selectedModel, setSelectedModel] = useState(models[0]);
@@ -420,7 +420,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
         await startPortForward(
           cluster,
-          serviceNamespace,
+          namespace,
           podName,
           resolvedTargetPort,
           serviceName,
