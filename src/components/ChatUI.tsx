@@ -28,7 +28,6 @@ import {
   stopOrDeletePortForward,
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import { getClusterDefaultNamespace } from '@kinvolk/headlamp-plugin/lib/lib/k8s/api/v1/clusterApi';
 
 const openAICompatibleProvider = createOpenAICompatible({
   baseURL: OPENAI_CONFIG.baseURL,
@@ -164,6 +163,8 @@ const SendButton = styled(IconButton)(() => ({
 interface ChatUIProps {
   open?: boolean;
   onClose?: () => void;
+  namespace: string;
+  workspaceName?: string;
 }
 
 // fetch pod name and resolved target port dynamically
@@ -213,7 +214,7 @@ async function getFirstMatchingService(namespace: string, labelSelector: string)
   return services[0];
 }
 
-const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
+const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, workspaceName }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -405,23 +406,11 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
           console.log('Could not get cluster, using empty string');
         }
 
-        // Get namespace with a fallback to 'default'
-        let namespace = 'default';
-        try {
-          if (cluster && typeof getClusterDefaultNamespace === 'function') {
-            const namespaceValue = getClusterDefaultNamespace(cluster);
-            if (namespaceValue) {
-              namespace = namespaceValue;
-            }
-          }
-        } catch (namespaceError) {
-          console.log('Could not get namespace, using default');
-        }
-
+        // Use namespace from props
         const serviceName = selectedModel.value;
         const serviceNamespace = namespace;
 
-        const resolved = await resolvePodAndPort(serviceName, namespace);
+        const resolved = await resolvePodAndPort(serviceName, serviceNamespace);
         if (!resolved) {
           throw new Error(`Could not resolve pod or target port for ${serviceName}`);
         }
@@ -433,7 +422,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
 
         await startPortForward(
           cluster,
-          namespace,
+          serviceNamespace,
           podName,
           resolvedTargetPort,
           serviceName,
@@ -860,6 +849,7 @@ const ChatWithFAB: React.FC = () => {
           setOpen(false);
           setPortForwardAttempted(true);
         }}
+        namespace="default"
       />
     </>
   );
