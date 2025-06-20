@@ -162,16 +162,14 @@ interface ChatUIProps {
 }
 
 // fetch pod name and resolved target port dynamically
-async function resolvePodAndPort(serviceName: string, namespace: string) {
+async function resolvePodAndPort(serviceName: string, namespace: string, workspaceName: string) {
   const service = await request(`/api/v1/namespaces/${namespace}/services/${serviceName}`);
   const selector = service?.spec?.selector;
   const targetPort = service?.spec?.ports?.[0]?.targetPort;
 
   if (!selector || !targetPort) return null;
 
-  const labelSelector = Object.entries(selector)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(',');
+  const labelSelector = `kaito.sh/workspace=${workspaceName}`;
 
   const podsResp = await request(
     `/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`
@@ -395,7 +393,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       const serviceName = selectedModel.value;
       const serviceNamespace = namespace;
 
-      const resolved = await resolvePodAndPort(serviceName, serviceNamespace);
+      const resolved = await resolvePodAndPort(serviceName, serviceNamespace, workspaceName);
       if (!resolved) {
         throw new Error(`Could not resolve pod or target port for ${serviceName}`);
       }
