@@ -531,11 +531,9 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
           console.log('Could not get cluster for cleanup, using empty string');
         }
 
-        stopOrDeletePortForward(cluster, portForwardId, true)
-          .then(() => {})
-          .catch(error => {
-            console.error(`Cleanup: Failed to stop port forward:`, error);
-          });
+        stopOrDeletePortForward(cluster, portForwardId, true).catch(error => {
+          console.error(`Cleanup: Failed to stop port forward:`, error);
+        });
       }
     };
   }, []);
