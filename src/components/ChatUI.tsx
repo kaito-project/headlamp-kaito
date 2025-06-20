@@ -390,6 +390,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   const startPortForwardProcess = () => {
     setIsPortForwardRunning(true);
     setPortForwardStatus('Starting port forward...');
+    console.log('Port forwarding: starting...');
 
     (async () => {
       try {
@@ -445,6 +446,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
         setPortForwardId(newPortForwardId);
         setPortForwardStatus(`Port forward running on localhost:${localPort}`);
+        console.log(`Port forwarding: running on localhost:${localPort}`);
       } catch (error) {
         console.error('Port forward error:', error);
         setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -455,6 +457,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   };
 
   const stopAIPortForward = () => {
+    const idToStop = portForwardId;
     if (!portForwardId) {
       setIsPortForwardRunning(false);
       setPortForwardStatus('Port forward not running');
@@ -462,8 +465,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     }
 
     setPortForwardStatus('Stopping port forward...');
-
-    const idToStop = portForwardId;
+    console.log('Port forwarding: stopping...');
 
     setIsPortForwardRunning(false);
     setPortForwardId(null);
@@ -481,6 +483,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     stopOrDeletePortForward(cluster, idToStop, true)
       .then(() => {
         setPortForwardStatus('Port forward stopped');
+        console.log('Port forwarding: stopped');
 
         const stopMessage: Message = {
           id: Date.now().toString(),
@@ -551,7 +554,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   return (
     <ChatDialog
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        stopAIPortForward();
+        console.log('port forwarding done');
+      }}
       maxWidth={false}
       PaperProps={{
         sx: { m: 2 },
