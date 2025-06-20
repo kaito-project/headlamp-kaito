@@ -395,7 +395,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
     (async () => {
       try {
-        // Get cluster with a fallback to empty string
         let cluster = '';
         try {
           const clusterValue = getCluster();
@@ -406,7 +405,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
           console.log('Could not get cluster, using empty string');
         }
 
-        // Use namespace from props
         const serviceName = selectedModel.value;
         const serviceNamespace = namespace;
 
@@ -457,7 +455,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     setIsPortForwardRunning(false);
     setPortForwardId(null);
 
-    // Get cluster with a fallback to empty string
     let cluster = '';
     try {
       const clusterValue = getCluster();
