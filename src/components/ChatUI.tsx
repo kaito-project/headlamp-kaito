@@ -29,12 +29,6 @@ import {
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 
-const openAICompatibleProvider = createOpenAICompatible({
-  baseURL: OPENAI_CONFIG.baseURL,
-  apiKey: 'placeholder-key',
-  name: 'openai-compatible',
-});
-
 interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';
@@ -236,6 +230,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     { title: 'DeepSeek', value: 'deepseek' },
   ];
   const [selectedModel, setSelectedModel] = useState(models[0]);
+  const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -298,6 +293,11 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       }));
+      const openAICompatibleProvider = createOpenAICompatible({
+        baseURL,
+        apiKey: 'placeholder-key',
+        name: 'openai-compatible',
+      });
 
       const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel('phi-4-mini-instruct'),
@@ -412,10 +412,9 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         }
 
         const { podName, resolvedTargetPort } = resolved;
-        const localPort = '0';
+        const localPort = String(10000 + Math.floor(Math.random() * 10000));
         const address = 'localhost';
 
-        // reproducible port forward ID based on workspaceName and namespace
         const newPortForwardId = workspaceName && namespace;
 
         // log all args passed to startPortForward
@@ -442,6 +441,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
           address,
           newPortForwardId
         );
+        setBaseURL(`http://localhost:${localPort}/v1`);
 
         setPortForwardId(newPortForwardId);
         setPortForwardStatus(`Port forward running on localhost:${localPort}`);
