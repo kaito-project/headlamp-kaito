@@ -195,6 +195,19 @@ async function resolvePodAndPort(serviceName: string, namespace: string, workspa
   };
 }
 
+// Helper to get cluster name or empty string
+function getClusterOrEmpty() {
+  try {
+    const clusterValue = getCluster();
+    if (clusterValue !== null && clusterValue !== undefined) {
+      return clusterValue;
+    }
+  } catch (clusterError) {
+    console.log('Could not get cluster, using empty string');
+  }
+  return '';
+}
+
 const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, workspaceName }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -380,15 +393,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     console.log('Port forwarding: starting...');
 
     try {
-      let cluster = '';
-      try {
-        const clusterValue = getCluster();
-        if (clusterValue !== null && clusterValue !== undefined) {
-          cluster = clusterValue;
-        }
-      } catch (clusterError) {
-        console.log('Could not get cluster, using empty string');
-      }
+      const cluster = getClusterOrEmpty();
 
       const serviceName = selectedModel.value;
       const serviceNamespace = namespace;
@@ -442,15 +447,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     setIsPortForwardRunning(false);
     setPortForwardId(null);
 
-    let cluster = '';
-    try {
-      const clusterValue = getCluster();
-      if (clusterValue !== null && clusterValue !== undefined) {
-        cluster = clusterValue;
-      }
-    } catch (clusterError) {
-      console.log('Could not get cluster for stopping port forward, using empty string');
-    }
+    const cluster = getClusterOrEmpty();
 
     stopOrDeletePortForward(cluster, idToStop, true)
       .then(() => {
@@ -504,15 +501,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
     return () => {
       if (portForwardId) {
-        let cluster = '';
-        try {
-          const clusterValue = getCluster();
-          if (clusterValue !== null && clusterValue !== undefined) {
-            cluster = clusterValue;
-          }
-        } catch (clusterError) {
-          console.log('Could not get cluster for cleanup, using empty string');
-        }
+        const cluster = getClusterOrEmpty();
 
         stopOrDeletePortForward(cluster, portForwardId, true).catch(error => {
           console.error(`Cleanup: Failed to stop port forward:`, error);
