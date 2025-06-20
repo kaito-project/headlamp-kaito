@@ -407,7 +407,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       const localPort = String(10000 + Math.floor(Math.random() * 10000));
       const address = 'localhost';
 
-      const newPortForwardId = workspaceName && namespace;
+      const newPortForwardId = workspaceName + '/' + namespace;
 
       await startPortForward(
         cluster,
