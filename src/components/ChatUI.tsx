@@ -376,73 +376,58 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
     startPortForwardProcess();
   };
-  const startPortForwardProcess = () => {
+  const startPortForwardProcess = async () => {
     setIsPortForwardRunning(true);
     setPortForwardStatus('Starting port forward...');
     console.log('Port forwarding: starting...');
 
-    (async () => {
+    try {
+      let cluster = '';
       try {
-        let cluster = '';
-        try {
-          const clusterValue = getCluster();
-          if (clusterValue !== null && clusterValue !== undefined) {
-            cluster = clusterValue;
-          }
-        } catch (clusterError) {
-          console.log('Could not get cluster, using empty string');
+        const clusterValue = getCluster();
+        if (clusterValue !== null && clusterValue !== undefined) {
+          cluster = clusterValue;
         }
-
-        const serviceName = selectedModel.value;
-        const serviceNamespace = namespace;
-
-        const resolved = await resolvePodAndPort(serviceName, serviceNamespace);
-        if (!resolved) {
-          throw new Error(`Could not resolve pod or target port for ${serviceName}`);
-        }
-
-        const { podName, resolvedTargetPort } = resolved;
-        const localPort = String(10000 + Math.floor(Math.random() * 10000));
-        const address = 'localhost';
-
-        const newPortForwardId = workspaceName && namespace;
-
-        // log all args passed to startPortForward
-        console.log('startPortForward args:', {
-          cluster,
-          namespace,
-          podName,
-          resolvedTargetPort,
-          serviceName,
-          serviceNamespace,
-          localPort,
-          address,
-          newPortForwardId,
-        });
-
-        await startPortForward(
-          cluster,
-          namespace,
-          podName,
-          resolvedTargetPort,
-          serviceName,
-          serviceNamespace,
-          localPort,
-          address,
-          newPortForwardId
-        );
-        setBaseURL(`http://localhost:${localPort}/v1`);
-
-        setPortForwardId(newPortForwardId);
-        setPortForwardStatus(`Port forward running on localhost:${localPort}`);
-        console.log(`Port forwarding: running on localhost:${localPort}`);
-      } catch (error) {
-        console.error('Port forward error:', error);
-        setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
-        setIsPortForwardRunning(false);
-        setPortForwardId(null);
+      } catch (clusterError) {
+        console.log('Could not get cluster, using empty string');
       }
-    })();
+
+      const serviceName = selectedModel.value;
+      const serviceNamespace = namespace;
+
+      const resolved = await resolvePodAndPort(serviceName, serviceNamespace);
+      if (!resolved) {
+        throw new Error(`Could not resolve pod or target port for ${serviceName}`);
+      }
+
+      const { podName, resolvedTargetPort } = resolved;
+      const localPort = String(10000 + Math.floor(Math.random() * 10000));
+      const address = 'localhost';
+
+      const newPortForwardId = workspaceName && namespace;
+
+      await startPortForward(
+        cluster,
+        namespace,
+        podName,
+        resolvedTargetPort,
+        serviceName,
+        serviceNamespace,
+        localPort,
+        address,
+        newPortForwardId
+      );
+      setBaseURL(`http://localhost:${localPort}/v1`);
+
+      setPortForwardId(newPortForwardId);
+      setPortForwardStatus(`Port forward running on localhost:${localPort}`);
+      console.log(`Port forwarding: running on localhost:${localPort}`);
+    } catch (error) {
+      console.error('Port forward error:', error);
+      setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      setIsPortForwardRunning(false);
+      setPortForwardId(null);
+    }
   };
 
   const stopAIPortForward = () => {
