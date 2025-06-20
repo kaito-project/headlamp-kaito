@@ -192,20 +192,9 @@ async function resolvePodAndPort(serviceName: string, namespace: string) {
   }
 
   return {
-    podName: pod.metadata.name,
+    podName: pod?.metadata?.name,
     resolvedTargetPort: resolvedPort.toString(),
   };
-}
-async function getFirstMatchingService(namespace: string, labelSelector: string) {
-  const response = await request(
-    `/api/v1/namespaces/${namespace}/services?labelSelector=${labelSelector}`,
-    { method: 'GET' }
-  );
-
-  const services = response?.items || [];
-  if (services.length === 0) return null;
-
-  return services[0];
 }
 
 const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, workspaceName }) => {
