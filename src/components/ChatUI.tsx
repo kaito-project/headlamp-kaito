@@ -195,7 +195,6 @@ async function resolvePodAndPort(serviceName: string, namespace: string, workspa
   };
 }
 
-// Helper to get cluster name or empty string
 function getClusterOrEmpty() {
   try {
     const clusterValue = getCluster();
@@ -225,12 +224,36 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   const [portForwardStatus, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
-  const models = [
-    { title: 'workspace-phi-4-mini-instruct', value: 'workspace-phi-4-mini-instruct' },
-    { title: 'DeepSeek', value: 'deepseek' },
-  ];
-  const [selectedModel, setSelectedModel] = useState(models[0]);
+  const [models, setModels] = useState<{ title: string; value: string }[]>([]);
+  const [selectedModel, setSelectedModel] = useState<{ title: string; value: string } | null>(null);
+
   const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await request(`/api/v1/namespaces/${namespace}/services`);
+        const items = res?.items || [];
+        const modelOptions = items
+          .map((svc: any) => svc.metadata.name)
+          .filter((name: string) =>
+            /^(workspace-|deepseek|falcon|mistral|phi|llama|qwen)/i.test(name)
+          )
+          .map(name => ({
+            title: name,
+            value: name,
+          }));
+
+        setModels(modelOptions);
+        if (!selectedModel && modelOptions.length > 0) {
+          setSelectedModel(modelOptions[0]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch services for model list:', err);
+      }
+    };
+
+    fetchServices();
+  }, [namespace]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -395,6 +418,9 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     try {
       const cluster = getClusterOrEmpty();
 
+      if (!selectedModel) {
+        throw new Error('No model selected yet.');
+      }
       const serviceName = selectedModel.value;
       const serviceNamespace = namespace;
 
@@ -489,26 +515,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   };
 
   useEffect(() => {
-    const checkPortForwardStatus = async () => {
-      try {
-        startAIPortForward();
-      } catch (error) {
-        console.error('Error checking port forward status:', error);
-      }
-    };
-
-    checkPortForwardStatus();
-
-    return () => {
-      if (portForwardId) {
-        const cluster = getClusterOrEmpty();
-
-        stopOrDeletePortForward(cluster, portForwardId, true).catch(error => {
-          console.error(`Cleanup: Failed to stop port forward:`, error);
-        });
-      }
-    };
-  }, []);
+    if (selectedModel && !isPortForwardRunning && !portForwardId) {
+      startAIPortForward();
+    }
+  }, [selectedModel]);
 
   return (
     <ChatDialog
@@ -537,7 +547,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
             </Avatar>
             <Box>
               <Typography variant="h6" fontWeight="600" color="black">
-                Chat with {selectedModel.title}
+                Chat with {selectedModel?.title ?? 'Model'}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Box
@@ -748,37 +758,39 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
                 }}
               />
             </Box>
-            <Autocomplete
-              options={models}
-              getOptionLabel={opt => opt.title}
-              value={selectedModel}
-              onChange={(e, val) => setSelectedModel(val || models[0])}
-              sx={{
-                width: '150px',
-                '& .MuiInputBase-root': {
-                  color: '#000000',
-                  fontSize: '12px',
-                  height: '32px',
-                  backgroundColor: '#ffffff',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(0,0,0,0.2)',
-                },
-              }}
-              renderInput={params => (
-                <TextField
-                  {...params}
-                  label="Model"
-                  variant="outlined"
-                  sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#000000',
-                      fontSize: '12px',
-                    },
-                  }}
-                />
-              )}
-            />
+            <Tooltip title="Select a model">
+              <Autocomplete
+                options={models}
+                getOptionLabel={opt => opt.title}
+                value={selectedModel ?? null}
+                onChange={(e, val) => setSelectedModel(val)}
+                sx={{
+                  width: '150px',
+                  '& .MuiInputBase-root': {
+                    color: '#000000',
+                    fontSize: '12px',
+                    height: '32px',
+                    backgroundColor: '#ffffff',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(0,0,0,0.2)',
+                  },
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label="Model"
+                    variant="outlined"
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        color: '#000000',
+                        fontSize: '12px',
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Tooltip>
           </Stack>
         </InputContainer>
       </DialogContent>
