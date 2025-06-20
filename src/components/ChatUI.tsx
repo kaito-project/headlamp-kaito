@@ -273,10 +273,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    if (!isPortForwardRunning) {
-      await startAIPortForward();
-    }
-
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
