@@ -215,7 +215,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   const inputRef = useRef<HTMLDivElement>(null);
   const [models, setModels] = useState<{ title: string; value: string }[]>([]);
   const [selectedModel, setSelectedModel] = useState<{ title: string; value: string } | null>(null);
-
+  const [isPortReady, setIsPortReady] = useState(false);
   const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
   useEffect(() => {
     const fetchServices = async () => {
@@ -445,6 +445,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         newPortForwardId
       );
       setBaseURL(`http://localhost:${localPort}/v1`);
+      const res = await fetch(`http://localhost:${localPort}/v1/models`, { method: 'GET' });
+      if (res.ok) {
+        setIsPortReady(true);
+      }
 
       portForwardIdRef.current = newPortForwardId;
       setPortForwardStatus(`Port forward running on localhost:${localPort}`);
@@ -465,6 +469,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     }
 
     setPortForwardStatus('Stopping port forward...');
+    setIsPortReady(false);
     console.log('port forwarding stopped');
 
     setIsPortForwardRunning(false);
@@ -696,7 +701,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
                 }}
               />
             </StyledInputBox>
-            <SendButton onClick={handleSend} disabled={!input.trim() || isLoading}>
+            <SendButton onClick={handleSend} disabled={!input.trim() || isLoading || !isPortReady}>
               {isLoading ? <CircularProgress size={20} color="inherit" /> : '➤'}
             </SendButton>{' '}
           </Stack>{' '}
