@@ -307,7 +307,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       }));
       const openAICompatibleProvider = createOpenAICompatible({
         baseURL,
-        apiKey: 'placeholder-key',
+        apiKey: '',
         name: 'openai-compatible',
       });
 
