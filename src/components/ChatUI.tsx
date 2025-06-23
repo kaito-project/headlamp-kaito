@@ -162,37 +162,26 @@ interface ChatUIProps {
 }
 
 // fetch pod name and resolved target port dynamically
-async function resolvePodAndPort(serviceName: string, namespace: string, workspaceName: string) {
-  const service = await request(`/api/v1/namespaces/${namespace}/services/${serviceName}`);
-  const selector = service?.spec?.selector;
-  const targetPort = service?.spec?.ports?.[0]?.targetPort;
-
-  if (!selector || !targetPort) return null;
-
+async function resolvePodAndPort(namespace: string, workspaceName: string) {
   const labelSelector = `kaito.sh/workspace=${workspaceName}`;
-
   const podsResp = await request(
     `/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`
   );
   const pod = podsResp?.items?.[0];
   if (!pod) return null;
 
-  let resolvedPort = targetPort;
-  if (typeof targetPort === 'string' && isNaN(Number(targetPort))) {
-    const containers = pod.spec.containers || [];
-    for (const container of containers) {
-      const portObj = container.ports?.find((p: any) => p.name === targetPort);
-      if (portObj) {
-        resolvedPort = portObj.containerPort.toString();
-        break;
-      }
+  const containers = pod.spec.containers || [];
+  for (const container of containers) {
+    const portObj = container.ports?.[0];
+    if (portObj && portObj.containerPort) {
+      return {
+        podName: pod.metadata.name,
+        resolvedTargetPort: portObj.containerPort.toString(),
+      };
     }
   }
 
-  return {
-    podName: pod?.metadata?.name,
-    resolvedTargetPort: resolvedPort.toString(),
-  };
+  return null;
 }
 
 function getClusterOrEmpty() {
@@ -424,7 +413,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       const serviceName = selectedModel.value;
       const serviceNamespace = namespace;
 
-      const resolved = await resolvePodAndPort(serviceName, serviceNamespace, workspaceName);
+      const resolved = await resolvePodAndPort(namespace, workspaceName);
       if (!resolved) {
         throw new Error(`Could not resolve pod or target port for ${serviceName}`);
       }
