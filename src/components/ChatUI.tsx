@@ -209,7 +209,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
   const [isLoading, setIsLoading] = useState(false);
   const [isPortForwardRunning, setIsPortForwardRunning] = useState(false);
-  const [portForwardId, setPortForwardId] = useState<string | null>(null);
+  const portForwardIdRef = useRef<string | null>(null);
   const [portForwardStatus, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -398,7 +398,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   const startAIPortForward = () => {
     if (isPortForwardRunning) return;
 
-    if (portForwardId) {
+    if (portForwardIdRef.current) {
       (async () => {
         await stopAIPortForward();
         startPortForwardProcess();
@@ -446,19 +446,19 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       );
       setBaseURL(`http://localhost:${localPort}/v1`);
 
-      setPortForwardId(newPortForwardId);
+      portForwardIdRef.current = newPortForwardId;
       setPortForwardStatus(`Port forward running on localhost:${localPort}`);
     } catch (error) {
       console.error('Port forward error:', error);
       setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
       setIsPortForwardRunning(false);
-      setPortForwardId(null);
+      portForwardIdRef.current = null;
     }
   };
 
   const stopAIPortForward = () => {
-    const idToStop = portForwardId;
-    if (!portForwardId) {
+    const idToStop = portForwardIdRef.current;
+    if (!portForwardIdRef.current) {
       setIsPortForwardRunning(false);
       setPortForwardStatus('Port forward not running');
       return;
@@ -468,7 +468,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     console.log('port forwarding stopped');
 
     setIsPortForwardRunning(false);
-    setPortForwardId(null);
+    portForwardIdRef.current = null;
 
     const cluster = getClusterOrEmpty();
 
@@ -511,7 +511,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   };
 
   useEffect(() => {
-    if (selectedModel && !isPortForwardRunning && !portForwardId) {
+    if (selectedModel && !isPortForwardRunning && !portForwardIdRef.current) {
       startAIPortForward();
     }
   }, [selectedModel]);
