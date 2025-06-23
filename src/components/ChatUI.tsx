@@ -312,7 +312,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       });
 
       const { textStream } = await streamText({
-        model: openAICompatibleProvider.chatModel('phi-4-mini-instruct'),
+        model: openAICompatibleProvider.chatModel(selectedModel?.value),
         messages: conversationHistory,
         temperature: OPENAI_CONFIG.temperature,
         maxTokens: OPENAI_CONFIG.maxTokens,
