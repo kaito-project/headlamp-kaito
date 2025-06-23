@@ -227,10 +227,13 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
           .filter((name: string) =>
             /^(workspace-|deepseek|falcon|mistral|phi|llama|qwen)/i.test(name)
           )
-          .map(name => ({
-            title: name,
-            value: name,
-          }));
+          .map(fullName => {
+            const shortName = fullName.replace(/^workspace-/, ''); // strip "workspace-" prefix
+            return {
+              title: fullName,
+              value: shortName,
+            };
+          });
 
         setModels(modelOptions);
         if (!selectedModel && modelOptions.length > 0) {
@@ -306,6 +309,8 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         content: msg.content,
       }));
       const modelId = selectedModel?.value;
+      console.log('Selected model:', selectedModel?.value);
+
       if (!modelId) {
         throw new Error('No model selected.');
       }
