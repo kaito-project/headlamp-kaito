@@ -14,6 +14,7 @@ import {
   Tooltip,
   TextField,
   Autocomplete,
+  Button,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
@@ -21,12 +22,12 @@ import { streamText } from 'ai';
 import { OPENAI_CONFIG } from '../config/openai';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-
-const openAICompatibleProvider = createOpenAICompatible({
-  baseURL: OPENAI_CONFIG.baseURL,
-  apiKey: 'placeholder-key',
-  name: 'openai-compatible',
-});
+import {
+  request,
+  startPortForward,
+  stopOrDeletePortForward,
+} from '@kinvolk/headlamp-plugin/lib/ApiProxy';
+import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 
 interface Message {
   id: string;
@@ -156,27 +157,66 @@ const SendButton = styled(IconButton)(() => ({
 interface ChatUIProps {
   open?: boolean;
   onClose?: () => void;
+  namespace: string;
+  workspaceName?: string;
 }
 
-const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
+// fetch pod name and resolved target port dynamically
+async function resolvePodAndPort(namespace: string, workspaceName: string) {
+  const labelSelector = `kaito.sh/workspace=${workspaceName}`;
+  const podsResp = await request(
+    `/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`
+  );
+  const pod = podsResp?.items?.[0];
+  if (!pod) return null;
+
+  const containers = pod.spec.containers || [];
+  for (const container of containers) {
+    const portObj = container.ports?.[0];
+    if (portObj && portObj.containerPort) {
+      return {
+        podName: pod.metadata.name,
+        resolvedTargetPort: portObj.containerPort.toString(),
+      };
+    }
+  }
+
+  return null;
+}
+
+function getClusterOrEmpty() {
+  try {
+    const clusterValue = getCluster();
+    if (clusterValue !== null && clusterValue !== undefined) {
+      return clusterValue;
+    }
+  } catch (clusterError) {
+    console.log('Could not get cluster, using empty string');
+  }
+  return '';
+}
+
+const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, workspaceName }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Hello! I'm your AI assistant for Kubernetes and Kaito. How can I help you today?",
+      content: "Hello! I'm your AI assistant. How can I help you today?",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
+  const [isPortForwardRunning, setIsPortForwardRunning] = useState(false);
+  const portForwardIdRef = useRef<string | null>(null);
+  const [portForwardStatus, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
-  const models = [
-    { title: 'OpenAI', value: 'openai' },
-    { title: 'DeepSeek', value: 'deepseek' },
-  ];
-  const [selectedModel, setSelectedModel] = useState(models[0]);
-
+  const [models, setModels] = useState<{ title: string; value: string }[]>([]);
+  const [selectedModel, setSelectedModel] = useState<{ title: string; value: string } | null>(null);
+  const [isPortReady, setIsPortReady] = useState(false);
+  const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -238,9 +278,20 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       }));
+      const modelId = selectedModel?.value;
+      console.log('Selected model:', selectedModel?.value);
+
+      if (!modelId) {
+        throw new Error('No model selected.');
+      }
+      const openAICompatibleProvider = createOpenAICompatible({
+        baseURL,
+        apiKey: '',
+        name: 'openai-compatible',
+      });
 
       const { textStream } = await streamText({
-        model: openAICompatibleProvider.chatModel('phi-4-mini-instruct'),
+        model: openAICompatibleProvider.chatModel(modelId),
         messages: conversationHistory,
         temperature: OPENAI_CONFIG.temperature,
         maxTokens: OPENAI_CONFIG.maxTokens,
@@ -314,6 +365,136 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
       setIsLoading(false);
     }
   };
+  const startAIPortForward = () => {
+    if (isPortForwardRunning) return;
+
+    if (portForwardIdRef.current) {
+      (async () => {
+        await stopAIPortForward();
+        startPortForwardProcess();
+      })();
+      return;
+    }
+
+    startPortForwardProcess();
+  };
+  const startPortForwardProcess = async () => {
+    setIsPortForwardRunning(true);
+    setPortForwardStatus('Starting port forward...');
+
+    try {
+      const cluster = getClusterOrEmpty();
+      if (!workspaceName) {
+        throw new Error('Missing workspace name.');
+      }
+      const serviceName = workspaceName;
+      const serviceNamespace = namespace;
+
+      const resolved = await resolvePodAndPort(namespace, workspaceName);
+      if (!resolved) {
+        throw new Error(`Could not resolve pod or target port for ${serviceName}`);
+      }
+
+      const { podName, resolvedTargetPort } = resolved;
+      const localPort = String(10000 + Math.floor(Math.random() * 10000));
+      const address = 'localhost';
+
+      const newPortForwardId = workspaceName + '/' + namespace;
+      console.log(newPortForwardId, localPort);
+
+      await startPortForward(
+        cluster,
+        namespace,
+        podName,
+        resolvedTargetPort,
+        serviceName,
+        serviceNamespace,
+        localPort,
+        address,
+        newPortForwardId
+      );
+      setBaseURL(`http://localhost:${localPort}/v1`);
+      try {
+        const res = await fetch(`http://localhost:${localPort}/v1/models`);
+        if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data.data)) {
+          throw new Error('Unexpected /v1/models response format');
+        }
+
+        const modelOptions = data.data.map((model: { id: string }) => ({
+          title: model.id,
+          value: model.id,
+        }));
+
+        setModels(modelOptions);
+        if (modelOptions.length > 0) {
+          setSelectedModel(prev => prev ?? modelOptions[0]);
+        }
+
+        setIsPortReady(true);
+      } catch (err) {
+        console.error('Error fetching models from /v1/models:', err);
+        setPortForwardStatus(
+          `Error fetching models: ${err instanceof Error ? err.message : String(err)}`
+        );
+        setIsPortReady(false);
+      }
+
+      portForwardIdRef.current = newPortForwardId;
+      setPortForwardStatus(`Port forward running on localhost:${localPort}`);
+    } catch (error) {
+      console.error('Port forward error:', error);
+      setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      setIsPortForwardRunning(false);
+      portForwardIdRef.current = null;
+    }
+  };
+
+  const stopAIPortForward = () => {
+    const idToStop = portForwardIdRef.current;
+    if (!portForwardIdRef.current) {
+      setIsPortForwardRunning(false);
+      setPortForwardStatus('Port forward not running');
+      return;
+    }
+
+    setPortForwardStatus('Stopping port forward...');
+    setIsPortReady(false);
+    console.log('port forwarding stopped');
+
+    setIsPortForwardRunning(false);
+    portForwardIdRef.current = null;
+
+    const cluster = getClusterOrEmpty();
+
+    stopOrDeletePortForward(cluster, idToStop, true)
+      .then(() => {
+        setPortForwardStatus('Port forward stopped');
+
+        const stopMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: 'Port forwarding stopped successfully.',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, stopMessage]);
+      })
+      .catch(error => {
+        console.error(`Failed to stop port forward with ID ${idToStop}:`, error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        setPortForwardStatus(`Error stopping: ${errorMsg}`);
+
+        const errorMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `Failed to stop port forwarding: ${errorMsg}`,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      });
+  };
 
   const clearChat = () => {
     setMessages([
@@ -326,10 +507,22 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
     ]);
   };
 
+  useEffect(() => {
+    if (!open || isPortForwardRunning || portForwardIdRef.current) return;
+
+    const initiateChatBackend = async () => {
+      await startPortForwardProcess();
+    };
+    initiateChatBackend();
+  }, [open]);
+
   return (
     <ChatDialog
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        stopAIPortForward();
+        onClose?.();
+      }}
       maxWidth={false}
       PaperProps={{
         sx: { m: 2 },
@@ -350,7 +543,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
             </Avatar>
             <Box>
               <Typography variant="h6" fontWeight="600" color="black">
-                Chat with {selectedModel.title}
+                Chat with {selectedModel?.title ?? 'Model'}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Box
@@ -358,7 +551,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    bgcolor: '#10b981',
+                    bgcolor: isPortForwardRunning ? '#10b981' : '#f59e0b',
                     animation: 'pulse 2s infinite',
                     '@keyframes pulse': {
                       '0%, 100%': { opacity: 1 },
@@ -366,9 +559,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                     },
                   }}
                 />
-                <Typography variant="caption" color="black">
-                  Ready to help
-                </Typography>
               </Stack>
             </Box>
           </Stack>{' '}
@@ -381,7 +571,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
             {onClose && (
               <Tooltip title="Close chat">
                 <IconButton
-                  onClick={onClose}
+                  onClick={() => {
+                    stopAIPortForward();
+                    onClose();
+                  }}
                   size="small"
                   sx={{
                     color: '#ef4444',
@@ -408,7 +601,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
         <MessagesContainer>
           {messages.map(message => (
             <MessageBubble key={message.id} isUser={message.role === 'user'}>
-              {' '}
               <Avatar
                 sx={{
                   width: 32,
@@ -497,14 +689,14 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                   wordBreak: 'break-word',
                   minHeight: '20px',
                   '&:empty::before': {
-                    content: '"Ask about Kubernetes, Kaito AI, or anything else..."',
+                    content: '"Ask me a question..."',
                     color: '#64748b',
                     fontStyle: 'normal',
                   },
                 }}
               />
             </StyledInputBox>
-            <SendButton onClick={handleSend} disabled={!input.trim() || isLoading}>
+            <SendButton onClick={handleSend} disabled={!input.trim() || isLoading || !isPortReady}>
               {isLoading ? <CircularProgress size={20} color="inherit" /> : '➤'}
             </SendButton>{' '}
           </Stack>{' '}
@@ -563,37 +755,39 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose }) => {
                 }}
               />
             </Box>
-            <Autocomplete
-              options={models}
-              getOptionLabel={opt => opt.title}
-              value={selectedModel}
-              onChange={(e, val) => setSelectedModel(val || models[0])}
-              sx={{
-                width: '150px',
-                '& .MuiInputBase-root': {
-                  color: '#000000',
-                  fontSize: '12px',
-                  height: '32px',
-                  backgroundColor: '#ffffff',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'rgba(0,0,0,0.2)',
-                },
-              }}
-              renderInput={params => (
-                <TextField
-                  {...params}
-                  label="Model"
-                  variant="outlined"
-                  sx={{
-                    '& .MuiInputLabel-root': {
-                      color: '#000000',
-                      fontSize: '12px',
-                    },
-                  }}
-                />
-              )}
-            />
+            <Tooltip title="Select a model">
+              <Autocomplete
+                options={models}
+                getOptionLabel={opt => opt.title}
+                value={selectedModel ?? null}
+                onChange={(e, val) => setSelectedModel(val)}
+                sx={{
+                  width: '150px',
+                  '& .MuiInputBase-root': {
+                    color: '#000000',
+                    fontSize: '12px',
+                    height: '32px',
+                    backgroundColor: '#ffffff',
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(0,0,0,0.2)',
+                  },
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label="Model"
+                    variant="outlined"
+                    sx={{
+                      '& .MuiInputLabel-root': {
+                        color: '#000000',
+                        fontSize: '12px',
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Tooltip>
           </Stack>
         </InputContainer>
       </DialogContent>
@@ -629,11 +823,19 @@ const ChatFAB: React.FC<{ onClick: () => void }> = ({ onClick }) => {
 
 const ChatWithFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [portForwardAttempted, setPortForwardAttempted] = useState(false);
 
   return (
     <>
       <ChatFAB onClick={() => setOpen(true)} />
-      <ChatUI open={open} onClose={() => setOpen(false)} />
+      <ChatUI
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setPortForwardAttempted(true);
+        }}
+        namespace="default"
+      />
     </>
   );
 };

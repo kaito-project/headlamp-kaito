@@ -192,7 +192,14 @@ export function WorkspaceDetail() {
           ]
         }
       />
-      {chatOpen && <ChatUI open={chatOpen} onClose={handleCloseChat} />}
+      {chatOpen && (
+        <ChatUI
+          open={chatOpen}
+          onClose={handleCloseChat}
+          namespace={namespace}
+          workspaceName={name}
+        />
+      )}
     </>
   );
 }
