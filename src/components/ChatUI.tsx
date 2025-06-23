@@ -228,7 +228,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
             /^(workspace-|deepseek|falcon|mistral|phi|llama|qwen)/i.test(name)
           )
           .map(fullName => {
-            const shortName = fullName.replace(/^workspace-/, ''); // strip "workspace-" prefix
+            const shortName = fullName.replace(/^workspace-/, '');
             return {
               title: fullName,
               value: shortName,
