@@ -431,6 +431,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       const address = 'localhost';
 
       const newPortForwardId = workspaceName + '/' + namespace;
+      console.log(newPortForwardId, localPort);
 
       await startPortForward(
         cluster,
@@ -464,6 +465,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     }
 
     setPortForwardStatus('Stopping port forward...');
+    console.log('port forwarding stopped');
 
     setIsPortForwardRunning(false);
     setPortForwardId(null);
@@ -519,6 +521,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       open={open}
       onClose={() => {
         stopAIPortForward();
+        onClose?.();
       }}
       maxWidth={false}
       PaperProps={{
@@ -569,6 +572,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
               <Tooltip title="Close chat">
                 <IconButton
                   onClick={() => {
+                    stopAIPortForward();
                     onClose();
                   }}
                   size="small"
