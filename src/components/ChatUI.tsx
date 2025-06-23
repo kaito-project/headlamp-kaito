@@ -305,6 +305,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       }));
+      const modelId = selectedModel?.value;
+      if (!modelId) {
+        throw new Error('No model selected.');
+      }
       const openAICompatibleProvider = createOpenAICompatible({
         baseURL,
         apiKey: '',
@@ -312,7 +316,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       });
 
       const { textStream } = await streamText({
-        model: openAICompatibleProvider.chatModel('phi-4-mini-instruct'),
+        model: openAICompatibleProvider.chatModel(modelId),
         messages: conversationHistory,
         temperature: OPENAI_CONFIG.temperature,
         maxTokens: OPENAI_CONFIG.maxTokens,
