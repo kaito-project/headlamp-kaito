@@ -217,36 +217,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   const [selectedModel, setSelectedModel] = useState<{ title: string; value: string } | null>(null);
   const [isPortReady, setIsPortReady] = useState(false);
   const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await request(`/api/v1/namespaces/${namespace}/services`);
-        const items = res?.items || [];
-        const modelOptions = items
-          .map((svc: any) => svc.metadata.name)
-          .filter((name: string) =>
-            /^(workspace-|deepseek|falcon|mistral|phi|llama|qwen)/i.test(name)
-          )
-          .map(fullName => {
-            const shortName = fullName.replace(/^workspace-/, '');
-            return {
-              title: fullName,
-              value: shortName,
-            };
-          });
-
-        setModels(modelOptions);
-        if (!selectedModel && modelOptions.length > 0) {
-          setSelectedModel(modelOptions[0]);
-        }
-      } catch (err) {
-        console.error('Failed to fetch services for model list:', err);
-      }
-    };
-
-    fetchServices();
-  }, [namespace]);
-
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
@@ -414,11 +384,10 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
     try {
       const cluster = getClusterOrEmpty();
-
-      if (!selectedModel) {
-        throw new Error('No model selected yet.');
+      if (!workspaceName) {
+        throw new Error('Missing workspace name.');
       }
-      const serviceName = selectedModel.value;
+      const serviceName = workspaceName;
       const serviceNamespace = namespace;
 
       const resolved = await resolvePodAndPort(namespace, workspaceName);
@@ -445,9 +414,32 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         newPortForwardId
       );
       setBaseURL(`http://localhost:${localPort}/v1`);
-      const res = await fetch(`http://localhost:${localPort}/v1/models`, { method: 'GET' });
-      if (res.ok) {
+      try {
+        const res = await fetch(`http://localhost:${localPort}/v1/models`);
+        if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data.data)) {
+          throw new Error('Unexpected /v1/models response format');
+        }
+
+        const modelOptions = data.data.map((model: { id: string }) => ({
+          title: model.id,
+          value: model.id,
+        }));
+
+        setModels(modelOptions);
+        if (modelOptions.length > 0) {
+          setSelectedModel(prev => prev ?? modelOptions[0]);
+        }
+
         setIsPortReady(true);
+      } catch (err) {
+        console.error('Error fetching models from /v1/models:', err);
+        setPortForwardStatus(
+          `Error fetching models: ${err instanceof Error ? err.message : String(err)}`
+        );
+        setIsPortReady(false);
       }
 
       portForwardIdRef.current = newPortForwardId;
@@ -516,10 +508,13 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
   };
 
   useEffect(() => {
-    if (selectedModel && !isPortForwardRunning && !portForwardIdRef.current) {
-      startAIPortForward();
-    }
-  }, [selectedModel]);
+    if (!open || isPortForwardRunning || portForwardIdRef.current) return;
+
+    const initiateChatBackend = async () => {
+      await startPortForwardProcess();
+    };
+    initiateChatBackend();
+  }, [open]);
 
   return (
     <ChatDialog
