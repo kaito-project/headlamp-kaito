@@ -74,7 +74,7 @@ const KaitoChat: React.FC = () => {
 
       const cluster = getCluster() || '';
       const newPort = String(10000 + Math.floor(Math.random() * 10000));
-      const pfId = `${workspaceName}-${Date.now()}`;
+      const pfId = workspaceName + '/' + namespace;
 
       await startPortForward(
         cluster,
