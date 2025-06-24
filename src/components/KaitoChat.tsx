@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Autocomplete, TextField, Stack, Button, Dialog, DialogContent } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Autocomplete,
+  TextField,
+  Stack,
+  Button,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -156,11 +167,7 @@ const KaitoChat: React.FC = () => {
           />
         )}
         {selectedWorkspace && selectedModel && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleGoClick}
-          >
+          <Button variant="contained" color="primary" onClick={handleGoClick}>
             Go
           </Button>
         )}
@@ -169,7 +176,35 @@ const KaitoChat: React.FC = () => {
       {/* Dialog for chat functionality */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogContent>
-          <ChatUI workspaceName={selectedWorkspace?.label} modelName={selectedModel?.title} />
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              Chat
+            </Typography>
+            <Tooltip title="Close chat">
+              <IconButton
+                onClick={() => setDialogOpen(false)}
+                sx={{
+                  color: '#ef4444',
+                  fontSize: '18px',
+                  width: 32,
+                  height: 32,
+                  marginLeft: 'auto',
+                  '&:hover': {
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    color: '#dc2626',
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                ✕
+              </IconButton>
+            </Tooltip>
+          </Box>
+          <ChatUI
+            namespace={selectedWorkspace?.namespace}
+            workspaceName={selectedWorkspace?.label}
+          />
         </DialogContent>
       </Dialog>
     </Box>
