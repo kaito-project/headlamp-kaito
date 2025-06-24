@@ -1,16 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Typography,
-  Autocomplete,
-  TextField,
-  Stack,
-  Button,
-  Dialog,
-  DialogContent,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+import { Box, Typography, Autocomplete, TextField, Stack, Button } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -135,14 +124,8 @@ const KaitoChat: React.FC = () => {
     fetchModels();
   }, [localPort]);
 
-  const handleGoClick = () => {
-    setDialogOpen(true);
-  };
-
   return (
-    <Box
-      sx={{ width: '100vw', height: '100vh', background: theme.palette.background.default, p: 4 }}
-    >
+    <Box sx={{ width: '100%', height: '100%', background: theme.palette.background.default, p: 4 }}>
       <Stack direction="row" alignItems="center" spacing={2} mb={4}>
         <Typography variant="h5" fontWeight={600}>
           Chat with
@@ -166,34 +149,28 @@ const KaitoChat: React.FC = () => {
           />
         )}
         {selectedWorkspace && selectedModel && (
-          <Button variant="contained" color="primary" onClick={handleGoClick}>
+          <Button variant="contained" color="primary" onClick={() => setDialogOpen(true)}>
             Go
           </Button>
         )}
       </Stack>
 
-      <Dialog
-        open={dialogOpen}
-        onClose={() => {
-          setDialogOpen(false);
-          setSelectedWorkspace(null);
-          setSelectedModel(null);
-          setLocalPort(null);
-          setPortForwardId(null);
-        }}
-      >
-        <ChatUI
-          namespace={selectedWorkspace?.namespace}
-          workspaceName={selectedWorkspace?.label}
-          onClose={() => {
-            setDialogOpen(false);
-            setSelectedWorkspace(null);
-            setSelectedModel(null);
-            setLocalPort(null);
-            setPortForwardId(null);
-          }}
-        />
-      </Dialog>
+      {dialogOpen && selectedWorkspace && (
+        <Box sx={{ mt: 2 }}>
+          <ChatUI
+            embedded
+            namespace={selectedWorkspace.namespace}
+            workspaceName={selectedWorkspace.label}
+            onClose={() => {
+              setDialogOpen(false);
+              setSelectedWorkspace(null);
+              setSelectedModel(null);
+              setLocalPort(null);
+              setPortForwardId(null);
+            }}
+          />
+        </Box>
+      )}
     </Box>
   );
 };
