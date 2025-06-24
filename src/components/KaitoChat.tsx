@@ -111,7 +111,7 @@ const KaitoChat: React.FC = () => {
         stopOrDeletePortForward(cluster, portForwardId, true).catch(console.error);
       }
     };
-  }, [workspaceName]);
+  }, [workspaceName, portForwardId]);
 
   useEffect(() => {
     if (!localPort) return;
