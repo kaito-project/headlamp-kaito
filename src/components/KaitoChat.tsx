@@ -19,7 +19,7 @@ import {
   stopOrDeletePortForward,
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import ChatUI from './ChatUI'; // Adjust the import based on your file structure
+import ChatUI from './ChatUI';
 
 interface ModelOption {
   title: string;
@@ -106,7 +106,6 @@ const KaitoChat: React.FC = () => {
     startForward();
 
     return () => {
-      // Stop port forward on unmount
       if (portForwardId) {
         const cluster = getCluster() || '';
         stopOrDeletePortForward(cluster, portForwardId, true).catch(console.error);
@@ -173,7 +172,6 @@ const KaitoChat: React.FC = () => {
         )}
       </Stack>
 
-      {/* Dialog for chat functionality */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogContent>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
