@@ -27,7 +27,14 @@ import {
   startPortForward,
   stopOrDeletePortForward,
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+import { useTheme } from '@mui/material/styles';
+import {
+  resolvePodAndPort,
+  startWorkspacePortForward,
+  stopWorkspacePortForward,
+  fetchModelsWithRetry,
+  getClusterOrEmpty,
+} from './chatUtils';
 
 interface Message {
   id: string;
@@ -159,44 +166,18 @@ interface ChatUIProps {
   onClose?: () => void;
   namespace: string;
   workspaceName?: string;
+  theme?: any;
 }
 
-// fetch pod name and resolved target port dynamically
-async function resolvePodAndPort(namespace: string, workspaceName: string) {
-  const labelSelector = `kaito.sh/workspace=${workspaceName}`;
-  const podsResp = await request(
-    `/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`
-  );
-  const pod = podsResp?.items?.[0];
-  if (!pod) return null;
-
-  const containers = pod.spec.containers || [];
-  for (const container of containers) {
-    const portObj = container.ports?.[0];
-    if (portObj && portObj.containerPort) {
-      return {
-        podName: pod.metadata.name,
-        resolvedTargetPort: portObj.containerPort.toString(),
-      };
-    }
-  }
-
-  return null;
-}
-
-function getClusterOrEmpty() {
-  try {
-    const clusterValue = getCluster();
-    if (clusterValue !== null && clusterValue !== undefined) {
-      return clusterValue;
-    }
-  } catch (clusterError) {
-    console.log('Could not get cluster, using empty string');
-  }
-  return '';
-}
-
-const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, workspaceName }) => {
+const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
+  open = true,
+  onClose,
+  namespace,
+  workspaceName,
+  embedded = false,
+  theme: themeProp,
+}) => {
+  const theme = themeProp || useTheme();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -365,74 +346,41 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
       setIsLoading(false);
     }
   };
-  const startAIPortForward = () => {
-    if (isPortForwardRunning) return;
 
-    if (portForwardIdRef.current) {
-      (async () => {
-        await stopAIPortForward();
-        startPortForwardProcess();
-      })();
-      return;
-    }
-
-    startPortForwardProcess();
-  };
   const startPortForwardProcess = async () => {
     setIsPortForwardRunning(true);
     setPortForwardStatus('Starting port forward...');
 
     try {
-      const cluster = getClusterOrEmpty();
       if (!workspaceName) {
         throw new Error('Missing workspace name.');
       }
-      const serviceName = workspaceName;
-      const serviceNamespace = namespace;
 
       const resolved = await resolvePodAndPort(namespace, workspaceName);
       if (!resolved) {
-        throw new Error(`Could not resolve pod or target port for ${serviceName}`);
+        throw new Error(`Could not resolve pod or target port for ${workspaceName}`);
       }
 
-      const { podName, resolvedTargetPort } = resolved;
+      const { podName, targetPort } = resolved;
       const localPort = String(10000 + Math.floor(Math.random() * 10000));
-      const address = 'localhost';
-
       const newPortForwardId = workspaceName + '/' + namespace;
-      console.log(newPortForwardId, localPort);
 
-      await startPortForward(
-        cluster,
+      await startWorkspacePortForward({
         namespace,
+        workspaceName,
         podName,
-        resolvedTargetPort,
-        serviceName,
-        serviceNamespace,
+        targetPort,
         localPort,
-        address,
-        newPortForwardId
-      );
+        portForwardId: newPortForwardId,
+      });
+
       setBaseURL(`http://localhost:${localPort}/v1`);
       try {
-        const res = await fetch(`http://localhost:${localPort}/v1/models`);
-        if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`);
-        const data = await res.json();
-
-        if (!Array.isArray(data.data)) {
-          throw new Error('Unexpected /v1/models response format');
-        }
-
-        const modelOptions = data.data.map((model: { id: string }) => ({
-          title: model.id,
-          value: model.id,
-        }));
-
+        const modelOptions = await fetchModelsWithRetry(localPort);
         setModels(modelOptions);
         if (modelOptions.length > 0) {
           setSelectedModel(prev => prev ?? modelOptions[0]);
         }
-
         setIsPortReady(true);
       } catch (err) {
         console.error('Error fetching models from /v1/models:', err);
@@ -454,7 +402,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
   const stopAIPortForward = () => {
     const idToStop = portForwardIdRef.current;
-    if (!portForwardIdRef.current) {
+    if (!idToStop) {
       setIsPortForwardRunning(false);
       setPortForwardStatus('Port forward not running');
       return;
@@ -462,17 +410,12 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
 
     setPortForwardStatus('Stopping port forward...');
     setIsPortReady(false);
-    console.log('port forwarding stopped');
-
     setIsPortForwardRunning(false);
     portForwardIdRef.current = null;
 
-    const cluster = getClusterOrEmpty();
-
-    stopOrDeletePortForward(cluster, idToStop, true)
+    stopWorkspacePortForward(idToStop)
       .then(() => {
         setPortForwardStatus('Port forward stopped');
-
         const stopMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
@@ -485,7 +428,6 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
         console.error(`Failed to stop port forward with ID ${idToStop}:`, error);
         const errorMsg = error instanceof Error ? error.message : String(error);
         setPortForwardStatus(`Error stopping: ${errorMsg}`);
-
         const errorMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
@@ -516,19 +458,299 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
     initiateChatBackend();
   }, [open]);
 
+  const renderChatContent = (
+    messages: Message[],
+    messagesEndRef: React.RefObject<HTMLDivElement>,
+    inputRef: React.RefObject<HTMLDivElement>,
+    input: string,
+    handleInputChange: (e: React.FormEvent<HTMLDivElement>) => void,
+    handleKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void,
+    handleSend: () => void,
+    handleChipClick: (text: string) => void,
+    clearChat: () => void,
+    theme: any,
+    isLoading: boolean,
+    isPortReady: boolean,
+    models: { title: string; value: string }[],
+    selectedModel: { title: string; value: string } | null,
+    setSelectedModel: React.Dispatch<React.SetStateAction<{ title: string; value: string } | null>>
+  ) => (
+    <>
+      <MessagesContainer>
+        {messages.map(message => (
+          <MessageBubble key={message.id} isUser={message.role === 'user'}>
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 'bold',
+              }}
+            >
+              {message.role === 'user' ? '' : '🤖'}
+            </Avatar>
+            <MessageContent isUser={message.role === 'user'}>
+              <Box
+                sx={{
+                  lineHeight: 1.6,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  color: 'inherit',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  '& p': { margin: 0, padding: 0 },
+                  '& strong': { fontWeight: 600 },
+                  '& em': { fontStyle: 'italic' },
+                  '& code': {
+                    backgroundColor:
+                      message.role === 'user' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.05)',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    fontFamily: 'monospace',
+                  },
+                }}
+              >
+                <ReactMarkdown>{message.content}</ReactMarkdown>
+                {message.isLoading && (
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: '2px',
+                      height: '18px',
+                      backgroundColor: message.role === 'user' ? '#ffffff' : '#64748b',
+                      marginLeft: '2px',
+                      animation: 'blink 1s infinite',
+                    }}
+                  />
+                )}
+              </Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  display: 'block',
+                  mt: 1,
+                  opacity: 0.8,
+                  fontSize: '11px',
+                  color: 'inherit',
+                }}
+              >
+                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Typography>
+            </MessageContent>
+          </MessageBubble>
+        ))}
+        <div ref={messagesEndRef} />
+      </MessagesContainer>
+      <InputContainer
+        sx={{
+          background: theme.palette.background.default,
+          color: theme.palette.primary.main,
+        }}
+      >
+        <Stack direction="row" spacing={2} alignItems="flex-end" width="100%">
+          <StyledInputBox
+            onClick={() => inputRef.current?.focus()}
+            sx={{
+              flex: 1,
+              backgroundColor: theme.palette.background.default,
+              color: theme.palette.primary.main,
+              border: `2px solid ${theme.palette.divider}`,
+            }}
+          >
+            <Typography
+              ref={inputRef}
+              component="div"
+              contentEditable
+              suppressContentEditableWarning
+              onInput={handleInputChange}
+              onKeyDown={handleKeyDown}
+              sx={{
+                flex: 1,
+                fontSize: '16px',
+                fontWeight: 400,
+                lineHeight: 1.5,
+                color: input.trim() ? theme.palette.primary.main : theme.palette.text.secondary,
+                outline: 'none',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                minHeight: '20px',
+                '&:empty::before': {
+                  content: '"Ask me a question..."',
+                  color: theme.palette.text.secondary,
+                  fontStyle: 'normal',
+                },
+              }}
+            />
+          </StyledInputBox>
+          <SendButton onClick={handleSend} disabled={!input.trim() || isLoading || !isPortReady}>
+            {isLoading ? <CircularProgress size={20} color="inherit" /> : '➤'}
+          </SendButton>
+        </Stack>
+        <Stack
+          direction="row"
+          spacing={1}
+          mt={2}
+          flexWrap="wrap"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Box display="flex" flexWrap="wrap" gap={1} color={theme.palette.primary.main}>
+            <Chip
+              label="What can you do?"
+              size="small"
+              variant="outlined"
+              onClick={() => handleChipClick('What can you help me with?')}
+              sx={{
+                color: theme.palette.primary.main,
+                borderColor: theme.palette.divider,
+              }}
+            />
+            <Chip
+              label="Deploy an app"
+              size="small"
+              variant="outlined"
+              onClick={() => handleChipClick('How do I deploy an application?')}
+              sx={{
+                color: theme.palette.primary.main,
+                borderColor: theme.palette.divider,
+              }}
+            />
+            <Chip
+              label="Troubleshoot issues"
+              size="small"
+              variant="outlined"
+              onClick={() => handleChipClick('Can you help me troubleshoot a problem?')}
+              sx={{
+                color: theme.palette.primary.main,
+                borderColor: theme.palette.divider,
+              }}
+            />
+          </Box>
+          <Tooltip title="Select a model">
+            <Autocomplete
+              options={models}
+              getOptionLabel={opt => opt.title}
+              value={selectedModel ?? null}
+              onChange={(e, val) => {
+                if (val) {
+                  setSelectedModel(val);
+                }
+              }}
+              sx={{
+                width: '150px',
+                '& .MuiInputBase-root': {
+                  height: '32px',
+                  color: theme.palette.primary.main,
+                  backgroundColor: theme.palette.background.default,
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: theme.palette.divider,
+                },
+              }}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  label="Model"
+                  variant="outlined"
+                  sx={{
+                    '& .MuiInputLabel-root': {
+                      fontSize: '12px',
+                      color: theme.palette.primary.main,
+                    },
+                  }}
+                />
+              )}
+            />
+          </Tooltip>
+        </Stack>
+      </InputContainer>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          background: theme.palette.background.default,
+        }}
+      >
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            p: 1,
+            pb: 0,
+          }}
+        >
+          <IconButton
+            onClick={() => {
+              stopAIPortForward();
+              onClose?.();
+            }}
+            size="small"
+            sx={{
+              color: theme.palette.error.main,
+              fontSize: '18px',
+              width: 32,
+              height: 32,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+                color: theme.palette.error.dark,
+                transform: 'scale(1.1)',
+              },
+              transition: 'all 0.2s ease',
+            }}
+            aria-label="Close chat"
+          >
+            ✕
+          </IconButton>
+        </Box>
+        <Box sx={{ flex: 1, overflowY: 'auto' }}>
+          {renderChatContent(
+            messages,
+            messagesEndRef,
+            inputRef,
+            input,
+            handleInputChange,
+            handleKeyDown,
+            handleSend,
+            handleChipClick,
+            clearChat,
+            theme,
+            isLoading,
+            isPortReady,
+            models,
+            selectedModel,
+            setSelectedModel
+          )}
+        </Box>
+      </Box>
+    );
+  }
   return (
     <ChatDialog
       open={open}
       onClose={() => {
         stopAIPortForward();
-        onClose?.();
+        if (onClose) onClose();
       }}
       maxWidth={false}
       PaperProps={{
-        sx: { m: 2 },
+        sx: { m: 2, background: theme.palette.background.paper },
       }}
     >
-      <ChatHeader>
+      <ChatHeader sx={{ background: theme.palette.background.default }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
           <Stack direction="row" alignItems="center" spacing={2}>
             {' '}
@@ -542,7 +764,7 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
               🤖
             </Avatar>
             <Box>
-              <Typography variant="h6" fontWeight="600" color="black">
+              <Typography variant="h6" fontWeight="600" color={theme.palette.text.primary}>
                 Chat with {selectedModel?.title ?? 'Model'}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
@@ -567,229 +789,60 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
               <IconButton onClick={clearChat} size="small">
                 🗑️
               </IconButton>
-            </Tooltip>{' '}
-            {onClose && (
-              <Tooltip title="Close chat">
-                <IconButton
-                  onClick={() => {
-                    stopAIPortForward();
-                    onClose();
-                  }}
-                  size="small"
-                  sx={{
-                    color: '#ef4444',
-                    fontSize: '18px',
-                    width: 32,
-                    height: 32,
-                    '&:hover': {
-                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                      color: '#dc2626',
-                      transform: 'scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  ✕
-                </IconButton>
-              </Tooltip>
-            )}
+            </Tooltip>
+            <Tooltip title="Close chat">
+              <IconButton
+                onClick={() => {
+                  stopAIPortForward();
+                  onClose?.();
+                }}
+                size="small"
+                sx={{
+                  color: '#ef4444',
+                  fontSize: '18px',
+                  width: 32,
+                  height: 32,
+                  '&:hover': {
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    color: '#dc2626',
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                ✕
+              </IconButton>
+            </Tooltip>
           </Stack>
         </Stack>
       </ChatHeader>
 
-      <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <MessagesContainer>
-          {messages.map(message => (
-            <MessageBubble key={message.id} isUser={message.role === 'user'}>
-              <Avatar
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                }}
-              >
-                {message.role === 'user' ? '👤' : '🤖'}
-              </Avatar>{' '}
-              <MessageContent isUser={message.role === 'user'}>
-                {' '}
-                <Box
-                  sx={{
-                    lineHeight: 1.6,
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    color: 'inherit',
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    '& p': { margin: 0, padding: 0 },
-                    '& strong': { fontWeight: 600 },
-                    '& em': { fontStyle: 'italic' },
-                    '& code': {
-                      backgroundColor:
-                        message.role === 'user'
-                          ? 'rgba(255, 255, 255, 0.2)'
-                          : 'rgba(0, 0, 0, 0.05)',
-                      padding: '2px 4px',
-                      borderRadius: '4px',
-                      fontFamily: 'monospace',
-                    },
-                  }}
-                >
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
-                  {message.isLoading && (
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        width: '2px',
-                        height: '18px',
-                        backgroundColor: message.role === 'user' ? '#ffffff' : '#64748b',
-                        marginLeft: '2px',
-                        animation: 'blink 1s infinite',
-                      }}
-                    />
-                  )}
-                </Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: 'block',
-                    mt: 1,
-                    opacity: 0.8,
-                    fontSize: '11px',
-                    color: 'inherit',
-                  }}
-                >
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Typography>
-              </MessageContent>
-            </MessageBubble>
-          ))}{' '}
-          <div ref={messagesEndRef} />
-        </MessagesContainer>{' '}
-        <InputContainer>
-          <Stack direction="row" spacing={2} alignItems="flex-end" width="100%">
-            <StyledInputBox onClick={() => inputRef.current?.focus()} sx={{ flex: 1 }}>
-              <Typography
-                ref={inputRef}
-                component="div"
-                contentEditable
-                suppressContentEditableWarning
-                onInput={handleInputChange}
-                onKeyDown={handleKeyDown}
-                sx={{
-                  flex: 1,
-                  fontSize: '16px',
-                  fontWeight: 400,
-                  lineHeight: 1.5,
-                  color: input.trim() ? '#1e293b' : '#64748b',
-                  outline: 'none',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  minHeight: '20px',
-                  '&:empty::before': {
-                    content: '"Ask me a question..."',
-                    color: '#64748b',
-                    fontStyle: 'normal',
-                  },
-                }}
-              />
-            </StyledInputBox>
-            <SendButton onClick={handleSend} disabled={!input.trim() || isLoading || !isPortReady}>
-              {isLoading ? <CircularProgress size={20} color="inherit" /> : '➤'}
-            </SendButton>{' '}
-          </Stack>{' '}
-          <Stack
-            direction="row"
-            spacing={1}
-            mt={2}
-            flexWrap="wrap"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Box display="flex" flexWrap="wrap" gap={1}>
-              <Chip
-                label="What can you do?"
-                size="small"
-                variant="outlined"
-                onClick={() => handleChipClick('What can you help me with?')}
-                sx={{
-                  fontSize: '12px',
-                  color: '#374151',
-                  borderColor: 'rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  },
-                }}
-              />{' '}
-              <Chip
-                label="Deploy an app"
-                size="small"
-                variant="outlined"
-                onClick={() => handleChipClick('How do I deploy an application?')}
-                sx={{
-                  fontSize: '12px',
-                  color: '#374151',
-                  borderColor: 'rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  },
-                }}
-              />{' '}
-              <Chip
-                label="Troubleshoot issues"
-                size="small"
-                variant="outlined"
-                onClick={() => handleChipClick('Can you help me troubleshoot a problem?')}
-                sx={{
-                  fontSize: '12px',
-                  color: '#374151',
-                  borderColor: 'rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  },
-                }}
-              />
-            </Box>
-            <Tooltip title="Select a model">
-              <Autocomplete
-                options={models}
-                getOptionLabel={opt => opt.title}
-                value={selectedModel ?? null}
-                onChange={(e, val) => setSelectedModel(val)}
-                sx={{
-                  width: '150px',
-                  '& .MuiInputBase-root': {
-                    color: '#000000',
-                    fontSize: '12px',
-                    height: '32px',
-                    backgroundColor: '#ffffff',
-                  },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(0,0,0,0.2)',
-                  },
-                }}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    label="Model"
-                    variant="outlined"
-                    sx={{
-                      '& .MuiInputLabel-root': {
-                        color: '#000000',
-                        fontSize: '12px',
-                      },
-                    }}
-                  />
-                )}
-              />
-            </Tooltip>
-          </Stack>
-        </InputContainer>
+      <DialogContent
+        sx={{
+          p: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          background: theme.palette.background.default,
+        }}
+      >
+        {renderChatContent(
+          messages,
+          messagesEndRef,
+          inputRef,
+          input,
+          handleInputChange,
+          handleKeyDown,
+          handleSend,
+          handleChipClick,
+          clearChat,
+          theme,
+          isLoading,
+          isPortReady,
+          models,
+          selectedModel,
+          setSelectedModel
+        )}
       </DialogContent>
     </ChatDialog>
   );
