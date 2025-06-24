@@ -172,8 +172,27 @@ const KaitoChat: React.FC = () => {
         )}
       </Stack>
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <ChatUI namespace={selectedWorkspace?.namespace} workspaceName={selectedWorkspace?.label} />
+      <Dialog
+        open={dialogOpen}
+        onClose={() => {
+          setDialogOpen(false);
+          setSelectedWorkspace(null);
+          setSelectedModel(null);
+          setLocalPort(null);
+          setPortForwardId(null);
+        }}
+      >
+        <ChatUI
+          namespace={selectedWorkspace?.namespace}
+          workspaceName={selectedWorkspace?.label}
+          onClose={() => {
+            setDialogOpen(false);
+            setSelectedWorkspace(null);
+            setSelectedModel(null);
+            setLocalPort(null);
+            setPortForwardId(null);
+          }}
+        />
       </Dialog>
     </Box>
   );
