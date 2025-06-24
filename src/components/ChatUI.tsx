@@ -575,7 +575,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                     fontWeight: 'bold',
                   }}
                 >
-                  {message.role === 'user' ? '👤' : '🤖'}
+                  {message.role === 'user' ? '' : '🤖'}
                 </Avatar>
                 <MessageContent isUser={message.role === 'user'}>
                   <Box
@@ -812,7 +812,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   fontWeight: 'bold',
                 }}
               >
-                {message.role === 'user' ? '👤' : '🤖'}
+                {message.role === 'user' ? '' : '🤖'}
               </Avatar>{' '}
               <MessageContent isUser={message.role === 'user'}>
                 {' '}
