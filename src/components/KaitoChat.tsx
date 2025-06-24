@@ -21,12 +21,36 @@ const KaitoChat: React.FC = () => {
     workspaceName?: string;
     namespace?: string;
   };
-  const { workspaceName, namespace = 'default' } = state;
 
   const [models, setModels] = useState<ModelOption[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelOption | null>(null);
   const [localPort, setLocalPort] = useState<string | null>(null);
   const [portForwardId, setPortForwardId] = useState<string | null>(null);
+  const [workspaceOptions, setWorkspaceOptions] = useState<{ label: string; namespace: string }[]>(
+    []
+  );
+  const [selectedWorkspace, setSelectedWorkspace] = useState<{
+    label: string;
+    namespace: string;
+  } | null>(null);
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const response = await request('/apis/kaito.sh/v1beta1/workspaces');
+        const options = (response.items || []).map((item: any) => ({
+          label: item.metadata.name,
+          namespace: item.metadata.namespace,
+        }));
+        setWorkspaceOptions(options);
+      } catch (err) {
+        console.error('Failed to fetch workspaces:', err);
+      }
+    };
+
+    fetchWorkspaces();
+  }, []);
+  const workspaceName = selectedWorkspace?.label;
+  const namespace = selectedWorkspace?.namespace || 'default';
 
   useEffect(() => {
     const resolvePodAndPort = async () => {
@@ -103,23 +127,28 @@ const KaitoChat: React.FC = () => {
       sx={{ width: '100vw', height: '100vh', background: theme.palette.background.default, p: 4 }}
     >
       <Stack direction="row" alignItems="center" spacing={2} mb={4}>
-        <Typography variant="h5" fontWeight={600} color={theme.palette.text.primary}>
+        <Typography variant="h5" fontWeight={600}>
           Chat with
         </Typography>
         <Autocomplete
-          options={models}
-          getOptionLabel={opt => opt.title}
-          value={selectedModel}
-          onChange={(_, val) => setSelectedModel(val)}
-          sx={{
-            width: 220,
-            background: theme.palette.background.paper,
-            color: theme.palette.text.primary,
-          }}
-          renderInput={params => <TextField {...params} label="Model" variant="outlined" />}
+          options={workspaceOptions}
+          getOptionLabel={opt => opt.label}
+          value={selectedWorkspace}
+          onChange={(_, val) => setSelectedWorkspace(val)}
+          sx={{ width: 250 }}
+          renderInput={params => <TextField {...params} label="Workspace" />}
         />
+        {selectedWorkspace && (
+          <Autocomplete
+            options={models}
+            getOptionLabel={opt => opt.title}
+            value={selectedModel}
+            onChange={(_, val) => setSelectedModel(val)}
+            sx={{ width: 250 }}
+            renderInput={params => <TextField {...params} label="Model" />}
+          />
+        )}
       </Stack>
-      {/* Add chat UI here if needed */}
     </Box>
   );
 };
