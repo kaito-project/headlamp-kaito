@@ -541,6 +541,39 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           background: theme.palette.background.default,
         }}
       >
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            p: 1,
+            pb: 0,
+          }}
+        >
+          <IconButton
+            onClick={() => {
+              stopAIPortForward();
+              onClose?.();
+            }}
+            size="small"
+            sx={{
+              color: theme.palette.error.main,
+              fontSize: '18px',
+              width: 32,
+              height: 32,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+                color: theme.palette.error.dark,
+                transform: 'scale(1.1)',
+              },
+              transition: 'all 0.2s ease',
+            }}
+            aria-label="Close chat"
+          >
+            ✕
+          </IconButton>
+        </Box>
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
           <MessagesContainer>
             {messages.map(message => (
