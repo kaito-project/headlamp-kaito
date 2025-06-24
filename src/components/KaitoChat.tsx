@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Autocomplete, TextField, Stack } from '@mui/material';
+import { Box, Typography, Autocomplete, TextField, Stack, Button, Dialog, DialogContent } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -8,6 +8,7 @@ import {
   stopOrDeletePortForward,
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+import ChatUI from './ChatUI'; // Adjust the import based on your file structure
 
 interface ModelOption {
   title: string;
@@ -33,6 +34,8 @@ const KaitoChat: React.FC = () => {
     label: string;
     namespace: string;
   } | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
@@ -122,6 +125,10 @@ const KaitoChat: React.FC = () => {
     fetchModels();
   }, [localPort]);
 
+  const handleGoClick = () => {
+    setDialogOpen(true);
+  };
+
   return (
     <Box
       sx={{ width: '100vw', height: '100vh', background: theme.palette.background.default, p: 4 }}
@@ -148,7 +155,23 @@ const KaitoChat: React.FC = () => {
             renderInput={params => <TextField {...params} label="Model" />}
           />
         )}
+        {selectedWorkspace && selectedModel && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleGoClick}
+          >
+            Go
+          </Button>
+        )}
       </Stack>
+
+      {/* Dialog for chat functionality */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogContent>
+          <ChatUI workspaceName={selectedWorkspace?.label} modelName={selectedModel?.title} />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
