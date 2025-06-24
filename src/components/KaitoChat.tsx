@@ -137,7 +137,7 @@ const KaitoChat: React.FC = () => {
         flexDirection: 'column',
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={2} mb={4}>
+      <Stack direction="row" alignItems="center" spacing={2} mb={4} sx={{ flexShrink: 0 }}>
         <Typography
           variant="h5"
           fontWeight={600}
@@ -172,34 +172,35 @@ const KaitoChat: React.FC = () => {
         )}
       </Stack>
 
-      {dialogOpen && selectedWorkspace && (
-        <Box
-          sx={{
-            flex: 1,
-            minHeight: 0,
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            pb: '80px',
-          }}
-        >
-          <ChatUI
-            embedded
-            namespace={selectedWorkspace.namespace}
-            workspaceName={selectedWorkspace.label}
-            onClose={() => {
-              setDialogOpen(false);
-              setSelectedWorkspace(null);
-              setSelectedModel(null);
-              setLocalPort(null);
-              setPortForwardId(null);
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {dialogOpen && selectedWorkspace && (
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
             }}
-            promptBarColor={theme.palette.background.default}
-            promptBarTextColor={theme.palette.text.primary}
-            theme={theme}
-          />
-        </Box>
-      )}
+          >
+            <ChatUI
+              embedded
+              namespace={selectedWorkspace.namespace}
+              workspaceName={selectedWorkspace.label}
+              onClose={() => {
+                setDialogOpen(false);
+                setSelectedWorkspace(null);
+                setSelectedModel(null);
+                setLocalPort(null);
+                setPortForwardId(null);
+              }}
+              promptBarColor={theme.palette.background.default}
+              promptBarTextColor={theme.palette.text.primary}
+              theme={theme}
+            />
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 };
