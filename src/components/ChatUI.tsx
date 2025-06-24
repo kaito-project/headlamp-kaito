@@ -567,32 +567,30 @@ const ChatUI: React.FC<ChatUIProps> = ({ open = true, onClose, namespace, worksp
               <IconButton onClick={clearChat} size="small">
                 🗑️
               </IconButton>
-            </Tooltip>{' '}
-            {onClose && (
-              <Tooltip title="Close chat">
-                <IconButton
-                  onClick={() => {
-                    stopAIPortForward();
-                    onClose();
-                  }}
-                  size="small"
-                  sx={{
-                    color: '#ef4444',
-                    fontSize: '18px',
-                    width: 32,
-                    height: 32,
-                    '&:hover': {
-                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                      color: '#dc2626',
-                      transform: 'scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  ✕
-                </IconButton>
-              </Tooltip>
-            )}
+            </Tooltip>
+            <Tooltip title="Close chat">
+              <IconButton
+                onClick={() => {
+                  stopAIPortForward();
+                  onClose?.();
+                }}
+                size="small"
+                sx={{
+                  color: '#ef4444',
+                  fontSize: '18px',
+                  width: 32,
+                  height: 32,
+                  '&:hover': {
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    color: '#dc2626',
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                ✕
+              </IconButton>
+            </Tooltip>
           </Stack>
         </Stack>
       </ChatHeader>

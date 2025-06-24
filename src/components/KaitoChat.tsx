@@ -173,37 +173,7 @@ const KaitoChat: React.FC = () => {
       </Stack>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6" sx={{ flexGrow: 1 }}>
-              Chat
-            </Typography>
-            <Tooltip title="Close chat">
-              <IconButton
-                onClick={() => setDialogOpen(false)}
-                sx={{
-                  color: '#ef4444',
-                  fontSize: '18px',
-                  width: 32,
-                  height: 32,
-                  marginLeft: 'auto',
-                  '&:hover': {
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    color: '#dc2626',
-                    transform: 'scale(1.1)',
-                  },
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                ✕
-              </IconButton>
-            </Tooltip>
-          </Box>
-          <ChatUI
-            namespace={selectedWorkspace?.namespace}
-            workspaceName={selectedWorkspace?.label}
-          />
-        </DialogContent>
+        <ChatUI namespace={selectedWorkspace?.namespace} workspaceName={selectedWorkspace?.label} />
       </Dialog>
     </Box>
   );
