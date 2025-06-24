@@ -125,7 +125,18 @@ const KaitoChat: React.FC = () => {
   }, [localPort]);
 
   return (
-    <Box sx={{ width: '100%', height: '100%', background: theme.palette.background.default, p: 4 }}>
+    <Box
+      sx={{
+        width: '100%',
+        height: '100vh',
+        minHeight: '100vh',
+        position: 'relative',
+        background: theme.palette.background.default,
+        p: 4,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Stack direction="row" alignItems="center" spacing={2} mb={4}>
         <Typography
           variant="h5"
@@ -162,7 +173,16 @@ const KaitoChat: React.FC = () => {
       </Stack>
 
       {dialogOpen && selectedWorkspace && (
-        <Box sx={{ mt: 2 }}>
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            pb: '80px',
+          }}
+        >
           <ChatUI
             embedded
             namespace={selectedWorkspace.namespace}
@@ -174,6 +194,9 @@ const KaitoChat: React.FC = () => {
               setLocalPort(null);
               setPortForwardId(null);
             }}
+            promptBarColor={theme.palette.background.default}
+            promptBarTextColor={theme.palette.text.primary}
+            theme={theme}
           />
         </Box>
       )}

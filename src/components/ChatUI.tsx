@@ -161,6 +161,8 @@ interface ChatUIProps {
   namespace: string;
   workspaceName?: string;
   theme?: any;
+  promptBarColor?: string;
+  promptBarTextColor?: string;
 }
 
 // fetch pod name and resolved target port dynamically
@@ -205,6 +207,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   workspaceName,
   embedded = false,
   theme: themeProp,
+  promptBarColor,
+  promptBarTextColor,
 }) => {
   const theme = themeProp || useTheme();
   const [messages, setMessages] = useState<Message[]>([
@@ -375,19 +379,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       setIsLoading(false);
     }
   };
-  const startAIPortForward = () => {
-    if (isPortForwardRunning) return;
 
-    if (portForwardIdRef.current) {
-      (async () => {
-        await stopAIPortForward();
-        startPortForwardProcess();
-      })();
-      return;
-    }
-
-    startPortForwardProcess();
-  };
   const startPortForwardProcess = async () => {
     setIsPortForwardRunning(true);
     setPortForwardStatus('Starting port forward...');
@@ -526,85 +518,30 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     initiateChatBackend();
   }, [open]);
 
+  const barBg =
+    promptBarColor ??
+    (theme.palette.mode === 'dark'
+      ? theme.palette.background.paper
+      : theme.palette.background.default);
+  const barText =
+    promptBarTextColor ??
+    (theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.primary);
+
   if (embedded) {
     return (
-      <Box sx={{ borderRadius: 2, boxShadow: 2, bgcolor: theme.palette.background.paper, p: 0 }}>
-        <ChatHeader sx={{ background: theme.palette.background.default }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
-            <Stack direction="row" alignItems="center" spacing={2}>
-              {' '}
-              <Avatar
-                sx={{
-                  bgcolor: '#2563eb',
-                  width: 40,
-                  height: 40,
-                }}
-              >
-                🤖
-              </Avatar>
-              <Box>
-                <Typography variant="h6" fontWeight="600" color="black">
-                  Chat with {selectedModel?.title ?? 'Model'}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      bgcolor: isPortForwardRunning ? '#10b981' : '#f59e0b',
-                      animation: 'pulse 2s infinite',
-                      '@keyframes pulse': {
-                        '0%, 100%': { opacity: 1 },
-                        '50%': { opacity: 0.5 },
-                      },
-                    }}
-                  />
-                </Stack>
-              </Box>
-            </Stack>{' '}
-            <Stack direction="row" spacing={1}>
-              <Tooltip title="Clear conversation">
-                <IconButton onClick={clearChat} size="small">
-                  🗑️
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Close chat">
-                <IconButton
-                  onClick={() => {
-                    stopAIPortForward();
-                    onClose?.();
-                  }}
-                  size="small"
-                  sx={{
-                    color: '#ef4444',
-                    fontSize: '18px',
-                    width: 32,
-                    height: 32,
-                    '&:hover': {
-                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                      color: '#dc2626',
-                      transform: 'scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  ✕
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          </Stack>
-        </ChatHeader>
-
-        <DialogContent
-          sx={{
-            p: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            background: theme.palette.background.default,
-          }}
-        >
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          background: theme.palette.background.default,
+        }}
+      >
+        <Box sx={{ flex: 1, overflowY: 'auto' }}>
           <MessagesContainer>
             {messages.map(message => (
               <MessageBubble key={message.id} isUser={message.role === 'user'}>
@@ -619,9 +556,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   }}
                 >
                   {message.role === 'user' ? '👤' : '🤖'}
-                </Avatar>{' '}
+                </Avatar>
                 <MessageContent isUser={message.role === 'user'}>
-                  {' '}
                   <Box
                     sx={{
                       lineHeight: 1.6,
@@ -675,12 +611,49 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   </Typography>
                 </MessageContent>
               </MessageBubble>
-            ))}{' '}
+            ))}
             <div ref={messagesEndRef} />
-          </MessagesContainer>{' '}
-          <InputContainer>
-            <Stack direction="row" spacing={2} alignItems="flex-end" width="100%">
-              <StyledInputBox onClick={() => inputRef.current?.focus()} sx={{ flex: 1 }}>
+          </MessagesContainer>
+        </Box>
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 10,
+            background: 'transparent',
+            color: barText,
+            boxShadow: 'none',
+            p: 0,
+            m: 0,
+          }}
+        >
+          <InputContainer
+            sx={{
+              background: theme.palette.background.default,
+              color: theme.palette.primary.main,
+              backdropFilter: 'blur(2px)',
+              p: '10px 24px 14px 24px',
+              m: 0,
+              borderRadius: 0,
+              minWidth: 0,
+              borderTop: `1.5px solid ${theme.palette.divider}`,
+              boxShadow: 'none',
+            }}
+          >
+            <Stack direction="row" spacing={2} alignItems="flex-end" width="100%" sx={{ m: 0 }}>
+              <StyledInputBox
+                onClick={() => inputRef.current?.focus()}
+                sx={{
+                  flex: 1,
+                  m: 0,
+                  borderRadius: '24px',
+                  backgroundColor: theme.palette.background.default,
+                  color: theme.palette.primary.main,
+                  border: `2px solid ${theme.palette.divider}`,
+                }}
+              >
                 <Typography
                   ref={inputRef}
                   component="div"
@@ -693,14 +666,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                     fontSize: '16px',
                     fontWeight: 400,
                     lineHeight: 1.5,
-                    color: input.trim() ? '#1e293b' : '#64748b',
+                    color: input.trim() ? theme.palette.primary.main : theme.palette.text.secondary,
                     outline: 'none',
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word',
                     minHeight: '20px',
                     '&:empty::before': {
                       content: '"Ask me a question..."',
-                      color: '#64748b',
+                      color: theme.palette.text.secondary,
                       fontStyle: 'normal',
                     },
                   }}
@@ -711,99 +684,10 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 disabled={!input.trim() || isLoading || !isPortReady}
               >
                 {isLoading ? <CircularProgress size={20} color="inherit" /> : '➤'}
-              </SendButton>{' '}
-            </Stack>{' '}
-            <Stack
-              direction="row"
-              spacing={1}
-              mt={2}
-              flexWrap="wrap"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Box display="flex" flexWrap="wrap" gap={1}>
-                <Chip
-                  label="What can you do?"
-                  size="small"
-                  variant="outlined"
-                  onClick={() => handleChipClick('What can you help me with?')}
-                  sx={{
-                    fontSize: '12px',
-                    color: '#374151',
-                    borderColor: 'rgba(0,0,0,0.2)',
-                    '&:hover': {
-                      borderColor: '#3b82f6',
-                      backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                    },
-                  }}
-                />{' '}
-                <Chip
-                  label="Deploy an app"
-                  size="small"
-                  variant="outlined"
-                  onClick={() => handleChipClick('How do I deploy an application?')}
-                  sx={{
-                    fontSize: '12px',
-                    color: '#374151',
-                    borderColor: 'rgba(0,0,0,0.2)',
-                    '&:hover': {
-                      borderColor: '#3b82f6',
-                      backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                    },
-                  }}
-                />{' '}
-                <Chip
-                  label="Troubleshoot issues"
-                  size="small"
-                  variant="outlined"
-                  onClick={() => handleChipClick('Can you help me troubleshoot a problem?')}
-                  sx={{
-                    fontSize: '12px',
-                    color: '#374151',
-                    borderColor: 'rgba(0,0,0,0.2)',
-                    '&:hover': {
-                      borderColor: '#3b82f6',
-                      backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                    },
-                  }}
-                />
-              </Box>
-              <Tooltip title="Select a model">
-                <Autocomplete
-                  options={models}
-                  getOptionLabel={opt => opt.title}
-                  value={selectedModel ?? null}
-                  onChange={(e, val) => setSelectedModel(val)}
-                  sx={{
-                    width: '150px',
-                    '& .MuiInputBase-root': {
-                      color: '#000000',
-                      fontSize: '12px',
-                      height: '32px',
-                      backgroundColor: '#ffffff',
-                    },
-                    '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: 'rgba(0,0,0,0.2)',
-                    },
-                  }}
-                  renderInput={params => (
-                    <TextField
-                      {...params}
-                      label="Model"
-                      variant="outlined"
-                      sx={{
-                        '& .MuiInputLabel-root': {
-                          color: '#000000',
-                          fontSize: '12px',
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </Tooltip>
+              </SendButton>
             </Stack>
           </InputContainer>
-        </DialogContent>
+        </Box>
       </Box>
     );
   }
@@ -965,9 +849,22 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           ))}{' '}
           <div ref={messagesEndRef} />
         </MessagesContainer>{' '}
-        <InputContainer>
+        <InputContainer
+          sx={{
+            background: theme.palette.background.default,
+            color: theme.palette.primary.main,
+          }}
+        >
           <Stack direction="row" spacing={2} alignItems="flex-end" width="100%">
-            <StyledInputBox onClick={() => inputRef.current?.focus()} sx={{ flex: 1 }}>
+            <StyledInputBox
+              onClick={() => inputRef.current?.focus()}
+              sx={{
+                flex: 1,
+                backgroundColor: theme.palette.background.default,
+                color: theme.palette.primary.main,
+                border: `2px solid ${theme.palette.divider}`,
+              }}
+            >
               <Typography
                 ref={inputRef}
                 component="div"
@@ -980,14 +877,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   fontSize: '16px',
                   fontWeight: 400,
                   lineHeight: 1.5,
-                  color: input.trim() ? '#1e293b' : '#64748b',
+                  color: input.trim() ? theme.palette.primary.main : theme.palette.text.secondary,
                   outline: 'none',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-word',
                   minHeight: '20px',
                   '&:empty::before': {
                     content: '"Ask me a question..."',
-                    color: '#64748b',
+                    color: theme.palette.text.secondary,
                     fontStyle: 'normal',
                   },
                 }}
@@ -995,8 +892,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             </StyledInputBox>
             <SendButton onClick={handleSend} disabled={!input.trim() || isLoading || !isPortReady}>
               {isLoading ? <CircularProgress size={20} color="inherit" /> : '➤'}
-            </SendButton>{' '}
-          </Stack>{' '}
+            </SendButton>
+          </Stack>
           <Stack
             direction="row"
             spacing={1}
@@ -1005,20 +902,15 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             justifyContent="space-between"
             alignItems="center"
           >
-            <Box display="flex" flexWrap="wrap" gap={1}>
+            <Box display="flex" flexWrap="wrap" gap={1} color={theme.palette.primary.main}>
               <Chip
                 label="What can you do?"
                 size="small"
                 variant="outlined"
                 onClick={() => handleChipClick('What can you help me with?')}
                 sx={{
-                  fontSize: '12px',
-                  color: '#374151',
-                  borderColor: 'rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  },
+                  color: theme.palette.primary.main,
+                  borderColor: theme.palette.divider,
                 }}
               />{' '}
               <Chip
@@ -1027,13 +919,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 variant="outlined"
                 onClick={() => handleChipClick('How do I deploy an application?')}
                 sx={{
-                  fontSize: '12px',
-                  color: '#374151',
-                  borderColor: 'rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  },
+                  color: theme.palette.primary.main,
+                  borderColor: theme.palette.divider,
                 }}
               />{' '}
               <Chip
@@ -1042,13 +929,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 variant="outlined"
                 onClick={() => handleChipClick('Can you help me troubleshoot a problem?')}
                 sx={{
-                  fontSize: '12px',
-                  color: '#374151',
-                  borderColor: 'rgba(0,0,0,0.2)',
-                  '&:hover': {
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  },
+                  color: theme.palette.primary.main,
+                  borderColor: theme.palette.divider,
                 }}
               />
             </Box>
@@ -1061,13 +943,12 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 sx={{
                   width: '150px',
                   '& .MuiInputBase-root': {
-                    color: '#000000',
-                    fontSize: '12px',
                     height: '32px',
-                    backgroundColor: '#ffffff',
+                    color: theme.palette.primary.main,
+                    backgroundColor: theme.palette.background.default,
                   },
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'rgba(0,0,0,0.2)',
+                    borderColor: theme.palette.divider,
                   },
                 }}
                 renderInput={params => (
@@ -1077,8 +958,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                     variant="outlined"
                     sx={{
                       '& .MuiInputLabel-root': {
-                        color: '#000000',
                         fontSize: '12px',
+                        color: theme.palette.primary.main,
                       },
                     }}
                   />
