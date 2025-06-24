@@ -194,8 +194,6 @@ const KaitoChat: React.FC = () => {
                 setLocalPort(null);
                 setPortForwardId(null);
               }}
-              promptBarColor={theme.palette.background.default}
-              promptBarTextColor={theme.palette.text.primary}
               theme={theme}
             />
           </Box>

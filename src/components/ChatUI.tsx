@@ -161,8 +161,6 @@ interface ChatUIProps {
   namespace: string;
   workspaceName?: string;
   theme?: any;
-  promptBarColor?: string;
-  promptBarTextColor?: string;
 }
 
 // fetch pod name and resolved target port dynamically
@@ -207,8 +205,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   workspaceName,
   embedded = false,
   theme: themeProp,
-  promptBarColor,
-  promptBarTextColor,
 }) => {
   const theme = themeProp || useTheme();
   const [messages, setMessages] = useState<Message[]>([
@@ -518,15 +514,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     initiateChatBackend();
   }, [open]);
 
-  const barBg =
-    promptBarColor ??
-    (theme.palette.mode === 'dark'
-      ? theme.palette.background.paper
-      : theme.palette.background.default);
-  const barText =
-    promptBarTextColor ??
-    (theme.palette.mode === 'dark' ? theme.palette.text.primary : theme.palette.text.primary);
-
   if (embedded) {
     return (
       <Box
@@ -656,7 +643,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             right: 0,
             zIndex: 10,
             background: 'transparent',
-            color: barText,
+            color: theme.palette.text.primary,
             boxShadow: 'none',
             p: 0,
             m: 0,
