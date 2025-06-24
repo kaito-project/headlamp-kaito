@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Autocomplete, TextField, Stack, Button } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import {
-  request,
-  startPortForward,
-  stopOrDeletePortForward,
-} from '@kinvolk/headlamp-plugin/lib/ApiProxy';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 import ChatUI from './ChatUI';
+import {
+  resolvePodAndPort,
+  startWorkspacePortForward,
+  stopWorkspacePortForward,
+  fetchModelsWithRetry,
+} from './chatUtils';
+import { request } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 
 interface ModelOption {
   title: string;
@@ -56,48 +57,37 @@ const KaitoChat: React.FC = () => {
   const namespace = selectedWorkspace?.namespace || 'default';
 
   useEffect(() => {
-    const resolvePodAndPort = async () => {
-      const labelSelector = `kaito.sh/workspace=${workspaceName}`;
-      const podsResp = await request(
-        `/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`
-      );
-      const pod = podsResp?.items?.[0];
-      const containerPort = pod?.spec?.containers?.[0]?.ports?.[0]?.containerPort;
-      return containerPort ? { podName: pod.metadata.name, targetPort: containerPort } : null;
-    };
-
+    let cancelled = false;
     const startForward = async () => {
       if (!workspaceName) return;
 
-      const resolved = await resolvePodAndPort();
+      const resolved = await resolvePodAndPort(namespace, workspaceName);
       if (!resolved) return;
 
-      const cluster = getCluster() || '';
       const newPort = String(10000 + Math.floor(Math.random() * 10000));
       const pfId = workspaceName + '/' + namespace;
 
-      await startPortForward(
-        cluster,
+      await startWorkspacePortForward({
         namespace,
-        resolved.podName,
-        resolved.targetPort.toString(),
         workspaceName,
-        namespace,
-        newPort,
-        'localhost',
-        pfId
-      );
+        podName: resolved.podName,
+        targetPort: resolved.targetPort,
+        localPort: newPort,
+        portForwardId: pfId,
+      });
 
-      setLocalPort(newPort);
-      setPortForwardId(pfId);
+      if (!cancelled) {
+        setLocalPort(newPort);
+        setPortForwardId(pfId);
+      }
     };
 
     startForward();
 
     return () => {
+      cancelled = true;
       if (portForwardId) {
-        const cluster = getCluster() || '';
-        stopOrDeletePortForward(cluster, portForwardId, true).catch(console.error);
+        stopWorkspacePortForward(portForwardId).catch(console.error);
       }
     };
   }, [workspaceName, portForwardId]);
@@ -107,12 +97,7 @@ const KaitoChat: React.FC = () => {
 
     const fetchModels = async () => {
       try {
-        const res = await fetch(`http://localhost:${localPort}/v1/models`);
-        const data = await res.json();
-        const modelOptions = (data.data || []).map((model: any) => ({
-          title: model.id,
-          value: model.id,
-        }));
+        const modelOptions = await fetchModelsWithRetry(localPort);
         setModels(modelOptions);
         if (modelOptions.length > 0) setSelectedModel(modelOptions[0]);
       } catch (err) {

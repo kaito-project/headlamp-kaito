@@ -27,8 +27,14 @@ import {
   startPortForward,
   stopOrDeletePortForward,
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 import { useTheme } from '@mui/material/styles';
+import {
+  resolvePodAndPort,
+  startWorkspacePortForward,
+  stopWorkspacePortForward,
+  fetchModelsWithRetry,
+  getClusterOrEmpty,
+} from './chatUtils';
 
 interface Message {
   id: string;
@@ -161,41 +167,6 @@ interface ChatUIProps {
   namespace: string;
   workspaceName?: string;
   theme?: any;
-}
-
-// fetch pod name and resolved target port dynamically
-async function resolvePodAndPort(namespace: string, workspaceName: string) {
-  const labelSelector = `kaito.sh/workspace=${workspaceName}`;
-  const podsResp = await request(
-    `/api/v1/namespaces/${namespace}/pods?labelSelector=${labelSelector}`
-  );
-  const pod = podsResp?.items?.[0];
-  if (!pod) return null;
-
-  const containers = pod.spec.containers || [];
-  for (const container of containers) {
-    const portObj = container.ports?.[0];
-    if (portObj && portObj.containerPort) {
-      return {
-        podName: pod.metadata.name,
-        resolvedTargetPort: portObj.containerPort.toString(),
-      };
-    }
-  }
-
-  return null;
-}
-
-function getClusterOrEmpty() {
-  try {
-    const clusterValue = getCluster();
-    if (clusterValue !== null && clusterValue !== undefined) {
-      return clusterValue;
-    }
-  } catch (clusterError) {
-    console.log('Could not get cluster, using empty string');
-  }
-  return '';
 }
 
 const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
@@ -381,56 +352,35 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     setPortForwardStatus('Starting port forward...');
 
     try {
-      const cluster = getClusterOrEmpty();
       if (!workspaceName) {
         throw new Error('Missing workspace name.');
       }
-      const serviceName = workspaceName;
-      const serviceNamespace = namespace;
 
       const resolved = await resolvePodAndPort(namespace, workspaceName);
       if (!resolved) {
-        throw new Error(`Could not resolve pod or target port for ${serviceName}`);
+        throw new Error(`Could not resolve pod or target port for ${workspaceName}`);
       }
 
-      const { podName, resolvedTargetPort } = resolved;
+      const { podName, targetPort } = resolved;
       const localPort = String(10000 + Math.floor(Math.random() * 10000));
-      const address = 'localhost';
-
       const newPortForwardId = workspaceName + '/' + namespace;
-      console.log(newPortForwardId, localPort);
 
-      await startPortForward(
-        cluster,
+      await startWorkspacePortForward({
         namespace,
+        workspaceName,
         podName,
-        resolvedTargetPort,
-        serviceName,
-        serviceNamespace,
+        targetPort,
         localPort,
-        address,
-        newPortForwardId
-      );
+        portForwardId: newPortForwardId,
+      });
+
       setBaseURL(`http://localhost:${localPort}/v1`);
       try {
-        const res = await fetch(`http://localhost:${localPort}/v1/models`);
-        if (!res.ok) throw new Error(`Failed to fetch models: ${res.statusText}`);
-        const data = await res.json();
-
-        if (!Array.isArray(data.data)) {
-          throw new Error('Unexpected /v1/models response format');
-        }
-
-        const modelOptions = data.data.map((model: { id: string }) => ({
-          title: model.id,
-          value: model.id,
-        }));
-
+        const modelOptions = await fetchModelsWithRetry(localPort);
         setModels(modelOptions);
         if (modelOptions.length > 0) {
           setSelectedModel(prev => prev ?? modelOptions[0]);
         }
-
         setIsPortReady(true);
       } catch (err) {
         console.error('Error fetching models from /v1/models:', err);
@@ -452,7 +402,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
   const stopAIPortForward = () => {
     const idToStop = portForwardIdRef.current;
-    if (!portForwardIdRef.current) {
+    if (!idToStop) {
       setIsPortForwardRunning(false);
       setPortForwardStatus('Port forward not running');
       return;
@@ -460,17 +410,12 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
     setPortForwardStatus('Stopping port forward...');
     setIsPortReady(false);
-    console.log('port forwarding stopped');
-
     setIsPortForwardRunning(false);
     portForwardIdRef.current = null;
 
-    const cluster = getClusterOrEmpty();
-
-    stopOrDeletePortForward(cluster, idToStop, true)
+    stopWorkspacePortForward(idToStop)
       .then(() => {
         setPortForwardStatus('Port forward stopped');
-
         const stopMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
@@ -483,7 +428,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         console.error(`Failed to stop port forward with ID ${idToStop}:`, error);
         const errorMsg = error instanceof Error ? error.message : String(error);
         setPortForwardStatus(`Error stopping: ${errorMsg}`);
-
         const errorMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
