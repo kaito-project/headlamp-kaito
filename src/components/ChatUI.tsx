@@ -833,7 +833,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
               🤖
             </Avatar>
             <Box>
-              <Typography variant="h6" fontWeight="600" color="white">
+              <Typography variant="h6" fontWeight="600" color={theme.palette.text.primary}>
                 Chat with {selectedModel?.title ?? 'Model'}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>

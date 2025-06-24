@@ -127,7 +127,13 @@ const KaitoChat: React.FC = () => {
   return (
     <Box sx={{ width: '100%', height: '100%', background: theme.palette.background.default, p: 4 }}>
       <Stack direction="row" alignItems="center" spacing={2} mb={4}>
-        <Typography variant="h5" fontWeight={600}>
+        <Typography
+          variant="h5"
+          fontWeight={600}
+          color={
+            theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary
+          }
+        >
           Chat with
         </Typography>
         <Autocomplete
