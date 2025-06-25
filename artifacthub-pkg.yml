@@ -1,9 +1,0 @@
-version: 0.0.1
-name: headlamp-kaito
-displayName: Headlamp Kaito
-createdAt: '2025-06-24T02:41:50Z'
-logoURL: 'https://avatars.githubusercontent.com/u/186863079?s=48&v=4'
-description: Headlamp-Kaito enhances the KAITO AKS extension with a modern, intuitive UI built directly into Headlamp. Instead of relying on YAML or CLI workflows, this release introduces a visual experience that simplifies GPU node provisioning and model deployment for AKS users
-annotations:
-  headlamp/plugin/archive-url: 'https://github.com/kaito-project/headlamp-kaito/archive/refs/tags/v0.0.1.tar.gz'
-  headlamp/plugin/archive-checksum: 'sha256:0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5'
