@@ -745,6 +745,32 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             </IconButton>
           </Tooltip>
         </Box>
+
+        {/* Add the content here */}
+        {renderChatContent(
+          messages,
+          messagesEndRef,
+          inputRef,
+          input,
+          handleInputChange,
+          handleKeyDown,
+          handleSend,
+          handleChipClick,
+          clearChat,
+          theme,
+          isLoading,
+          isPortReady,
+          models,
+          selectedModel,
+          setSelectedModel
+        )}
+
+        <ModelSettingsDialog
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          config={config}
+          onSave={setConfig}
+        />
       </Box>
     );
   }
@@ -914,21 +940,10 @@ const ChatFAB: React.FC<{ onClick: () => void }> = ({ onClick }) => {
 const ChatWithFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [portForwardAttempted, setPortForwardAttempted] = useState(false);
-
-  // const [open, setOpen] = useState(false);
-  const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
   return (
     <>
       <ChatFAB onClick={() => setOpen(true)} />
       <ChatUI open={open} onClose={() => setOpen(false)} namespace="default" />
-      <ModelSettingsDialog
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        config={config}
-        onSave={setConfig}
-      />
     </>
   );
 };

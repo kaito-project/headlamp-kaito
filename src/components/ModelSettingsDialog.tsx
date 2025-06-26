@@ -1,4 +1,3 @@
-// ModelSettingsDialog.tsx
 import React from 'react';
 import {
   Dialog,
@@ -25,6 +24,13 @@ interface Props {
 
 const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave }) => {
   const [localConfig, setLocalConfig] = React.useState(config);
+
+  // update localConfig when config prop changes or dialog opens
+  React.useEffect(() => {
+    if (open) {
+      setLocalConfig(config);
+    }
+  }, [config, open]);
 
   const handleSave = () => {
     onSave(localConfig);
