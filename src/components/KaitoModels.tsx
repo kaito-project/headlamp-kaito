@@ -279,12 +279,18 @@ resource:
 inference:
     preset:
       name: ${modelNameCheck}
-      ${
-        isLlama
-          ? `presetOptions:
-            modelAccessSecret: hf-token`
-          : ''
-      }`;
+      ${isLlama ? `presetOptions:\n      modelAccessSecret: hf-token` : ''}
+${
+  isLlama
+    ? `\n---\napiVersion: v1
+kind: Secret
+metadata:
+  name: hf-token
+type: Opaque
+data:
+  HF_TOKEN: # your secret here.`
+    : ''
+}`;
   }
   return (
     <>
