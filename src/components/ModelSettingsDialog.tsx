@@ -5,9 +5,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Slider,
   Typography,
-  Stack,
+  Box,
 } from '@mui/material';
 
 export interface ModelConfig {
@@ -23,11 +22,11 @@ interface Props {
 }
 
 const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave }) => {
-  const [localConfig, setLocalConfig] = React.useState(config);
+  const defaultConfig = { temperature: 0.7, maxTokens: 1000 };
+  const [localConfig, setLocalConfig] = React.useState(config || defaultConfig);
 
-  // update localConfig when config prop changes or dialog opens
   React.useEffect(() => {
-    if (open) {
+    if (open && config) {
       setLocalConfig(config);
     }
   }, [config, open]);
@@ -37,36 +36,46 @@ const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave })
     onClose();
   };
 
+  const handleTemperatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setLocalConfig(prev => ({ ...prev, temperature: value }));
+  };
+
+  const handleMaxTokensChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setLocalConfig(prev => ({ ...prev, maxTokens: value }));
+  };
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Model Settings</DialogTitle>
       <DialogContent>
-        <Stack spacing={4} sx={{ width: 300 }}>
-          <div>
-            <Typography gutterBottom>Temperature ({localConfig.temperature.toFixed(2)})</Typography>
-            <Slider
+        <Box sx={{ width: 300, pt: 2 }}>
+          <Box mb={3}>
+            <Typography gutterBottom>Temperature: {localConfig.temperature.toFixed(2)}</Typography>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
               value={localConfig.temperature}
-              min={0}
-              max={1}
-              step={0.01}
-              onChange={(_, value) =>
-                setLocalConfig(cfg => ({ ...cfg, temperature: value as number }))
-              }
+              onChange={handleTemperatureChange}
+              style={{ width: '100%' }}
             />
-          </div>
-          <div>
-            <Typography gutterBottom>Max Tokens ({localConfig.maxTokens})</Typography>
-            <Slider
+          </Box>
+          <Box mb={2}>
+            <Typography gutterBottom>Max Tokens: {localConfig.maxTokens}</Typography>
+            <input
+              type="range"
+              min="100"
+              max="4000"
+              step="50"
               value={localConfig.maxTokens}
-              min={100}
-              max={4000}
-              step={50}
-              onChange={(_, value) =>
-                setLocalConfig(cfg => ({ ...cfg, maxTokens: value as number }))
-              }
+              onChange={handleMaxTokensChange}
+              style={{ width: '100%' }}
             />
-          </div>
-        </Stack>
+          </Box>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="inherit">

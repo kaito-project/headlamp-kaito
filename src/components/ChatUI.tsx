@@ -22,7 +22,6 @@ import {
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
-// import { OPENAI_CONFIG } from '../config/openai';
 import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
 import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
@@ -184,9 +183,10 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   theme: themeProp,
 }) => {
   const theme = themeProp || useTheme();
-  const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG);
+  const defaultConfig = { temperature: 0.7, maxTokens: 1000 };
+  const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG || defaultConfig);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const { temperature, maxTokens } = config;
+  const { temperature = 0.7, maxTokens = 1000 } = config || {};
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -726,27 +726,24 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             ✕
           </IconButton>
           <Tooltip title="Model Settings">
-            <IconButton
+            <div
               onClick={() => setSettingsOpen(true)}
-              size="small"
-              sx={{
-                fontSize: '18px',
+              style={{
+                cursor: 'pointer',
                 width: 32,
                 height: 32,
-                '&:hover': {
-                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                  color: '#2563eb',
-                  transform: 'scale(1.1)',
-                },
-                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+                borderRadius: '4px',
               }}
             >
-              ⚙️
-            </IconButton>
+              ⚙
+            </div>
           </Tooltip>
         </Box>
 
-        {/* Add the content here */}
         {renderChatContent(
           messages,
           messagesEndRef,
@@ -851,23 +848,21 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 </IconButton>
               </Tooltip>
               <Tooltip title="Model Settings">
-                <IconButton
+                <div
                   onClick={() => setSettingsOpen(true)}
-                  size="small"
-                  sx={{
-                    fontSize: '18px',
+                  style={{
+                    cursor: 'pointer',
                     width: 32,
                     height: 32,
-                    '&:hover': {
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      color: '#2563eb',
-                      transform: 'scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px',
+                    borderRadius: '4px',
                   }}
                 >
-                  ⚙️
-                </IconButton>
+                  ⚙
+                </div>
               </Tooltip>
             </Stack>
           </Stack>
@@ -939,7 +934,6 @@ const ChatFAB: React.FC<{ onClick: () => void }> = ({ onClick }) => {
 
 const ChatWithFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [portForwardAttempted, setPortForwardAttempted] = useState(false);
   return (
     <>
       <ChatFAB onClick={() => setOpen(true)} />
