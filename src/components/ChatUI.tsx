@@ -15,11 +15,17 @@ import {
   TextField,
   Autocomplete,
   Button,
+  DialogTitle,
+  DialogActions,
+  Slider,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
-import { OPENAI_CONFIG } from '../config/openai';
+// import { OPENAI_CONFIG } from '../config/openai';
+import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
+import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
+
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -178,6 +184,9 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   theme: themeProp,
 }) => {
   const theme = themeProp || useTheme();
+  const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { temperature, maxTokens } = config;
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -253,6 +262,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       timestamp: new Date(),
       isLoading: true,
     };
+
     setMessages(prev => [...prev, aiMessage]);
     try {
       const conversationHistory = messages.concat(userMessage).map(msg => ({
@@ -274,8 +284,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel(modelId),
         messages: conversationHistory,
-        temperature: OPENAI_CONFIG.temperature,
-        maxTokens: OPENAI_CONFIG.maxTokens,
+        temperature,
+        maxTokens,
       });
 
       let streamedText = '';
@@ -715,8 +725,137 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           >
             ✕
           </IconButton>
+          <Tooltip title="Model Settings">
+            <IconButton
+              onClick={() => setSettingsOpen(true)}
+              size="small"
+              sx={{
+                fontSize: '18px',
+                width: 32,
+                height: 32,
+                '&:hover': {
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  color: '#2563eb',
+                  transform: 'scale(1.1)',
+                },
+                transition: 'all 0.2s ease',
+              }}
+            >
+              ⚙️
+            </IconButton>
+          </Tooltip>
         </Box>
-        <Box sx={{ flex: 1, overflowY: 'auto' }}>
+      </Box>
+    );
+  }
+  return (
+    <>
+      <ChatDialog
+        open={open}
+        onClose={() => {
+          stopAIPortForward();
+          if (onClose) onClose();
+        }}
+        maxWidth={false}
+        PaperProps={{
+          sx: { m: 2, background: theme.palette.background.paper },
+        }}
+      >
+        <ChatHeader sx={{ background: theme.palette.background.default }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
+            <Stack direction="row" alignItems="center" spacing={2}>
+              {' '}
+              <Avatar
+                sx={{
+                  bgcolor: '#2563eb',
+                  width: 40,
+                  height: 40,
+                }}
+              >
+                🤖
+              </Avatar>
+              <Box>
+                <Typography variant="h6" fontWeight="600" color={theme.palette.text.primary}>
+                  Chat with {selectedModel?.title ?? 'Model'}
+                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: isPortForwardRunning ? '#10b981' : '#f59e0b',
+                      animation: 'pulse 2s infinite',
+                      '@keyframes pulse': {
+                        '0%, 100%': { opacity: 1 },
+                        '50%': { opacity: 0.5 },
+                      },
+                    }}
+                  />
+                </Stack>
+              </Box>
+            </Stack>{' '}
+            <Stack direction="row" spacing={1}>
+              <Tooltip title="Clear conversation">
+                <IconButton onClick={clearChat} size="small">
+                  🗑️
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Close chat">
+                <IconButton
+                  onClick={() => {
+                    stopAIPortForward();
+                    onClose?.();
+                  }}
+                  size="small"
+                  sx={{
+                    color: '#ef4444',
+                    fontSize: '18px',
+                    width: 32,
+                    height: 32,
+                    '&:hover': {
+                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                      color: '#dc2626',
+                      transform: 'scale(1.1)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  ✕
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Model Settings">
+                <IconButton
+                  onClick={() => setSettingsOpen(true)}
+                  size="small"
+                  sx={{
+                    fontSize: '18px',
+                    width: 32,
+                    height: 32,
+                    '&:hover': {
+                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      color: '#2563eb',
+                      transform: 'scale(1.1)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  ⚙️
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </Stack>
+        </ChatHeader>
+
+        <DialogContent
+          sx={{
+            p: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            background: theme.palette.background.default,
+          }}
+        >
           {renderChatContent(
             messages,
             messagesEndRef,
@@ -734,117 +873,15 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             selectedModel,
             setSelectedModel
           )}
-        </Box>
-      </Box>
-    );
-  }
-  return (
-    <ChatDialog
-      open={open}
-      onClose={() => {
-        stopAIPortForward();
-        if (onClose) onClose();
-      }}
-      maxWidth={false}
-      PaperProps={{
-        sx: { m: 2, background: theme.palette.background.paper },
-      }}
-    >
-      <ChatHeader sx={{ background: theme.palette.background.default }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
-          <Stack direction="row" alignItems="center" spacing={2}>
-            {' '}
-            <Avatar
-              sx={{
-                bgcolor: '#2563eb',
-                width: 40,
-                height: 40,
-              }}
-            >
-              🤖
-            </Avatar>
-            <Box>
-              <Typography variant="h6" fontWeight="600" color={theme.palette.text.primary}>
-                Chat with {selectedModel?.title ?? 'Model'}
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: isPortForwardRunning ? '#10b981' : '#f59e0b',
-                    animation: 'pulse 2s infinite',
-                    '@keyframes pulse': {
-                      '0%, 100%': { opacity: 1 },
-                      '50%': { opacity: 0.5 },
-                    },
-                  }}
-                />
-              </Stack>
-            </Box>
-          </Stack>{' '}
-          <Stack direction="row" spacing={1}>
-            <Tooltip title="Clear conversation">
-              <IconButton onClick={clearChat} size="small">
-                🗑️
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Close chat">
-              <IconButton
-                onClick={() => {
-                  stopAIPortForward();
-                  onClose?.();
-                }}
-                size="small"
-                sx={{
-                  color: '#ef4444',
-                  fontSize: '18px',
-                  width: 32,
-                  height: 32,
-                  '&:hover': {
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    color: '#dc2626',
-                    transform: 'scale(1.1)',
-                  },
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                ✕
-              </IconButton>
-            </Tooltip>
-          </Stack>
-        </Stack>
-      </ChatHeader>
-
-      <DialogContent
-        sx={{
-          p: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          background: theme.palette.background.default,
-        }}
-      >
-        {renderChatContent(
-          messages,
-          messagesEndRef,
-          inputRef,
-          input,
-          handleInputChange,
-          handleKeyDown,
-          handleSend,
-          handleChipClick,
-          clearChat,
-          theme,
-          isLoading,
-          isPortReady,
-          models,
-          selectedModel,
-          setSelectedModel
-        )}
-      </DialogContent>
-    </ChatDialog>
+        </DialogContent>
+      </ChatDialog>
+      <ModelSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        config={config}
+        onSave={setConfig}
+      />
+    </>
   );
 };
 
@@ -878,16 +915,19 @@ const ChatWithFAB: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [portForwardAttempted, setPortForwardAttempted] = useState(false);
 
+  // const [open, setOpen] = useState(false);
+  const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   return (
     <>
       <ChatFAB onClick={() => setOpen(true)} />
-      <ChatUI
-        open={open}
-        onClose={() => {
-          setOpen(false);
-          setPortForwardAttempted(true);
-        }}
-        namespace="default"
+      <ChatUI open={open} onClose={() => setOpen(false)} namespace="default" />
+      <ModelSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        config={config}
+        onSave={setConfig}
       />
     </>
   );
