@@ -56,9 +56,7 @@ interface PresetModel {
     name: string;
     url: string;
   };
-  verifiedPublisher: boolean;
-  official: boolean;
-  cncf: boolean;
+
   logoImageId: string;
   description: string;
   instanceType: string;
@@ -180,9 +178,7 @@ function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[]
         name: getCompanyName(model.name),
         url: getHuggingFaceUrl(model.name),
       },
-      verifiedPublisher: true,
-      official: i % 3 === 0,
-      cncf: i % 4 === 0,
+
       logoImageId: getLogo(model.name),
       description: getModelDescription(model.name),
       instanceType: getInstanceType(model.name),
