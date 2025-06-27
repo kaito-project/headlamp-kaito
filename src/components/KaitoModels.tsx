@@ -241,41 +241,15 @@ const KaitoModels = () => {
     loadModels();
   }, []);
   function handleDeploy(model: PresetModel) {
-    const yamlString = generateWorkspaceYAML(model);
-
-    // For multi-document YAML, we need to handle it differently
-    // Split the YAML string by document separator and parse the first document
-    const yamlDocuments = yamlString.split('---\n').filter(doc => doc.trim());
-    let parsedYaml;
-
-    try {
-      if (yamlDocuments.length > 0) {
-        // Parse only the first document (Workspace) for the editor
-        parsedYaml = yaml.load(yamlDocuments[0]);
-      } else {
-        // Fallback: try to parse the entire string as single document
-        parsedYaml = yaml.load(yamlString);
-      }
-    } catch (error) {
-      console.error('Error parsing YAML:', error);
-      // If parsing fails, create a basic object structure
-      parsedYaml = {
-        apiVersion: 'kaito.sh/v1beta1',
-        kind: 'Workspace',
-        metadata: { name: `workspace-${model.name.toLowerCase()}` },
-      };
-    }
-
-    itemRef.current = parsedYaml;
+    const workspaceObjects = generateWorkspaceYAML(model);
+    itemRef.current = workspaceObjects.length > 1 ? workspaceObjects : workspaceObjects[0];
     setActiveModel(model);
-    setEditorValue(yamlString);
     setEditorDialogOpen(true);
   }
 
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const itemRef = React.useRef({});
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
-  const [editorValue, setEditorValue] = useState('');
 
   const filteredModels = presetModels.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
@@ -285,9 +259,15 @@ const KaitoModels = () => {
     (page - 1) * PAGE_OFFSET_COUNT_FOR_MODELS,
     page * PAGE_OFFSET_COUNT_FOR_MODELS
   );
-  function generateWorkspaceYAML(model: PresetModel): string {
+  function generateWorkspaceYAML(model: PresetModel): object[] {
     const modelNameCheck = model.name.toLowerCase();
     const isLlama = modelNameCheck.includes('llama');
+    const isLargeModel =
+      modelNameCheck.includes('40b') ||
+      modelNameCheck.includes('70b') ||
+      modelNameCheck.includes('32b');
+
+    const presetModelName = modelNameCheck.replace(/-/g, '.');
 
     const workspaceDoc = {
       apiVersion: 'kaito.sh/v1beta1',
@@ -296,6 +276,7 @@ const KaitoModels = () => {
         name: `workspace-${modelNameCheck}`,
       },
       resource: {
+        ...(isLargeModel && { count: 2 }),
         instanceType: model.instanceType,
         labelSelector: {
           matchLabels: {
@@ -304,8 +285,9 @@ const KaitoModels = () => {
         },
       },
       inference: {
+        ...(isLargeModel && { config: 'ds-inference-params' }),
         preset: {
-          name: modelNameCheck,
+          name: presetModelName,
           ...(isLlama && {
             presetOptions: {
               modelAccessSecret: 'hf-token',
@@ -315,22 +297,24 @@ const KaitoModels = () => {
       },
     };
 
-    const secretDoc = isLlama
-      ? {
-          apiVersion: 'v1',
-          kind: 'Secret',
-          metadata: {
-            name: 'hf-token',
-          },
-          type: 'Opaque',
-          data: {
-            HF_TOKEN: '# your secret here.',
-          },
-        }
-      : null;
+    const docs = [workspaceDoc];
 
-    const docs = [workspaceDoc, ...(secretDoc ? [secretDoc] : [])];
-    return docs.map(doc => yaml.dump(doc)).join('---\n');
+    if (isLlama) {
+      const secretDoc = {
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+          name: 'hf-token',
+        },
+        type: 'Opaque',
+        stringData: {
+          HF_TOKEN: '# your secret here.',
+        },
+      };
+      docs.push(secretDoc);
+    }
+
+    return docs;
   }
 
   return (
@@ -488,9 +472,6 @@ const KaitoModels = () => {
           open={editorDialogOpen}
           setOpen={setEditorDialogOpen}
           onClose={() => setEditorDialogOpen(false)}
-          onEditorChanged={newVal => {
-            setEditorValue(newVal);
-          }}
           onSave="default"
           title={`Deploy Model: ${activeModel?.name}`}
           saveLabel="Apply"
