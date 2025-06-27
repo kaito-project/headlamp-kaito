@@ -26,38 +26,24 @@ const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave })
   console.log('ModelSettingsDialog initializing with config:', config || defaultConfig);
   const [localConfig, setLocalConfig] = React.useState(config || defaultConfig);
 
-  // Log when component mounts
-  React.useEffect(() => {
-    console.log('ModelSettingsDialog mounted, initial state:', localConfig);
-    // Cleanup function will log when component unmounts
-    return () => {
-      console.log('ModelSettingsDialog unmounting');
-    };
-  }, []);
-
   React.useEffect(() => {
     if (open && config) {
-      console.log('Dialog opened, initializing with config:', config);
       setLocalConfig(config);
     }
   }, [config, open]);
 
   const handleSave = () => {
-    console.log('Saving model settings:', localConfig);
     onSave(localConfig);
     onClose();
-    console.log('Model settings saved:', localConfig);
   };
 
   const handleTemperatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
-    console.log('Temperature slider changed:', value);
     setLocalConfig(prev => ({ ...prev, temperature: value }));
   };
 
   const handleMaxTokensChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    console.log('Max tokens slider changed:', value);
     setLocalConfig(prev => ({ ...prev, maxTokens: value }));
   };
 

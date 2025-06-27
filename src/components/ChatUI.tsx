@@ -270,8 +270,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         content: msg.content,
       }));
       const modelId = selectedModel?.value;
-      console.log('Selected model:', selectedModel?.value);
-
       if (!modelId) {
         throw new Error('No model selected.');
       }
