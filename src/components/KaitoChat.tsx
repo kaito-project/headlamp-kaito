@@ -41,10 +41,17 @@ const KaitoChat: React.FC = () => {
     const fetchWorkspaces = async () => {
       try {
         const response = await request('/apis/kaito.sh/v1beta1/workspaces');
-        const options = (response.items || []).map((item: any) => ({
-          label: item.metadata.name,
-          namespace: item.metadata.namespace,
-        }));
+        const options = (response.items || [])
+          .filter((item: any) => {
+            const inferenceReadyCondition = (item.status?.conditions || []).find(
+              (condition: any) => condition.type === 'InferenceReady'
+            );
+            return inferenceReadyCondition?.status === 'True';
+          })
+          .map((item: any) => ({
+            label: item.metadata.name,
+            namespace: item.metadata.namespace,
+          }));
         setWorkspaceOptions(options);
       } catch (err) {
         console.error('Failed to fetch workspaces:', err);
@@ -138,7 +145,10 @@ const KaitoChat: React.FC = () => {
           value={selectedWorkspace}
           onChange={(_, val) => setSelectedWorkspace(val)}
           sx={{ width: 250 }}
-          renderInput={params => <TextField {...params} label="Workspace" />}
+          noOptionsText="No ready workspaces available"
+          renderInput={params => (
+            <TextField {...params} label="Workspace" helperText="Only showing ready workspaces" />
+          )}
         />
         {selectedWorkspace && (
           <Autocomplete
