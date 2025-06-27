@@ -29,7 +29,7 @@ import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -242,7 +242,29 @@ const KaitoModels = () => {
   }, []);
   function handleDeploy(model: PresetModel) {
     const yamlString = generateWorkspaceYAML(model);
-    const parsedYaml = yaml.load(yamlString);
+
+    // For multi-document YAML, we need to handle it differently
+    // Split the YAML string by document separator and parse the first document
+    const yamlDocuments = yamlString.split('---\n').filter(doc => doc.trim());
+    let parsedYaml;
+
+    try {
+      if (yamlDocuments.length > 0) {
+        // Parse only the first document (Workspace) for the editor
+        parsedYaml = yaml.load(yamlDocuments[0]);
+      } else {
+        // Fallback: try to parse the entire string as single document
+        parsedYaml = yaml.load(yamlString);
+      }
+    } catch (error) {
+      console.error('Error parsing YAML:', error);
+      // If parsing fails, create a basic object structure
+      parsedYaml = {
+        apiVersion: 'kaito.sh/v1beta1',
+        kind: 'Workspace',
+        metadata: { name: `workspace-${model.name.toLowerCase()}` },
+      };
+    }
 
     itemRef.current = parsedYaml;
     setActiveModel(model);
@@ -263,35 +285,54 @@ const KaitoModels = () => {
     (page - 1) * PAGE_OFFSET_COUNT_FOR_MODELS,
     page * PAGE_OFFSET_COUNT_FOR_MODELS
   );
-
   function generateWorkspaceYAML(model: PresetModel): string {
     const modelNameCheck = model.name.toLowerCase();
     const isLlama = modelNameCheck.includes('llama');
-    return `apiVersion: kaito.sh/v1beta1
-kind: Workspace
-metadata:
-  name: workspace-${modelNameCheck}
-resource:
-  instanceType: ${model.instanceType}
-  labelSelector: 
-    matchLabels:
-      apps: ${modelNameCheck}
-inference:
-    preset:
-      name: ${modelNameCheck}
-      ${isLlama ? `presetOptions:\n      modelAccessSecret: hf-token` : ''}
-${
-  isLlama
-    ? `\n---\napiVersion: v1
-kind: Secret
-metadata:
-  name: hf-token
-type: Opaque
-data:
-  HF_TOKEN: # your secret here.`
-    : ''
-}`;
+
+    const workspaceDoc = {
+      apiVersion: 'kaito.sh/v1beta1',
+      kind: 'Workspace',
+      metadata: {
+        name: `workspace-${modelNameCheck}`,
+      },
+      resource: {
+        instanceType: model.instanceType,
+        labelSelector: {
+          matchLabels: {
+            apps: modelNameCheck,
+          },
+        },
+      },
+      inference: {
+        preset: {
+          name: modelNameCheck,
+          ...(isLlama && {
+            presetOptions: {
+              modelAccessSecret: 'hf-token',
+            },
+          }),
+        },
+      },
+    };
+
+    const secretDoc = isLlama
+      ? {
+          apiVersion: 'v1',
+          kind: 'Secret',
+          metadata: {
+            name: 'hf-token',
+          },
+          type: 'Opaque',
+          data: {
+            HF_TOKEN: '# your secret here.',
+          },
+        }
+      : null;
+
+    const docs = [workspaceDoc, ...(secretDoc ? [secretDoc] : [])];
+    return docs.map(doc => yaml.dump(doc)).join('---\n');
   }
+
   return (
     <>
       <SectionHeader
