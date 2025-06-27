@@ -20,7 +20,6 @@ import {
 } from '@mui/material';
 import { Autocomplete, Pagination } from '@mui/material';
 import { useState, useEffect } from 'react';
-// Importing logos
 import falconLogo from '../logos/falcon-logo.webp';
 import deepseekLogo from '../logos/deepseek-logo.webp';
 import llamaLogo from '../logos/llama-logo.webp';
@@ -62,7 +61,6 @@ interface PresetModel {
   instanceType: string;
 }
 
-// Function to fetch and parse the YAML file from GitHub
 async function fetchSupportedModels(): Promise<SupportedModel[]> {
   try {
     const response = await fetch(
@@ -76,12 +74,10 @@ async function fetchSupportedModels(): Promise<SupportedModel[]> {
     return parsedYaml.models || [];
   } catch (error) {
     console.error('Failed to fetch supported models:', error);
-    // Return empty array if fetch fails
     return [];
   }
 }
 
-// Function to get appropriate logo for model
 const getLogo = (name: string): string => {
   const lname = name.toLowerCase();
   if (lname.includes('deepseek')) return deepseekLogo;
@@ -90,7 +86,7 @@ const getLogo = (name: string): string => {
   if (lname.includes('mistral')) return mistralLogo;
   if (lname.includes('phi')) return phiLogo;
   if (lname.includes('qwen')) return qwenLogo;
-  return huggingfaceLogo; // default logo for Hugging Face or others
+  return huggingfaceLogo;
 };
 
 function formatModelName(name: string): string {
@@ -200,14 +196,17 @@ const getCompanyName = (name: string): string => {
       return companyMap[key];
     }
   }
-  return 'Hugging Face'; // default for Hugging Face or others
+  return 'Hugging Face';
 };
 
-// Will replace this with common filter categories
 const categories = [
   { title: 'All', value: 0 },
-  { title: 'option2', value: 1 },
-  { title: 'option3', value: 2 },
+  { title: 'Meta', value: 1 },
+  { title: 'Microsoft', value: 2 },
+  { title: 'Mistral AI', value: 3 },
+  { title: 'DeepSeek', value: 4 },
+  { title: 'TII', value: 5 },
+  { title: 'Qwen', value: 6 },
 ];
 
 const KaitoModels = () => {
@@ -251,9 +250,34 @@ const KaitoModels = () => {
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
   const [editorValue, setEditorValue] = useState('');
 
-  const filteredModels = presetModels.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredModels = presetModels.filter(model => {
+    const matchesSearch = model.name.toLowerCase().includes(search.toLowerCase());
+    let matchesCategory = true;
+    if (category.value !== 0) {
+      switch (category.value) {
+        case 1:
+          matchesCategory = model.company.name.toLowerCase().includes('meta');
+          break;
+        case 2:
+          matchesCategory = model.company.name.toLowerCase().includes('microsoft');
+          break;
+        case 3:
+          matchesCategory = model.company.name.toLowerCase().includes('mistral');
+          break;
+        case 4:
+          matchesCategory = model.company.name.toLowerCase().includes('deepseek');
+          break;
+        case 5:
+          matchesCategory = model.company.name.toLowerCase().includes('tii');
+          break;
+        case 6:
+          matchesCategory = model.company.name.toLowerCase().includes('qwen');
+          break;
+      }
+    }
+
+    return matchesSearch && matchesCategory;
+  });
 
   const paginatedModels = filteredModels.slice(
     (page - 1) * PAGE_OFFSET_COUNT_FOR_MODELS,
@@ -421,9 +445,7 @@ inference:
           )}
         </>
       )}
-      <Box textAlign="right" mt={2} mr={2}>
-        {/* <Link href="https://artifacthub.io/" target="_blank"> */}
-      </Box>
+      <Box textAlign="right" mt={2} mr={2}></Box>
       {editorDialogOpen && (
         <EditorDialog
           item={itemRef.current}
