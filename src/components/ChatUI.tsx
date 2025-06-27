@@ -183,8 +183,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   theme: themeProp,
 }) => {
   const theme = themeProp || useTheme();
-  const defaultConfig = { temperature: 0.7, maxTokens: 1000 };
-  const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG || defaultConfig);
+  const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { temperature = 0.7, maxTokens = 1000 } = config || {};
   const [messages, setMessages] = useState<Message[]>([
