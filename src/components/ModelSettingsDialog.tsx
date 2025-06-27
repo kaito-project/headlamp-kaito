@@ -23,7 +23,6 @@ interface Props {
 
 const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave }) => {
   const defaultConfig = { temperature: 0.7, maxTokens: 1000 };
-  console.log('ModelSettingsDialog initializing with config:', config || defaultConfig);
   const [localConfig, setLocalConfig] = React.useState(config || defaultConfig);
 
   React.useEffect(() => {
