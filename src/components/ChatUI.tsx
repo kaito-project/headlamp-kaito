@@ -701,45 +701,51 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             pb: 0,
           }}
         >
-          <IconButton
-            onClick={() => {
-              stopAIPortForward();
-              onClose?.();
-            }}
-            size="small"
-            sx={{
-              color: theme.palette.error.main,
-              fontSize: '18px',
-              width: 32,
-              height: 32,
-              '&:hover': {
-                backgroundColor: theme.palette.action.hover,
-                color: theme.palette.error.dark,
-                transform: 'scale(1.1)',
-              },
-              transition: 'all 0.2s ease',
-            }}
-            aria-label="Close chat"
-          >
-            ✕
-          </IconButton>
-          <Tooltip title="Model Settings">
-            <div
-              onClick={() => setSettingsOpen(true)}
-              style={{
-                cursor: 'pointer',
+          <Stack direction="row" spacing={1}>
+            <Tooltip title="Model Settings">
+              <IconButton
+                onClick={() => setSettingsOpen(true)}
+                size="small"
+                sx={{
+                  color: theme.palette.primary.main,
+                  fontSize: '18px',
+                  width: 32,
+                  height: 32,
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.hover,
+                    color: theme.palette.primary.dark,
+                    transform: 'scale(1.1)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+                aria-label="Model Settings"
+              >
+                ⚙
+              </IconButton>
+            </Tooltip>
+            <IconButton
+              onClick={() => {
+                stopAIPortForward();
+                onClose?.();
+              }}
+              size="small"
+              sx={{
+                color: theme.palette.error.main,
+                fontSize: '18px',
                 width: 32,
                 height: 32,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-                borderRadius: '4px',
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                  color: theme.palette.error.dark,
+                  transform: 'scale(1.1)',
+                },
+                transition: 'all 0.2s ease',
               }}
+              aria-label="Close chat"
             >
-              ⚙
-            </div>
-          </Tooltip>
+              ✕
+            </IconButton>
+          </Stack>
         </Box>
 
         {renderChatContent(
@@ -822,6 +828,27 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   🗑️
                 </IconButton>
               </Tooltip>
+              <Tooltip title="Model Settings">
+                <IconButton
+                  onClick={() => setSettingsOpen(true)}
+                  size="small"
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontSize: '18px',
+                    width: 32,
+                    height: 32,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                      color: theme.palette.primary.dark,
+                      transform: 'scale(1.1)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                  aria-label="Model Settings"
+                >
+                  ⚙
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Close chat">
                 <IconButton
                   onClick={() => {
@@ -844,23 +871,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 >
                   ✕
                 </IconButton>
-              </Tooltip>
-              <Tooltip title="Model Settings">
-                <div
-                  onClick={() => setSettingsOpen(true)}
-                  style={{
-                    cursor: 'pointer',
-                    width: 32,
-                    height: 32,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '18px',
-                    borderRadius: '4px',
-                  }}
-                >
-                  ⚙
-                </div>
               </Tooltip>
             </Stack>
           </Stack>
