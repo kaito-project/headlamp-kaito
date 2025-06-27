@@ -262,10 +262,6 @@ const KaitoModels = () => {
   function generateWorkspaceYAML(model: PresetModel): object[] {
     const modelNameCheck = model.name.toLowerCase();
     const isLlama = modelNameCheck.includes('llama');
-    const isLargeModel =
-      modelNameCheck.includes('40b') ||
-      modelNameCheck.includes('70b') ||
-      modelNameCheck.includes('32b');
 
     const presetModelName = modelNameCheck.replace(/-/g, '.');
 
@@ -276,7 +272,6 @@ const KaitoModels = () => {
         name: `workspace-${modelNameCheck}`,
       },
       resource: {
-        ...(isLargeModel && { count: 2 }),
         instanceType: model.instanceType,
         labelSelector: {
           matchLabels: {
@@ -285,7 +280,6 @@ const KaitoModels = () => {
         },
       },
       inference: {
-        ...(isLargeModel && { config: 'ds-inference-params' }),
         preset: {
           name: presetModelName,
           ...(isLlama && {
@@ -307,7 +301,7 @@ const KaitoModels = () => {
           name: 'hf-token',
         },
         type: 'Opaque',
-        stringData: {
+        data: {
           HF_TOKEN: '# your secret here.',
         },
       };
