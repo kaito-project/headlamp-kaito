@@ -129,41 +129,76 @@ const KaitoChat: React.FC = () => {
         flexDirection: 'column',
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={2} mb={4} sx={{ flexShrink: 0 }}>
+      <Stack direction="row" spacing={2} mb={4} sx={{ flexShrink: 0, alignItems: 'flex-start' }}>
         <Typography
           variant="h5"
           fontWeight={600}
-          color={
-            theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary
-          }
+          sx={{
+            color:
+              theme.palette.mode === 'dark'
+                ? theme.palette.common.white
+                : theme.palette.text.primary,
+            mt: 3.5,
+          }}
         >
           Chat with
         </Typography>
-        <Autocomplete
-          options={workspaceOptions}
-          getOptionLabel={opt => opt.label}
-          value={selectedWorkspace}
-          onChange={(_, val) => setSelectedWorkspace(val)}
-          sx={{ width: 250 }}
-          noOptionsText="No ready workspaces available"
-          renderInput={params => (
-            <TextField {...params} label="Workspace" helperText="Only showing ready workspaces" />
-          )}
-        />
+        <Box>
+          <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+            Workspace
+          </Typography>
+          <Box sx={{ width: 250 }}>
+            <Autocomplete
+              options={workspaceOptions}
+              getOptionLabel={opt => opt.label}
+              value={selectedWorkspace}
+              onChange={(_, val) => setSelectedWorkspace(val)}
+              fullWidth
+              noOptionsText="No ready workspaces available"
+              renderInput={params => <TextField {...params} placeholder="Select a workspace" />}
+            />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              Only showing ready workspaces
+            </Typography>
+          </Box>
+        </Box>
         {selectedWorkspace && (
-          <Autocomplete
-            options={models}
-            getOptionLabel={opt => opt.title}
-            value={selectedModel}
-            onChange={(_, val) => setSelectedModel(val)}
-            sx={{ width: 250 }}
-            renderInput={params => <TextField {...params} label="Model" />}
-          />
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+              Model
+            </Typography>
+            <Box sx={{ width: 250 }}>
+              <Autocomplete
+                options={models}
+                getOptionLabel={opt => opt.title}
+                value={selectedModel}
+                onChange={(_, val) => setSelectedModel(val)}
+                fullWidth
+                renderInput={params => <TextField {...params} placeholder="Select a model" />}
+              />
+            </Box>
+          </Box>
         )}
         {selectedWorkspace && selectedModel && (
-          <Button variant="contained" color="primary" onClick={() => setDialogOpen(true)}>
-            Go
-          </Button>
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.5, visibility: 'hidden', display: 'block' }}
+            >
+              Button
+            </Typography>
+            <Box sx={{ width: '80px' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setDialogOpen(true)}
+                sx={{ height: '56px', width: '100%' }}
+              >
+                Go
+              </Button>
+            </Box>
+          </Box>
         )}
       </Stack>
 
