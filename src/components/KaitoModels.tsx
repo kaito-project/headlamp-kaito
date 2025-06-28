@@ -29,7 +29,7 @@ import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import * as yaml from 'js-yaml';
+import yaml from 'js-yaml';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -241,15 +241,19 @@ const KaitoModels = () => {
     loadModels();
   }, []);
   function handleDeploy(model: PresetModel) {
-    const workspaceObjects = generateWorkspaceYAML(model);
-    itemRef.current = workspaceObjects.length > 1 ? workspaceObjects : workspaceObjects[0];
+    const yamlString = generateWorkspaceYAML(model);
+    const parsedYaml = yaml.load(yamlString);
+
+    itemRef.current = parsedYaml;
     setActiveModel(model);
+    setEditorValue(yamlString);
     setEditorDialogOpen(true);
   }
 
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const itemRef = React.useRef({});
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
+  const [editorValue, setEditorValue] = useState('');
 
   const filteredModels = presetModels.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase())
@@ -259,58 +263,29 @@ const KaitoModels = () => {
     (page - 1) * PAGE_OFFSET_COUNT_FOR_MODELS,
     page * PAGE_OFFSET_COUNT_FOR_MODELS
   );
-  function generateWorkspaceYAML(model: PresetModel): object[] {
+
+  function generateWorkspaceYAML(model: PresetModel): string {
     const modelNameCheck = model.name.toLowerCase();
     const isLlama = modelNameCheck.includes('llama');
-
-    const presetModelName = modelNameCheck.replace(/-/g, '.');
-
-    const workspaceDoc = {
-      apiVersion: 'kaito.sh/v1beta1',
-      kind: 'Workspace',
-      metadata: {
-        name: `workspace-${modelNameCheck}`,
-      },
-      resource: {
-        instanceType: model.instanceType,
-        labelSelector: {
-          matchLabels: {
-            apps: modelNameCheck,
-          },
-        },
-      },
-      inference: {
-        preset: {
-          name: presetModelName,
-          ...(isLlama && {
-            presetOptions: {
-              modelAccessSecret: 'hf-token',
-            },
-          }),
-        },
-      },
-    };
-
-    const docs = [workspaceDoc];
-
-    if (isLlama) {
-      const secretDoc = {
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: {
-          name: 'hf-token',
-        },
-        type: 'Opaque',
-        data: {
-          HF_TOKEN: '# your secret here.',
-        },
-      };
-      docs.push(secretDoc);
-    }
-
-    return docs;
+    return `apiVersion: kaito.sh/v1beta1
+kind: Workspace
+metadata:
+  name: workspace-${modelNameCheck}
+resource:
+  instanceType: ${model.instanceType}
+  labelSelector: 
+    matchLabels:
+      apps: ${modelNameCheck}
+inference:
+    preset:
+      name: ${modelNameCheck}
+      ${
+        isLlama
+          ? `presetOptions:
+            modelAccessSecret: hf-token`
+          : ''
+      }`;
   }
-
   return (
     <>
       <SectionHeader
@@ -466,6 +441,9 @@ const KaitoModels = () => {
           open={editorDialogOpen}
           setOpen={setEditorDialogOpen}
           onClose={() => setEditorDialogOpen(false)}
+          onEditorChanged={newVal => {
+            setEditorValue(newVal);
+          }}
           onSave="default"
           title={`Deploy Model: ${activeModel?.name}`}
           saveLabel="Apply"
