@@ -285,19 +285,26 @@ const KaitoModels = () => {
   );
 
   function generateWorkspaceYAML(model: PresetModel): string {
+    const modelNameCheck = model.name.toLowerCase();
+    const isLlama = modelNameCheck.includes('llama');
     return `apiVersion: kaito.sh/v1beta1
 kind: Workspace
 metadata:
-  name: workspace-${model.name.toLowerCase()}
+  name: workspace-${modelNameCheck}
 resource:
   instanceType: ${model.instanceType}
   labelSelector: 
     matchLabels:
-      apps: ${model.name.toLowerCase()}
+      apps: ${modelNameCheck}
 inference:
     preset:
-      name: ${model.name.toLowerCase()}
-`;
+      name: ${modelNameCheck}
+      ${
+        isLlama
+          ? `presetOptions:
+            modelAccessSecret: hf-token`
+          : ''
+      }`;
   }
   return (
     <>
