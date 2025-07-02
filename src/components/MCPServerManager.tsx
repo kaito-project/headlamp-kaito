@@ -18,7 +18,7 @@ const MCPServerManager: React.FC = () => {
   const validateMCPServer = async (url: string): Promise<boolean> => {
     try {
       // For MCP servers, we can't validate with a simple HTTP call
-      // as they use SSE transport. Return true for now.
+      // as they use StreamableHTTP transport. Return true for now.
       return true;
     } catch {
       return false;
@@ -63,6 +63,7 @@ const MCPServerManager: React.FC = () => {
         Add MCP (Model Context Protocol) servers to access additional AI models. Enter the server
         details below and click Add to register a new server.
       </Typography>
+
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
         <TextField
           label="Server Name"
@@ -76,8 +77,8 @@ const MCPServerManager: React.FC = () => {
           value={url}
           onChange={e => setUrl(e.target.value)}
           fullWidth
-          placeholder="e.g., http://localhost:8080/sse"
-          helperText="The SSE endpoint URL of your MCP server"
+          placeholder="e.g., http://localhost:8080/mcp"
+          helperText="The StreamableHTTP endpoint URL of your MCP server"
         />
         <Button
           variant="contained"

@@ -23,6 +23,7 @@ import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText, generateText } from 'ai';
 import { experimental_createMCPClient as createMCPClient } from 'ai';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp';
 import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
 import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
@@ -178,26 +179,6 @@ interface ChatUIProps {
   theme?: any;
 }
 
-/**
- * ChatUI Component - Hybrid AI + MCP Architecture
- *
- * Architecture Overview:
- * - AI Model: Always uses port-forwarded Kubernetes service for primary inference
- * - MCP Context: Optionally augments responses with tools from MCP servers
- * - Tool Execution: MCP tools are called when relevant to user queries
- *
- * Data Flow:
- * 1. User submits query
- * 2. AI model processes query using port-forwarded endpoint
- * 3. If MCP tools are available and relevant, they augment the response
- * 4. Combined AI + tool results are returned to user
- *
- * Key Principles:
- * - Port forwarding is ONLY used for AI model inference
- * - MCP servers provide tools/context, not model inference
- * - Graceful degradation: chat works even if MCP tools fail
- * - Legacy MCP model selection is supported for backward compatibility
- */
 const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   open = true,
   onClose,
@@ -339,7 +320,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    console.log('🚀 Starting chat request with architecture:');
+    console.log('Starting chat request with architecture:');
     console.log('  AI Model:', selectedModel?.value, 'via', baseURL);
     console.log(
       '  MCP Context:',
@@ -383,7 +364,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
       // Create AI model provider (always use port-forwarded endpoint)
       const aiModelBaseURL = baseURL.includes('/v1') ? baseURL : `${baseURL}/v1`;
-      console.log('📡 Using AI model endpoint:', aiModelBaseURL);
+      console.log('Using AI model endpoint:', aiModelBaseURL);
 
       const openAICompatibleProvider = createOpenAICompatible({
         baseURL: aiModelBaseURL,
@@ -398,14 +379,19 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
       // Choose appropriate chat mode based on tool availability
       if (availableTools.length > 0) {
-        console.log('🔧 Using enhanced mode with', availableTools.length, 'MCP tools');
-        await handleEnhancedChat(model, conversationHistory, availableTools, aiMessageId);
+        console.log('Using enhanced mode with', availableTools.length, 'MCP tools');
+        try {
+          await handleEnhancedChat(model, conversationHistory, availableTools, aiMessageId);
+        } catch (enhancedError) {
+          console.warn('⚠️ Enhanced chat failed, falling back to standard chat:', enhancedError);
+          await handleStandardChat(model, conversationHistory, aiMessageId);
+        }
       } else {
         console.log('💬 Using standard chat mode (no MCP tools)');
         await handleStandardChat(model, conversationHistory, aiMessageId);
       }
     } catch (error) {
-      console.error('❌ Chat error:', error);
+      console.error('Chat error:', error);
       await handleChatError(error, aiMessageId);
     } finally {
       setIsLoading(false);
@@ -432,12 +418,28 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     }
 
     try {
+      console.log('Loading MCP tools from servers:', serversToUse);
       const tools = await getMCPToolsForChat(serversToUse);
-      console.log('✅ Loaded', tools.length, 'tools from', serversToUse.length, 'servers');
+      console.log('Loaded', tools.length, 'tools from', serversToUse.length, 'servers');
       return tools;
     } catch (error) {
-      console.error('⚠️ Failed to load MCP tools, continuing without:', error);
-      return [];
+      console.error('Failed to load MCP tools, attempting fallback:', error);
+
+      // Fallback: Try loading from each server individually
+      const fallbackTools: any[] = [];
+      for (const serverName of serversToUse) {
+        try {
+          console.log(`🔄 Fallback: Trying server ${serverName} individually`);
+          const serverTools = await getMCPToolsForChat([serverName]);
+          fallbackTools.push(...serverTools);
+          console.log(`Fallback: Loaded ${serverTools.length} tools from ${serverName}`);
+        } catch (serverError) {
+          console.warn(`⚠️ Fallback: Failed to load from ${serverName}:`, serverError);
+        }
+      }
+
+      console.log(`Fallback result: ${fallbackTools.length} total tools loaded`);
+      return fallbackTools;
     }
   };
 
@@ -448,60 +450,137 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     tools: any[],
     messageId: string
   ) => {
-    const result = await generateText({
-      model,
-      messages: conversationHistory,
-      tools: tools.reduce((acc, tool) => {
-        acc[tool.function.name] = {
-          description: tool.function.description,
-          parameters: tool.function.parameters,
-          execute: async (args: any) => {
-            return await executeMCPToolFromChat(tool.originalName, tool.serverName, args);
+    try {
+      console.log('Preparing tools for AI SDK:', tools.length);
+
+      // Convert tools to AI SDK format with validation
+      const aiSDKTools = tools.reduce((acc, tool) => {
+        try {
+          // Validate tool structure before adding
+          if (!tool.function?.name || !tool.function?.parameters) {
+            console.warn(`⚠️ Skipping malformed tool:`, tool);
+            return acc;
+          }
+
+          // Double-check schema compatibility
+          if (!isSchemaAISDKCompatible(tool.function.parameters)) {
+            console.warn(
+              `⚠️ Skipping tool ${tool.function.name}: final compatibility check failed`
+            );
+            console.warn(`   Schema:`, JSON.stringify(tool.function.parameters, null, 2));
+            return acc;
+          }
+
+          acc[tool.function.name] = {
+            description: tool.function.description,
+            parameters: tool.function.parameters,
+            execute: async (args: any) => {
+              return await executeMCPToolFromChat(tool.originalName, tool.serverName, args);
+            },
+          };
+          return acc;
+        } catch (toolError) {
+          console.warn(`⚠️ Error processing tool ${tool.function?.name}:`, toolError);
+          return acc;
+        }
+      }, {} as any);
+
+      console.log('Successfully prepared', Object.keys(aiSDKTools).length, 'tools for AI SDK');
+
+      // Final safety net: If no tools pass validation, create a simple test tool
+      if (Object.keys(aiSDKTools).length === 0 && tools.length > 0) {
+        console.log('All tools failed validation, creating fallback tool');
+        aiSDKTools['mcp_status'] = {
+          description: 'Get status of MCP tools (fallback)',
+          parameters: {
+            type: 'object',
+            properties: {},
+            required: [],
+          },
+          execute: async () => {
+            return {
+              status: 'MCP tools available but had schema compatibility issues',
+              availableToolCount: tools.length,
+              message: 'Original tools could not be loaded due to schema validation issues',
+            };
           },
         };
-        return acc;
-      }, {} as any),
-      temperature,
-      maxTokens,
-      toolChoice: 'auto',
-    });
+      }
 
-    let finalContent = result.text;
+      // Try to generate text with additional error handling for schema issues
+      let result;
+      try {
+        result = await generateText({
+          model,
+          messages: conversationHistory,
+          tools: aiSDKTools,
+          temperature,
+          maxTokens,
+          toolChoice: 'auto',
+        });
+      } catch (generateError) {
+        // If there's still a schema error, try without tools
+        if (generateError.message?.includes('typeName') || generateError.message?.includes('zod')) {
+          console.warn('⚠️ Schema validation error in generateText, retrying without tools');
+          console.warn('   Tools that were attempted:', Object.keys(aiSDKTools));
+          console.warn('   Error details:', generateError.message);
+          console.warn('   This suggests some tool schemas are still incompatible with AI SDK');
 
-    // Process any tool calls that were made
-    if (result.toolCalls && result.toolCalls.length > 0) {
-      console.log('🔧 Processing', result.toolCalls.length, 'tool calls');
-
-      const toolResults: string[] = [];
-      for (const toolCall of result.toolCalls) {
-        try {
-          const [serverName, ...toolNameParts] = toolCall.toolName.split('_');
-          const toolName = toolNameParts.join('_');
-
-          console.log(`⚙️ Executing: ${toolName} on ${serverName}`);
-          const toolResult = await executeMCPToolFromChat(toolName, serverName, toolCall.args);
-
-          toolResults.push(`**${toolCall.toolName}:** ${JSON.stringify(toolResult, null, 2)}`);
-        } catch (error) {
-          console.error(`❌ Tool execution failed: ${toolCall.toolName}:`, error);
-          toolResults.push(
-            `**${toolCall.toolName} failed:** ${
-              error instanceof Error ? error.message : 'Unknown error'
-            }`
-          );
+          result = await generateText({
+            model,
+            messages: conversationHistory,
+            temperature,
+            maxTokens,
+          });
+          result.text +=
+            '\n\n⚠️ Note: MCP tools were available but could not be used due to schema compatibility issues. ' +
+            `(${Object.keys(aiSDKTools).length} tools attempted)`;
+        } else {
+          throw generateError; // Re-throw if it's not a schema issue
         }
       }
 
-      if (toolResults.length > 0) {
-        finalContent += '\n\n**Tool Results:**\n' + toolResults.join('\n\n');
-      }
-    }
+      let finalContent = result.text;
 
-    setMessages(prev =>
-      prev.map(msg =>
-        msg.id === messageId ? { ...msg, content: finalContent, isLoading: false } : msg
-      )
-    );
+      // Process any tool calls that were made
+      if (result.toolCalls && result.toolCalls.length > 0) {
+        console.log('Processing', result.toolCalls.length, 'tool calls');
+
+        const toolResults: string[] = [];
+        for (const toolCall of result.toolCalls) {
+          try {
+            const [serverName, ...toolNameParts] = toolCall.toolName.split('_');
+            const toolName = toolNameParts.join('_');
+
+            console.log(`Executing: ${toolName} on ${serverName}`);
+            const toolResult = await executeMCPToolFromChat(toolName, serverName, toolCall.args);
+
+            toolResults.push(`**${toolCall.toolName}:** ${JSON.stringify(toolResult, null, 2)}`);
+          } catch (error) {
+            console.error(`Tool execution failed: ${toolCall.toolName}:`, error);
+            toolResults.push(
+              `**${toolCall.toolName} failed:** ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`
+            );
+          }
+        }
+
+        if (toolResults.length > 0) {
+          finalContent += '\n\n**Tool Results:**\n' + toolResults.join('\n\n');
+        }
+      }
+
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === messageId ? { ...msg, content: finalContent, isLoading: false } : msg
+        )
+      );
+    } catch (enhancedChatError) {
+      console.error('Enhanced chat error:', enhancedChatError);
+      // Fallback to standard chat if enhanced chat fails
+      throw enhancedChatError;
+    }
   };
 
   // Handle standard chat without tools
@@ -561,7 +640,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   };
 
   const startPortForwardProcess = async () => {
-    console.log('🔧 Starting AI model port forwarding...');
+    console.log('Starting AI model port forwarding...');
     setIsPortForwardRunning(true);
     setPortForwardStatus('Starting port forward...');
 
@@ -580,7 +659,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       const localPort = String(10000 + Math.floor(Math.random() * 10000));
       const portForwardId = `${workspaceName}/${namespace}`;
 
-      console.log(`📡 Forwarding ${podName}:${targetPort} to localhost:${localPort}`);
+      console.log(`Forwarding ${podName}:${targetPort} to localhost:${localPort}`);
 
       // Start port forwarding for AI model service
       await startWorkspacePortForward({
@@ -596,17 +675,17 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       const aiModelURL = `http://localhost:${localPort}/v1`;
       setBaseURL(aiModelURL);
 
-      console.log('🤖 Loading available AI models...');
+      console.log('Loading available AI models...');
       try {
         const modelOptions = await fetchModelsWithRetry(localPort);
         setModels(modelOptions);
         if (modelOptions.length > 0) {
           setSelectedModel(prev => prev ?? modelOptions[0]);
-          console.log('✅ AI models loaded:', modelOptions.map(m => m.title).join(', '));
+          console.log('AI models loaded:', modelOptions.map(m => m.title).join(', '));
         }
         setIsPortReady(true);
       } catch (err) {
-        console.error('❌ Failed to fetch AI models:', err);
+        console.error('Failed to fetch AI models:', err);
         setPortForwardStatus(
           `Model loading failed: ${err instanceof Error ? err.message : String(err)}`
         );
@@ -615,7 +694,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
       portForwardIdRef.current = portForwardId;
       setPortForwardStatus(`AI model ready on localhost:${localPort}`);
-      console.log('🎉 AI model port forwarding complete');
+      console.log('AI model port forwarding complete');
     } catch (error) {
       console.error('❌ Port forward error:', error);
       setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -628,13 +707,13 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const stopAIPortForward = () => {
     const portForwardId = portForwardIdRef.current;
     if (!portForwardId) {
-      console.log('🔌 No active port forward to stop');
+      console.log('No active port forward to stop');
       setIsPortForwardRunning(false);
       setPortForwardStatus('Port forward not running');
       return;
     }
 
-    console.log('🛑 Stopping AI model port forward...');
+    console.log('Stopping AI model port forward...');
     setPortForwardStatus('Stopping port forward...');
     setIsPortReady(false);
     setIsPortForwardRunning(false);
@@ -642,7 +721,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
     stopWorkspacePortForward(portForwardId)
       .then(() => {
-        console.log('✅ Port forward stopped successfully');
+        console.log('Port forward stopped successfully');
         setPortForwardStatus('Port forward stopped');
         const stopMessage: Message = {
           id: Date.now().toString(),
@@ -684,7 +763,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       return; // Skip if dialog not open or port forward already active
     }
 
-    console.log('🚀 Initializing AI model connection for chat...');
+    console.log('Initializing AI model connection for chat...');
     startPortForwardProcess();
   }, [open]);
 
@@ -706,13 +785,13 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const handleMCPModelSelect = (mcpModel: MCPModel) => {
     console.warn('⚠️ Legacy MCP Model Selection - This feature is deprecated');
     console.warn('   Please use MCP Context Integration instead for better tool management');
-    console.log('📎 Adding legacy MCP server for backward compatibility:', mcpModel.serverName);
+    console.log('Adding legacy MCP server for backward compatibility:', mcpModel.serverName);
 
     // Legacy mode: Just add the server for tool access, don't change AI model
     // The selected AI model remains the primary inference engine
     setSelectedMCPModel(mcpModel);
 
-    console.log('✅ Legacy MCP server configured for tool access only');
+    console.log('Legacy MCP server configured for tool access only');
   };
 
   const renderChatContent = (
@@ -1481,7 +1560,7 @@ const ChatWithFAB: React.FC = () => {
  */
 async function getMCPToolsForChat(selectedServers?: string[]): Promise<any[]> {
   try {
-    console.log('🔧 Loading MCP tools from servers:', selectedServers);
+    console.log('Loading MCP tools from servers:', selectedServers);
 
     const servers = loadMCPServers();
     const filteredServers = selectedServers
@@ -1489,7 +1568,7 @@ async function getMCPToolsForChat(selectedServers?: string[]): Promise<any[]> {
       : servers;
 
     if (filteredServers.length === 0) {
-      console.log('📭 No MCP servers configured or selected');
+      console.log('No MCP servers configured or selected');
       return [];
     }
 
@@ -1497,50 +1576,70 @@ async function getMCPToolsForChat(selectedServers?: string[]): Promise<any[]> {
 
     for (const server of filteredServers) {
       try {
-        console.log(`🔌 Connecting to MCP server: ${server.name} at ${server.url}`);
-        
-        let tools: any[] = [];
-        
-        // Check if this is an OP.GG or other HTTP-based MCP server
-        if (server.url.includes('mcp-api.op.gg') || server.url.includes('/tools')) {
-          tools = await loadToolsFromHttpMCP(server);
-        } else {
-          tools = await loadToolsFromSSEMCP(server);
-        }
-        
-        if (tools.length === 0) {
-          console.log(`📭 No tools available from ${server.name}`);
+        console.log(`Connecting to MCP server: ${server.name} at ${server.url}`);
+
+        const url = new URL(server.url);
+        const client = await createMCPClient({
+          transport: new StreamableHTTPClientTransport(url, {
+            sessionId: `session_${server.name}_${Date.now()}`,
+          }),
+        });
+
+        // Get tools from the MCP client
+        const tools = await client.tools();
+
+        if (!tools || Object.keys(tools).length === 0) {
+          console.log(`No tools available from ${server.name}`);
           continue;
         }
 
-        // Convert to AI SDK format
-        tools.forEach(tool => {
-          const aiTool = {
-            serverName: server.name,
-            originalName: tool.name,
-            serverUrl: server.url,
-            function: {
-              name: `${server.name}_${tool.name}`,
-              description: tool.description || `Tool ${tool.name} from ${server.name}`,
-              parameters: tool.inputSchema || {},
-            },
-          };
-          
-          allTools.push(aiTool);
-          console.log(`✅ Loaded tool: ${aiTool.function.name}`);
+        console.log(`Raw tools from ${server.name}:`, Object.keys(tools));
+
+        // Debug: Log first tool schema for inspection
+        const firstToolName = Object.keys(tools)[0];
+        const firstTool = tools[firstToolName];
+        console.log(`Sample tool schema for ${firstToolName}:`, JSON.stringify(firstTool, null, 2)); // Convert MCP tools to AI SDK format with schema validation
+        Object.entries(tools).forEach(([toolName, toolDef]: [string, any]) => {
+          try {
+            // Validate and normalize the tool schema
+            const normalizedSchema = normalizeToolSchema(toolDef.inputSchema);
+
+            // Test schema compatibility before using it
+            if (!isSchemaAISDKCompatible(normalizedSchema)) {
+              console.warn(`Skipping tool ${toolName}: schema not AI SDK compatible`);
+              return;
+            }
+
+            const aiTool = {
+              serverName: server.name,
+              originalName: toolName,
+              client: client, // Store client reference for execution
+              function: {
+                name: `${server.name}_${toolName}`,
+                description: toolDef.description || `Tool ${toolName} from ${server.name}`,
+                parameters: normalizedSchema,
+              },
+            };
+
+            allTools.push(aiTool);
+            console.log(`Loaded tool: ${aiTool.function.name}`);
+          } catch (schemaError) {
+            console.warn(`Skipping tool ${toolName} due to schema issues:`, schemaError);
+            // Continue with other tools even if one has schema issues
+          }
         });
-        
-        console.log(`🎉 Successfully loaded ${tools.length} tools from ${server.name}`);
+
+        console.log(`Successfully loaded ${Object.keys(tools).length} tools from ${server.name}`);
       } catch (error) {
-        console.error(`❌ Failed to connect to MCP server ${server.name}:`, error);
+        console.error(`Failed to connect to MCP server ${server.name}:`, error);
         // Continue with other servers even if one fails
       }
     }
 
-    console.log(`🔧 Total MCP tools loaded: ${allTools.length}`);
+    console.log(`Total MCP tools loaded: ${allTools.length}`);
     return allTools;
   } catch (error) {
-    console.error('❌ Critical error loading MCP tools:', error);
+    console.error('Critical error loading MCP tools:', error);
     return [];
   }
 }
@@ -1558,8 +1657,8 @@ async function executeMCPToolFromChat(
   args: any
 ): Promise<any> {
   try {
-    console.log(`⚙️ Executing MCP tool: ${toolName} on server: ${serverName}`);
-    console.log('📥 Tool arguments:', args);
+    console.log(`Executing MCP tool: ${toolName} on server: ${serverName}`);
+    console.log('Tool arguments:', args);
 
     // For now, return a structured mock response
     // In a real implementation, this would call the actual MCP tool
@@ -1574,13 +1673,190 @@ async function executeMCPToolFromChat(
       // TODO: Replace with actual MCP tool execution
     };
 
-    console.log('✅ Tool execution completed:', result);
+    console.log('Tool execution completed:', result);
     return result;
   } catch (error) {
-    console.error(`❌ MCP tool execution failed: ${toolName}@${serverName}:`, error);
+    console.error(`MCP tool execution failed: ${toolName}@${serverName}:`, error);
     throw new Error(
       `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
+  }
+}
+
+/**
+ * Normalize MCP tool schema to be compatible with AI SDK
+ * @param schema The input schema from MCP tool
+ * @returns Normalized schema compatible with AI SDK
+ */
+function normalizeToolSchema(schema: any): any {
+  if (!schema) {
+    return {
+      type: 'object',
+      properties: {},
+      required: [],
+    };
+  }
+
+  try {
+    // If schema is a string, try to parse it
+    if (typeof schema === 'string') {
+      schema = JSON.parse(schema);
+    }
+
+    // Create a clean schema object to avoid Zod issues
+    const cleanSchema: any = {
+      type: 'object',
+      properties: {},
+      required: [],
+    };
+
+    // Only include safe, well-known properties
+    if (schema.type && typeof schema.type === 'string') {
+      cleanSchema.type = schema.type;
+    }
+
+    if (schema.description && typeof schema.description === 'string') {
+      cleanSchema.description = schema.description;
+    }
+
+    if (schema.required && Array.isArray(schema.required)) {
+      cleanSchema.required = schema.required.filter(item => typeof item === 'string');
+    }
+
+    // Safely process properties
+    if (schema.properties && typeof schema.properties === 'object') {
+      cleanSchema.properties = {};
+
+      Object.keys(schema.properties).forEach(key => {
+        const prop = schema.properties[key];
+        if (prop && typeof prop === 'object') {
+          const cleanProp: any = {};
+
+          // Only include basic, safe properties
+          if (prop.type && typeof prop.type === 'string') {
+            cleanProp.type = prop.type;
+          } else {
+            // Guess type based on structure
+            if (prop.properties) {
+              cleanProp.type = 'object';
+            } else if (prop.items) {
+              cleanProp.type = 'array';
+            } else if (prop.enum) {
+              cleanProp.type = 'string';
+            } else {
+              cleanProp.type = 'string'; // Safe default
+            }
+          }
+
+          if (prop.description && typeof prop.description === 'string') {
+            cleanProp.description = prop.description;
+          }
+
+          if (prop.enum && Array.isArray(prop.enum)) {
+            cleanProp.enum = prop.enum;
+          }
+
+          if (prop.default !== undefined) {
+            cleanProp.default = prop.default;
+          }
+
+          // Handle array items safely
+          if (cleanProp.type === 'array' && prop.items) {
+            cleanProp.items = {
+              type:
+                prop.items.type && typeof prop.items.type === 'string' ? prop.items.type : 'string',
+            };
+          }
+
+          // Handle nested objects safely (but keep it simple)
+          if (cleanProp.type === 'object' && prop.properties) {
+            cleanProp.properties = {};
+            Object.keys(prop.properties).forEach(nestedKey => {
+              const nestedProp = prop.properties[nestedKey];
+              if (nestedProp && typeof nestedProp === 'object') {
+                cleanProp.properties[nestedKey] = {
+                  type:
+                    nestedProp.type && typeof nestedProp.type === 'string'
+                      ? nestedProp.type
+                      : 'string',
+                  description: nestedProp.description || undefined,
+                };
+              }
+            });
+          }
+
+          cleanSchema.properties[key] = cleanProp;
+        }
+      });
+    }
+
+    return cleanSchema;
+  } catch (error) {
+    console.warn('Failed to normalize schema, using minimal fallback:', error);
+    return {
+      type: 'object',
+      properties: {},
+      required: [],
+    };
+  }
+}
+
+/**
+ * Test if a schema is safe for AI SDK usage
+ * @param schema The schema to test
+ * @returns true if safe, false otherwise
+ */
+function isSchemaAISDKCompatible(schema: any): boolean {
+  try {
+    // Basic structure checks
+    if (!schema || typeof schema !== 'object') {
+      return false;
+    }
+
+    if (!schema.type || typeof schema.type !== 'string') {
+      return false;
+    }
+
+    // Check for problematic properties that might cause Zod issues
+    const problematicKeys = [
+      '$schema',
+      '$id',
+      '$ref',
+      'definitions',
+      'allOf',
+      'anyOf',
+      'oneOf',
+      'not',
+    ];
+    for (const key of problematicKeys) {
+      if (schema.hasOwnProperty(key)) {
+        console.warn(`Schema contains problematic property: ${key}`);
+        return false;
+      }
+    }
+
+    // Check properties structure if it exists
+    if (schema.properties) {
+      if (typeof schema.properties !== 'object') {
+        return false;
+      }
+
+      // Check each property
+      for (const [propName, propDef] of Object.entries(schema.properties)) {
+        if (propDef && typeof propDef === 'object') {
+          const prop = propDef as any;
+          if (!prop.type || typeof prop.type !== 'string') {
+            console.warn(`Property ${propName} missing or invalid type`);
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.warn('Schema compatibility check failed:', error);
+    return false;
   }
 }
 

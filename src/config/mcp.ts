@@ -1,4 +1,5 @@
 import { experimental_createMCPClient } from 'ai';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp';
 
 export interface MCPServerConfig {
   name: string;
@@ -41,11 +42,11 @@ export async function initializeMCPClients(): Promise<void> {
 
   for (const server of servers) {
     try {
+      const url = new URL(server.url);
       const client = experimental_createMCPClient({
-        transport: {
-          type: 'sse',
-          url: server.url,
-        },
+        transport: new StreamableHTTPClientTransport(url, {
+          sessionId: `session_${server.name}_${Date.now()}`,
+        }),
       });
 
       mcpClients.set(server.name, client);
