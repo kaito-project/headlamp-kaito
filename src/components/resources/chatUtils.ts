@@ -7,10 +7,14 @@ import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 import {
   MCPTool,
   MCPModel,
+  MCPResource,
   initializeMCPClients,
   getMCPTools,
   getMCPModels,
+  getMCPResources,
   loadMCPServers,
+  getAllMCPClients,
+  getMCPClient,
 } from '../../config/mcp';
 
 export async function resolvePodAndPort(namespace: string, workspaceName: string) {
@@ -98,10 +102,8 @@ export async function fetchModelsWithRetry(localPort: string, retries = 3, delay
 
 export async function fetchToolsFromAllMCPServers(): Promise<MCPTool[]> {
   try {
-    // Initialize MCP clients first
     await initializeMCPClients();
 
-    // Fetch tools from all connected servers
     const tools = await getMCPTools();
     return tools;
   } catch (error) {
@@ -112,14 +114,148 @@ export async function fetchToolsFromAllMCPServers(): Promise<MCPTool[]> {
 
 export async function fetchModelsFromAllMCPServers(): Promise<MCPModel[]> {
   try {
-    // Initialize MCP clients first
     await initializeMCPClients();
 
-    // Fetch models from all connected servers
     const models = await getMCPModels();
     return models;
   } catch (error) {
     console.error('Failed to fetch MCP models:', error);
+    return [];
+  }
+}
+
+export interface MCPContext {
+  resources: MCPResource[];
+  availableTools: MCPTool[];
+}
+
+export async function getMCPContext(serverNames?: string[]): Promise<MCPContext> {
+  try {
+    await initializeMCPClients();
+
+    const allResources = await getMCPResources();
+    const allTools = await getMCPTools();
+
+    // Filter by server names if provided
+    const resources = serverNames
+      ? allResources.filter(r => serverNames.includes(r.serverName))
+      : allResources;
+
+    const availableTools = serverNames
+      ? allTools.filter(t => serverNames.includes(t.serverName))
+      : allTools;
+
+    return { resources, availableTools };
+  } catch (error) {
+    console.error('Failed to get MCP context:', error);
+    return { resources: [], availableTools: [] };
+  }
+}
+
+export async function enhancePromptWithMCPContext(
+  originalPrompt: string,
+  enabledServerNames?: string[]
+): Promise<string> {
+  try {
+    const context = await getMCPContext(enabledServerNames);
+
+    if (context.resources.length === 0 && context.availableTools.length === 0) {
+      return originalPrompt;
+    }
+
+    let enhancedPrompt = originalPrompt;
+
+    // Add available resources context
+    if (context.resources.length > 0) {
+      const resourcesInfo = context.resources
+        .map(r => `- ${r.name} (${r.serverName}): ${r.description || r.uri}`)
+        .join('\n');
+
+      enhancedPrompt += `\n\n[Available Resources]\n${resourcesInfo}`;
+    }
+
+    // Add available tools context
+    if (context.availableTools.length > 0) {
+      const toolsInfo = context.availableTools
+        .map(t => `- ${t.name} (${t.serverName}): ${t.description}`)
+        .join('\n');
+
+      enhancedPrompt += `\n\n[Available Tools]\n${toolsInfo}`;
+    }
+
+    return enhancedPrompt;
+  } catch (error) {
+    console.error('Failed to enhance prompt with MCP context:', error);
+    return originalPrompt;
+  }
+}
+
+export async function executeMCPToolFromChat(
+  toolName: string,
+  serverName: string,
+  arguments_: any
+): Promise<any> {
+  try {
+    const client = getMCPClient(serverName);
+    if (!client) {
+      throw new Error(`MCP client not found for server: ${serverName}`);
+    }
+
+    // Use the correct AI SDK MCP client API
+    const result = await client.callTool({
+      name: toolName,
+      arguments: arguments_,
+    });
+
+    return result;
+  } catch (error) {
+    console.error(`Failed to execute MCP tool ${toolName} from ${serverName}:`, error);
+    throw error;
+  }
+}
+
+export async function getMCPToolsForChat(selectedServers?: string[]): Promise<any[]> {
+  try {
+    await initializeMCPClients();
+
+    const allTools: any[] = [];
+    const clients = getAllMCPClients();
+
+    for (const [serverName, client] of clients) {
+      // Skip if selectedServers is provided and this server is not in the list
+      if (selectedServers && !selectedServers.includes(serverName)) {
+        continue;
+      }
+
+      try {
+        // Use the correct AI SDK MCP client API
+        const serverTools = await client.tools();
+
+        // Format tools for AI SDK compatibility
+        const formattedTools = serverTools.map((tool: any) => ({
+          type: 'function',
+          function: {
+            name: `${serverName}_${tool.name || tool.function?.name}`,
+            description: tool.description || tool.function?.description || '',
+            parameters: tool.inputSchema ||
+              tool.function?.parameters || {
+                type: 'object',
+                properties: {},
+              },
+          },
+          serverName,
+          originalName: tool.name || tool.function?.name,
+        }));
+
+        allTools.push(...formattedTools);
+      } catch (error) {
+        console.error(`Failed to get tools from ${serverName}:`, error);
+      }
+    }
+
+    return allTools;
+  } catch (error) {
+    console.error('Failed to get MCP tools for chat:', error);
     return [];
   }
 }

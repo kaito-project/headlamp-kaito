@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { streamText } from 'ai';
+import { streamText, generateText } from 'ai';
 import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
 import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
@@ -40,8 +40,14 @@ import {
   fetchModelsWithRetry,
   getClusterOrEmpty,
 } from './resources/chatUtils';
-import { MCPServerConfig, MCPTool, MCPModel } from '../config/mcp';
-import { fetchToolsFromAllMCPServers, fetchModelsFromAllMCPServers } from './resources/chatUtils';
+import { MCPServerConfig, MCPTool, MCPModel, MCPContext, loadMCPServers } from '../config/mcp';
+import {
+  fetchToolsFromAllMCPServers,
+  fetchModelsFromAllMCPServers,
+  enhancePromptWithMCPContext,
+  executeMCPToolFromChat,
+  getMCPToolsForChat,
+} from './resources/chatUtils';
 import MCPServerManager from './MCPServerManager';
 
 interface Message {
@@ -210,12 +216,103 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const [isPortReady, setIsPortReady] = useState(false);
   const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
   const [mcpDialogOpen, setMcpDialogOpen] = useState(false);
+
+  // MCP Context Management (separate from model selection)
+  const [mcpContextEnabled, setMcpContextEnabled] = useState(false);
+  const [availableMCPServers, setAvailableMCPServers] = useState<string[]>([]);
+  const [selectedMCPServers, setSelectedMCPServers] = useState<string[]>([]);
+  const [mcpTools, setMcpTools] = useState<any[]>([]);
+
+  // Legacy MCP model state (to be removed)
   const [availableMCPModels, setAvailableMCPModels] = useState<MCPModel[]>([]);
   const [selectedMCPModel, setSelectedMCPModel] = useState<MCPModel | null>(null);
+
+  // Load MCP servers and tools on component mount
+  useEffect(() => {
+    const loadMCPData = async () => {
+      try {
+        const servers = loadMCPServers();
+        const serverNames = servers.map(server => server.name);
+        setAvailableMCPServers(serverNames);
+
+        // Load persisted MCP context settings
+        const savedMcpEnabled = localStorage.getItem('mcpContextEnabled');
+        const savedSelectedServers = localStorage.getItem('selectedMCPServers');
+
+        if (savedMcpEnabled !== null) {
+          setMcpContextEnabled(JSON.parse(savedMcpEnabled));
+        }
+
+        if (savedSelectedServers) {
+          const parsedServers = JSON.parse(savedSelectedServers);
+          // Only keep servers that still exist in configuration
+          const validServers = parsedServers.filter((server: string) =>
+            serverNames.includes(server)
+          );
+          setSelectedMCPServers(validServers);
+        }
+
+        // Load MCP tools for AI SDK integration
+        const tools = await getMCPToolsForChat();
+        setMcpTools(tools);
+
+        // Legacy: Load MCP models (to be deprecated)
+        const mcpModels = await fetchModelsFromAllMCPServers();
+        setAvailableMCPModels(mcpModels);
+      } catch (error) {
+        console.error('Failed to load MCP data:', error);
+      }
+    };
+
+    loadMCPData();
+  }, []);
+
+  // Persist MCP context settings when they change
+  useEffect(() => {
+    localStorage.setItem('mcpContextEnabled', JSON.stringify(mcpContextEnabled));
+  }, [mcpContextEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedMCPServers', JSON.stringify(selectedMCPServers));
+  }, [selectedMCPServers]);
+
+  // Reload MCP tools when MCP context settings change
+  useEffect(() => {
+    const reloadMCPTools = async () => {
+      if (mcpContextEnabled && selectedMCPServers.length > 0) {
+        try {
+          console.log('Reloading MCP tools for selected servers:', selectedMCPServers);
+          const tools = await getMCPToolsForChat(selectedMCPServers);
+          setMcpTools(tools);
+        } catch (error) {
+          console.error('Failed to reload MCP tools:', error);
+        }
+      } else {
+        setMcpTools([]);
+      }
+    };
+
+    reloadMCPTools();
+  }, [mcpContextEnabled, selectedMCPServers]);
 
   useEffect(() => {
     console.log('selectedMCPModel changed:', selectedMCPModel);
   }, [selectedMCPModel]);
+
+  // Test MCP server connectivity
+  const testMCPServer = async (serverName: string, url: string) => {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      });
+      return response.ok;
+    } catch (error) {
+      console.error(`Failed to test MCP server ${serverName} at ${url}:`, error);
+      return false;
+    }
+  };
 
   const handleInputChange = (e: React.FormEvent<HTMLDivElement>) => {
     const text = (e.target as HTMLElement).textContent || '';
@@ -248,7 +345,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     console.log('handleSend called');
     console.log('Current state:', {
       selectedModel: selectedModel,
-      selectedMCPModel: selectedMCPModel,
+      mcpContextEnabled: mcpContextEnabled,
+      selectedMCPServers: selectedMCPServers,
       baseURL: baseURL,
       isPortReady: isPortReady,
     });
@@ -274,62 +372,156 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     };
 
     setMessages(prev => [...prev, aiMessage]);
+
     try {
+      // Build conversation history
       const conversationHistory = messages.concat(userMessage).map(msg => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       }));
+
+      // Validate model selection
       const modelId = selectedModel?.value;
       if (!modelId) {
         throw new Error('No model selected.');
       }
-      let resolvedBaseURL = baseURL;
-      if (selectedMCPModel) {
-        resolvedBaseURL = `${selectedMCPModel.baseURL}/v1`;
-        console.log(`Using MCP model: ${selectedMCPModel.id} with base URL: ${resolvedBaseURL}`);
-      } else {
-        console.log(`Using regular model with base URL: ${resolvedBaseURL}`);
+
+      // Enhance prompt with MCP context if enabled
+      let enhancedUserMessage = userMessage.content;
+      if (mcpContextEnabled && selectedMCPServers.length > 0) {
+        enhancedUserMessage = await enhancePromptWithMCPContext(
+          userMessage.content,
+          selectedMCPServers
+        );
+
+        // Update the conversation history with enhanced prompt
+        conversationHistory[conversationHistory.length - 1].content = enhancedUserMessage;
       }
+
+      // Set up AI model provider
       const openAICompatibleProvider = createOpenAICompatible({
-        baseURL: resolvedBaseURL,
+        baseURL: baseURL,
         apiKey: '',
         name: 'openai-compatible',
       });
 
-      const { textStream } = await streamText({
-        model: openAICompatibleProvider.chatModel(modelId),
-        messages: conversationHistory,
-        temperature,
-        maxTokens,
+      // Get MCP tools for the enabled servers
+      const availableTools =
+        mcpContextEnabled && selectedMCPServers.length > 0
+          ? mcpTools.filter(tool => selectedMCPServers.includes(tool.serverName))
+          : [];
+
+      console.log('Available tools for chat:', availableTools);
+
+      // Convert tools array to tools object for AI SDK
+      const toolsObject: { [key: string]: any } = {};
+      availableTools.forEach(tool => {
+        toolsObject[tool.function.name] = {
+          description: tool.function.description,
+          parameters: tool.function.parameters,
+          execute: async (args: any) => {
+            const serverName = tool.serverName;
+            const originalName = tool.originalName;
+            return await executeMCPToolFromChat(originalName, serverName, args);
+          },
+        };
       });
 
-      let streamedText = '';
+      // Use generateText with tools for tool-augmented queries
+      if (availableTools.length > 0) {
+        const result = await generateText({
+          model: openAICompatibleProvider.chatModel(modelId),
+          messages: conversationHistory,
+          tools: toolsObject,
+          temperature,
+          maxTokens,
+        });
 
-      for await (const textChunk of textStream) {
-        streamedText += textChunk;
+        // Handle tool calls if any
+        if (result.toolCalls && result.toolCalls.length > 0) {
+          let responseContent = result.text;
+
+          for (const toolCall of result.toolCalls) {
+            try {
+              console.log(`Executing tool: ${toolCall.toolName}`);
+
+              // Tool execution is handled by the execute function defined above
+              // The result should already include tool results
+              responseContent += `\n\n[Tool Call: ${toolCall.toolName}]\n${JSON.stringify(
+                toolCall.args,
+                null,
+                2
+              )}`;
+            } catch (toolError) {
+              console.error(`Failed to execute tool ${toolCall.toolName}:`, toolError);
+              responseContent += `\n\n[Tool Error: ${toolCall.toolName}]\nFailed to execute: ${
+                toolError instanceof Error ? toolError.message : String(toolError)
+              }`;
+            }
+          }
+
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === aiMessageId
+                ? {
+                    ...msg,
+                    content: responseContent,
+                    isLoading: false,
+                  }
+                : msg
+            )
+          );
+        } else {
+          // No tool calls, just display the response
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === aiMessageId
+                ? {
+                    ...msg,
+                    content: result.text,
+                    isLoading: false,
+                  }
+                : msg
+            )
+          );
+        }
+      } else {
+        // Use streamText for regular queries without tools
+        const { textStream } = await streamText({
+          model: openAICompatibleProvider.chatModel(modelId),
+          messages: conversationHistory,
+          temperature,
+          maxTokens,
+        });
+
+        let streamedText = '';
+
+        for await (const textChunk of textStream) {
+          streamedText += textChunk;
+          setMessages(prev =>
+            prev.map(msg =>
+              msg.id === aiMessageId
+                ? {
+                    ...msg,
+                    content: streamedText,
+                    isLoading: true,
+                  }
+                : msg
+            )
+          );
+        }
+
         setMessages(prev =>
           prev.map(msg =>
             msg.id === aiMessageId
               ? {
                   ...msg,
-                  content: streamedText,
-                  isLoading: true,
+                  isLoading: false,
                 }
               : msg
           )
         );
       }
-
-      setMessages(prev =>
-        prev.map(msg =>
-          msg.id === aiMessageId
-            ? {
-                ...msg,
-                isLoading: false,
-              }
-            : msg
-        )
-      );
     } catch (error) {
       console.error('Error fetching completion:', error);
 
@@ -476,14 +668,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   };
 
   useEffect(() => {
-    if (!open || isPortForwardRunning || portForwardIdRef.current || selectedMCPModel) return;
+    if (!open || isPortForwardRunning || portForwardIdRef.current) return;
 
-    console.log('🔧 Starting port forward process (no MCP model selected)');
+    console.log('🔧 Starting port forward process');
     const initiateChatBackend = async () => {
       await startPortForwardProcess();
     };
     initiateChatBackend();
-  }, [open, selectedMCPModel]);
+  }, [open]);
 
   useEffect(() => {
     if (!mcpDialogOpen) return;
@@ -514,6 +706,22 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     setIsPortReady(true);
     console.log('MCP Model setup complete - isPortReady set to true');
   };
+
+  // Reload MCP tools when context settings change
+  useEffect(() => {
+    if (mcpContextEnabled && selectedMCPServers.length > 0) {
+      const reloadTools = async () => {
+        try {
+          const tools = await getMCPToolsForChat();
+          setMcpTools(tools);
+          console.log(`Loaded ${tools.length} MCP tools for enabled servers:`, selectedMCPServers);
+        } catch (error) {
+          console.error('Failed to reload MCP tools:', error);
+        }
+      };
+      reloadTools();
+    }
+  }, [mcpContextEnabled, selectedMCPServers]);
 
   const renderChatContent = (
     messages: Message[],
@@ -753,14 +961,16 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           <Stack direction="row" spacing={1}>
             <Tooltip
               title={
-                selectedMCPModel ? 'MCP Active - Click to manage' : 'MCP Off - Click to configure'
+                mcpContextEnabled
+                  ? 'MCP Context Active - Click to manage'
+                  : 'MCP Context Off - Click to configure'
               }
             >
               <Chip
-                label={selectedMCPModel ? 'MCP' : 'MCP OFF'}
+                label={mcpContextEnabled ? `MCP (${selectedMCPServers.length})` : 'MCP OFF'}
                 size="small"
-                variant={selectedMCPModel ? 'filled' : 'outlined'}
-                color={selectedMCPModel ? 'success' : 'default'}
+                variant={mcpContextEnabled ? 'filled' : 'outlined'}
+                color={mcpContextEnabled ? 'success' : 'default'}
                 onClick={() => setMcpDialogOpen(true)}
                 sx={{
                   fontSize: '9px',
@@ -768,7 +978,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   minWidth: '40px',
                   cursor: 'pointer',
                   '&:hover': {
-                    backgroundColor: selectedMCPModel ? 'success.light' : 'grey.100',
+                    backgroundColor: mcpContextEnabled ? 'success.light' : 'grey.100',
                   },
                 }}
               />
@@ -857,46 +1067,67 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             <MCPServerManager />
             <Box sx={{ p: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
-                Available MCP Models
+                MCP Context Configuration
               </Typography>
-              {availableMCPModels.length > 0 ? (
-                <Stack spacing={1}>
-                  {availableMCPModels.map((mcpModel, index) => (
-                    <Box
-                      key={`${mcpModel.serverName}-${mcpModel.id}-${index}`}
-                      sx={{
-                        p: 2,
-                        border: '1px solid rgba(0,0,0,0.1)',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        bgcolor:
-                          selectedMCPModel?.id === mcpModel.id
-                            ? 'rgba(59, 130, 246, 0.1)'
-                            : 'transparent',
-                        '&:hover': {
-                          bgcolor: 'rgba(59, 130, 246, 0.05)',
-                        },
-                      }}
-                      onClick={() => {
-                        console.log('MCP Model clicked:', mcpModel);
-                        handleMCPModelSelect(mcpModel);
-                        setMcpDialogOpen(false);
-                        console.log('Dialog closed, MCP model should be selected');
-                      }}
-                    >
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        {mcpModel.id}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Server: {mcpModel.serverName} | URL: {mcpModel.baseURL}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
-              ) : (
-                <Typography color="text.secondary">
-                  No MCP models available. Add MCP servers above to see available models.
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+                  Enable MCP Context
                 </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Chip
+                    label={mcpContextEnabled ? 'Enabled' : 'Disabled'}
+                    size="small"
+                    variant={mcpContextEnabled ? 'filled' : 'outlined'}
+                    color={mcpContextEnabled ? 'success' : 'default'}
+                    onClick={() => setMcpContextEnabled(!mcpContextEnabled)}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    {mcpContextEnabled
+                      ? 'MCP context will enhance your queries with available tools and resources'
+                      : 'Click to enable MCP context for tool-augmented queries'}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {mcpContextEnabled && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+                    Select MCP Servers
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Choose which MCP servers to use for context enhancement:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {availableMCPServers.map(serverName => (
+                      <Chip
+                        key={serverName}
+                        label={serverName}
+                        size="small"
+                        variant={selectedMCPServers.includes(serverName) ? 'filled' : 'outlined'}
+                        color={selectedMCPServers.includes(serverName) ? 'primary' : 'default'}
+                        onClick={() => {
+                          if (selectedMCPServers.includes(serverName)) {
+                            setSelectedMCPServers(prev => prev.filter(s => s !== serverName));
+                          } else {
+                            setSelectedMCPServers(prev => [...prev, serverName]);
+                          }
+                        }}
+                        sx={{ cursor: 'pointer' }}
+                      />
+                    ))}
+                    {availableMCPServers.length === 0 && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontStyle: 'italic' }}
+                      >
+                        No MCP servers configured. Add servers above to enable context features.
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
               )}
             </Box>
           </DialogContent>
@@ -931,10 +1162,17 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             </Avatar>
             <Box>
               <Typography variant="h6" fontWeight="600" color={theme.palette.text.primary}>
-                Chat with{' '}
-                {selectedMCPModel
-                  ? `${selectedMCPModel.id} (${selectedMCPModel.serverName})`
-                  : selectedModel?.title ?? 'Model'}
+                Chat with {selectedModel?.title ?? 'Model'}
+                {mcpContextEnabled && selectedMCPServers.length > 0 && (
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ ml: 1 }}
+                  >
+                    + MCP Tools ({selectedMCPServers.length} servers)
+                  </Typography>
+                )}
               </Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Box
@@ -956,21 +1194,23 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           <Stack direction="row" spacing={1}>
             <Tooltip
               title={
-                selectedMCPModel ? 'MCP Active - Click to manage' : 'MCP Off - Click to configure'
+                mcpContextEnabled
+                  ? 'MCP Context Active - Click to manage'
+                  : 'MCP Context Off - Click to configure'
               }
             >
               <Chip
-                label={selectedMCPModel ? 'MCP ON' : 'MCP OFF'}
+                label={mcpContextEnabled ? `MCP (${selectedMCPServers.length})` : 'MCP OFF'}
                 size="small"
-                variant={selectedMCPModel ? 'filled' : 'outlined'}
-                color={selectedMCPModel ? 'success' : 'default'}
+                variant={mcpContextEnabled ? 'filled' : 'outlined'}
+                color={mcpContextEnabled ? 'success' : 'default'}
                 onClick={() => setMcpDialogOpen(true)}
                 sx={{
                   fontSize: '10px',
                   height: '24px',
                   cursor: 'pointer',
                   '&:hover': {
-                    backgroundColor: selectedMCPModel ? 'success.light' : 'grey.100',
+                    backgroundColor: mcpContextEnabled ? 'success.light' : 'grey.100',
                   },
                 }}
               />
@@ -1054,46 +1294,63 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           <MCPServerManager />
           <Box sx={{ p: 2, borderTop: '1px solid rgba(0,0,0,0.1)' }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
-              Available MCP Models
+              MCP Context Configuration
             </Typography>
-            {availableMCPModels.length > 0 ? (
-              <Stack spacing={1}>
-                {availableMCPModels.map((mcpModel, index) => (
-                  <Box
-                    key={`${mcpModel.serverName}-${mcpModel.id}-${index}`}
-                    sx={{
-                      p: 2,
-                      border: '1px solid rgba(0,0,0,0.1)',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      bgcolor:
-                        selectedMCPModel?.id === mcpModel.id
-                          ? 'rgba(59, 130, 246, 0.1)'
-                          : 'transparent',
-                      '&:hover': {
-                        bgcolor: 'rgba(59, 130, 246, 0.05)',
-                      },
-                    }}
-                    onClick={() => {
-                      console.log('MCP Model clicked:', mcpModel);
-                      handleMCPModelSelect(mcpModel);
-                      setMcpDialogOpen(false);
-                      console.log('Dialog closed, MCP model should be selected');
-                    }}
-                  >
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      {mcpModel.id}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Server: {mcpModel.serverName} | URL: {mcpModel.baseURL}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            ) : (
-              <Typography color="text.secondary">
-                No MCP models available. Add MCP servers above to see available models.
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+                Enable MCP Context
               </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Chip
+                  label={mcpContextEnabled ? 'Enabled' : 'Disabled'}
+                  size="small"
+                  variant={mcpContextEnabled ? 'filled' : 'outlined'}
+                  color={mcpContextEnabled ? 'success' : 'default'}
+                  onClick={() => setMcpContextEnabled(!mcpContextEnabled)}
+                  sx={{ cursor: 'pointer' }}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  {mcpContextEnabled
+                    ? 'MCP context will enhance your queries with available tools and resources'
+                    : 'Click to enable MCP context for tool-augmented queries'}
+                </Typography>
+              </Box>
+            </Box>
+
+            {mcpContextEnabled && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+                  Select MCP Servers
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Choose which MCP servers to use for context enhancement:
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {availableMCPServers.map(serverName => (
+                    <Chip
+                      key={serverName}
+                      label={serverName}
+                      size="small"
+                      variant={selectedMCPServers.includes(serverName) ? 'filled' : 'outlined'}
+                      color={selectedMCPServers.includes(serverName) ? 'primary' : 'default'}
+                      onClick={() => {
+                        if (selectedMCPServers.includes(serverName)) {
+                          setSelectedMCPServers(prev => prev.filter(s => s !== serverName));
+                        } else {
+                          setSelectedMCPServers(prev => [...prev, serverName]);
+                        }
+                      }}
+                      sx={{ cursor: 'pointer' }}
+                    />
+                  ))}
+                  {availableMCPServers.length === 0 && (
+                    <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                      No MCP servers configured. Add servers above to enable context features.
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
             )}
           </Box>
         </DialogContent>
