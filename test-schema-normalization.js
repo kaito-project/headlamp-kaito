@@ -59,8 +59,6 @@ const testSchemas = [
 ];
 
 function testNormalizeToolSchema(schema) {
-  console.log('\n🧪 Testing schema:', JSON.stringify(schema, null, 2));
-
   try {
     // This would be the actual normalize function from your app
     // For testing, we'll recreate the logic here
@@ -162,7 +160,6 @@ function testNormalizeToolSchema(schema) {
 
         return cleanSchema;
       } catch (error) {
-        console.warn('Failed to normalize schema, using minimal fallback:', error);
         return {
           type: 'object',
           properties: {},
@@ -172,7 +169,6 @@ function testNormalizeToolSchema(schema) {
     };
 
     const normalized = normalizeToolSchema(schema);
-    console.log('✅ Normalized:', JSON.stringify(normalized, null, 2));
 
     // Check if the normalized schema is safe
     const isSafe =
@@ -184,15 +180,9 @@ function testNormalizeToolSchema(schema) {
       !normalized.hasOwnProperty('$id') &&
       !normalized.hasOwnProperty('$ref');
 
-    if (isSafe) {
-      console.log('✅ Schema passed safety checks');
-    } else {
-      console.log('❌ Schema failed safety checks');
-    }
-
     return { success: true, normalized, safe: isSafe };
   } catch (error) {
-    console.error('❌ Test failed:', error);
+    console.error('Test failed:', error);
     return { success: false, error: error.message };
   }
 }
