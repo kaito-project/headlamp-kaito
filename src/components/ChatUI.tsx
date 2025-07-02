@@ -749,29 +749,20 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           }}
         >
           <Stack direction="row" spacing={1}>
-            <Tooltip title="MCP Servers">
-              <IconButton
+            <Tooltip title="MCP Settings">
+              <Chip
+                label={mcpEnabled ? 'MCP ON' : 'MCP OFF'}
                 onClick={() => {
-                  console.log('MCP Servers button clicked');
                   setMcpManagerOpen(true);
                 }}
                 size="small"
+                variant={mcpEnabled ? 'filled' : 'outlined'}
                 sx={{
-                  color: theme.palette.primary.main,
-                  fontSize: '18px',
-                  width: 32,
-                  height: 32,
-                  '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
-                    color: theme.palette.primary.dark,
-                    transform: 'scale(1.1)',
-                  },
-                  transition: 'all 0.2s ease',
+                  height: 24,
+                  fontSize: '11px',
+                  cursor: 'pointer',
                 }}
-                aria-label="MCP Servers"
-              >
-                🔧
-              </IconButton>
+              />
             </Tooltip>
             <Tooltip title="Model Settings">
               <IconButton
@@ -915,29 +906,22 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   🗑️
                 </IconButton>
               </Tooltip>
-              <Tooltip title="MCP Servers">
-                <IconButton
+              <Tooltip title="MCP Settings">
+                <Chip
+                  label={mcpEnabled ? 'MCP' : 'MCP'}
                   onClick={() => {
-                    console.log('MCP Servers button clicked (dialog mode)');
+                    console.log('MCP button clicked (dialog mode)');
                     setMcpManagerOpen(true);
                   }}
                   size="small"
+                  variant={mcpEnabled ? 'filled' : 'outlined'}
+                  color={mcpEnabled ? 'success' : 'default'}
                   sx={{
-                    color: theme.palette.primary.main,
-                    fontSize: '18px',
-                    width: 32,
-                    height: 32,
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                      color: theme.palette.primary.dark,
-                      transform: 'scale(1.1)',
-                    },
-                    transition: 'all 0.2s ease',
+                    height: 24,
+                    fontSize: '11px',
+                    cursor: 'pointer',
                   }}
-                  aria-label="MCP Servers"
-                >
-                  🔧
-                </IconButton>
+                />
               </Tooltip>
               <Tooltip title="Model Settings">
                 <IconButton
