@@ -18,6 +18,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import BuildIcon from '@mui/icons-material/Build';
 import { Autocomplete, Pagination } from '@mui/material';
 import { useState, useEffect } from 'react';
 import falconLogo from '../logos/falcon-logo.webp';
@@ -55,7 +56,7 @@ interface PresetModel {
     name: string;
     url: string;
   };
-
+  supportsTools: boolean;
   logoImageId: string;
   description: string;
   instanceType: string;
@@ -174,7 +175,7 @@ function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[]
         name: getCompanyName(model.name),
         url: getHuggingFaceUrl(model.name),
       },
-
+      supportsTools: model.name.toLowerCase().includes('llama'),
       logoImageId: getLogo(model.name),
       description: getModelDescription(model.name),
       instanceType: getInstanceType(model.name),
@@ -368,27 +369,11 @@ inference:
                     )}
                   </Box>
                   <Box display="flex" alignItems="center">
-                    {model.cncf && (
-                      <Tooltip title="CNCF Project">
+                    {model.supportsTools && (
+                      <Tooltip title="Supports Tools">
                         <Icon
-                          icon="simple-icons:cncf"
+                          icon="material-symbols:build"
                           style={{ fontSize: 20, marginLeft: '0.5em' }}
-                        />
-                      </Tooltip>
-                    )}
-                    {model.official && (
-                      <Tooltip title="Official Model">
-                        <Icon
-                          icon="mdi:star-circle"
-                          style={{ fontSize: 22, marginLeft: '0.5em' }}
-                        />
-                      </Tooltip>
-                    )}
-                    {model.verifiedPublisher && (
-                      <Tooltip title="Verified Publisher">
-                        <Icon
-                          icon="mdi:check-decagram"
-                          style={{ fontSize: 22, marginLeft: '0.5em' }}
                         />
                       </Tooltip>
                     )}
