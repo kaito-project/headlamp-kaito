@@ -1,9 +1,13 @@
 # headlamp-kaito
 
-This is the default template README for [Headlamp Plugins](https://github.com/kubernetes-sigs/headlamp).
+Headlamp-Kaito enhances the [KAITO VSCode Extension](https://learn.microsoft.com/en-us/azure/aks/aks-extension-kaito) with a modern, intuitive UI built directly into Headlamp. Instead of relying on YAML or CLI workflows, this release introduces a visual experience that simplifies GPU node provisioning and model deployment for AKS users. Key features include:
 
-- The description of your plugin should go here.
-- You should also edit the package.json file meta data (like name and description).
+Enhanced UI for interacting with KAITO directly in Headlamp, replacing manual CLI steps
+One-click deployment of validated models from the KAITO Model Catalog
+Automatic provisioning of GPU-backed nodes using KAITO’s controller logic
+Dynamic model discovery from within the current namespace
+Built-in port forwarding with connection status and error handling
+AI-powered chat assistant for guided troubleshooting and user support
 
 ## Developing Headlamp plugins
 
