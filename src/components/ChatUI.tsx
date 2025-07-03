@@ -199,7 +199,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isPortForwardRunning, setIsPortForwardRunning] = useState(false);
 
-  // MCP-related state
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [mcpManagerOpen, setMcpManagerOpen] = useState(false);
   const [mcpEnabled, setMcpEnabled] = useState(true);
@@ -213,7 +212,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const [isPortReady, setIsPortReady] = useState(false);
   const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
 
-  // Initialize MCP integration
   useEffect(() => {
     const initializeMCP = async () => {
       if (mcpEnabled && mcpServers.length > 0) {
@@ -292,7 +290,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         name: 'openai-compatible',
       });
 
-      // Get MCP tools if available
       const mcpTools =
         mcpEnabled && mcpIntegration.hasTools() ? mcpIntegration.getTools() : undefined;
 
@@ -485,7 +482,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     initiateChatBackend();
   }, [open]);
 
-  // Cleanup MCP connections when component unmounts
   useEffect(() => {
     return () => {
       mcpIntegration.cleanup();
