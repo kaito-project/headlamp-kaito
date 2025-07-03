@@ -910,11 +910,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
               </Box>
             </Stack>{' '}
             <Stack direction="row" spacing={1}>
-              <Tooltip title="Clear conversation">
-                <IconButton onClick={clearChat} size="small">
-                  🗑️
-                </IconButton>
-              </Tooltip>
               {currentModelSupportsTools() && (
                 <Tooltip title="MCP Settings">
                   <Chip
@@ -953,6 +948,11 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   aria-label="Model Settings"
                 >
                   ⚙
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Clear conversation">
+                <IconButton onClick={clearChat} size="small">
+                  🗑️
                 </IconButton>
               </Tooltip>
               <Tooltip title="Close chat">
