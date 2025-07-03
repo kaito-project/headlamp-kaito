@@ -200,15 +200,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const [isPortForwardRunning, setIsPortForwardRunning] = useState(false);
 
   // MCP-related state
-  const [mcpServers, setMcpServers] = useState<MCPServer[]>([
-    {
-      id: 'example-server',
-      name: 'Example MCP Server',
-      endpoint: 'http://localhost:3000/mcp',
-      description: 'Example server for testing',
-      enabled: true,
-    },
-  ]);
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [mcpManagerOpen, setMcpManagerOpen] = useState(false);
   const [mcpEnabled, setMcpEnabled] = useState(true);
 
@@ -313,15 +305,22 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         onStepFinish: async ({ toolResults }) => {
           if (toolResults && toolResults.length > 0) {
             console.log('MCP Tool Results:', JSON.stringify(toolResults, null, 2));
-            // Optionally add tool results to the conversation
-            const toolResultsText = toolResults
-              .map(
-                result =>
-                  `Tool: ${result.toolName}\nResult: ${JSON.stringify(result.result, null, 2)}`
-              )
-              .join('\n\n');
 
-            // You can add tool results to the message or handle them as needed
+            // Add tool results as visible messages in the chat
+            for (const toolResult of toolResults) {
+              const toolMessage: Message = {
+                id: `tool-${Date.now()}-${Math.random()}`,
+                role: 'assistant',
+                content: `**🔧 Tool: ${toolResult.toolName}**\n\n\`\`\`json\n${JSON.stringify(
+                  toolResult.result,
+                  null,
+                  2
+                )}\n\`\`\``,
+                timestamp: new Date(),
+              };
+
+              setMessages(prev => [...prev, toolMessage]);
+            }
           }
         },
       });
@@ -751,12 +750,13 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           <Stack direction="row" spacing={1}>
             <Tooltip title="MCP Settings">
               <Chip
-                label={mcpEnabled ? 'MCP ON' : 'MCP OFF'}
+                label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP ON' : 'MCP OFF') : 'MCP'}
                 onClick={() => {
                   setMcpManagerOpen(true);
                 }}
                 size="small"
-                variant={mcpEnabled ? 'filled' : 'outlined'}
+                variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
+                color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
                 sx={{
                   height: 24,
                   fontSize: '11px',
@@ -908,14 +908,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
               </Tooltip>
               <Tooltip title="MCP Settings">
                 <Chip
-                  label={mcpEnabled ? 'MCP' : 'MCP'}
+                  label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP' : 'MCP') : 'MCP'}
                   onClick={() => {
                     console.log('MCP button clicked (dialog mode)');
                     setMcpManagerOpen(true);
                   }}
                   size="small"
-                  variant={mcpEnabled ? 'filled' : 'outlined'}
-                  color={mcpEnabled ? 'success' : 'default'}
+                  variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
+                  color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
                   sx={{
                     height: 24,
                     fontSize: '11px',
