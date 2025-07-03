@@ -298,8 +298,19 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         messages: conversationHistory,
         temperature,
         maxTokens,
+        maxSteps: 5,
         tools: mcpTools,
-        maxSteps: 10,
+        onStepFinish: async ({ toolResults, finishReason, usage }) => {
+          console.log('Step finished:', {
+            finishReason,
+            toolResultsCount: toolResults?.length || 0,
+            usage,
+          });
+
+          if (toolResults && toolResults.length > 0) {
+            console.log('MCP Tool Results:', JSON.stringify(toolResults, null, 2));
+          }
+        },
       });
 
       let streamedText = '';
