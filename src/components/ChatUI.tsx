@@ -302,27 +302,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         temperature,
         maxTokens,
         tools: mcpTools,
-        onStepFinish: async ({ toolResults }) => {
-          if (toolResults && toolResults.length > 0) {
-            console.log('MCP Tool Results:', JSON.stringify(toolResults, null, 2));
-
-            // Add tool results as visible messages in the chat
-            for (const toolResult of toolResults) {
-              const toolMessage: Message = {
-                id: `tool-${Date.now()}-${Math.random()}`,
-                role: 'assistant',
-                content: `**🔧 Tool: ${toolResult.toolName}**\n\n\`\`\`json\n${JSON.stringify(
-                  toolResult.result,
-                  null,
-                  2
-                )}\n\`\`\``,
-                timestamp: new Date(),
-              };
-
-              setMessages(prev => [...prev, toolMessage]);
-            }
-          }
-        },
+        maxSteps: 10,
       });
 
       let streamedText = '';
