@@ -1,7 +1,7 @@
 {
   "name": "headlamp-kaito",
   "version": "0.0.1",
-  "description": "Your Headlamp plugin",
+  "description": "A plugin for managing Kaito workspaces with integrated chat interface and MCP tool support.",
   "scripts": {
     "start": "headlamp-plugin start",
     "build": "headlamp-plugin build",
