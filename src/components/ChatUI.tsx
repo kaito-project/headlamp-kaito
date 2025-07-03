@@ -538,18 +538,20 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       <MessagesContainer>
         {messages.map(message => (
           <MessageBubble key={message.id} isUser={message.role === 'user'}>
-            <Avatar
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
-                color: '#ffffff',
-                fontSize: '14px',
-                fontWeight: 'bold',
-              }}
-            >
-              {message.role === 'user' ? '' : '🤖'}
-            </Avatar>
+            {message.role === 'user' && (
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                }}
+              >
+                {message.role === 'user' ? '' : '🤖'}
+              </Avatar>
+            )}
             <MessageContent isUser={message.role === 'user'}>
               <Box
                 sx={{
@@ -868,16 +870,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         <ChatHeader sx={{ background: theme.palette.background.default }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
             <Stack direction="row" alignItems="center" spacing={2}>
-              {' '}
-              <Avatar
-                sx={{
-                  bgcolor: '#2563eb',
-                  width: 40,
-                  height: 40,
-                }}
-              >
-                🤖
-              </Avatar>
               <Box>
                 <Typography variant="h6" fontWeight="600" color={theme.palette.text.primary}>
                   Chat with {selectedModel?.title ?? 'Model'}
