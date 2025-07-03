@@ -26,6 +26,7 @@ import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
 import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 import MCPServerManager, { MCPServer } from './MCPServerManager';
 import { mcpIntegration } from '../utils/mcpIntegration';
+import { modelSupportsTools } from '../utils/modelUtils';
 import ReactMarkdown from 'react-markdown';
 import {
   request,
@@ -212,9 +213,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const [isPortReady, setIsPortReady] = useState(false);
   const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
 
+  // Helper function to check if current model supports MCP tools
+  const currentModelSupportsTools = (): boolean => {
+    return selectedModel ? modelSupportsTools(selectedModel.value) : false;
+  };
+
   useEffect(() => {
     const initializeMCP = async () => {
-      if (mcpEnabled && mcpServers.length > 0) {
+      if (mcpEnabled && mcpServers.length > 0 && currentModelSupportsTools()) {
         try {
           await mcpIntegration.initializeServers(mcpServers);
         } catch (error) {
@@ -224,7 +230,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     };
 
     initializeMCP();
-  }, [mcpServers, mcpEnabled]);
+  }, [mcpServers, mcpEnabled, selectedModel]);
 
   const handleInputChange = (e: React.FormEvent<HTMLDivElement>) => {
     const text = (e.target as HTMLElement).textContent || '';
@@ -291,7 +297,19 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       });
 
       const mcpTools =
-        mcpEnabled && mcpIntegration.hasTools() ? mcpIntegration.getTools() : undefined;
+        mcpEnabled && currentModelSupportsTools() && mcpIntegration.hasTools()
+          ? mcpIntegration.getTools()
+          : undefined;
+
+      console.log('MCP Debug:', {
+        mcpEnabled,
+        modelSupportsTools: currentModelSupportsTools(),
+        hasTools: mcpIntegration.hasTools(),
+        toolsCount: mcpTools ? Object.keys(mcpTools).length : 0,
+        servers: mcpServers.length,
+        enabledServers: mcpServers.filter(s => s.enabled).length,
+        currentModel: selectedModel?.value,
+      });
 
       const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel(modelId),
@@ -735,22 +753,24 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           }}
         >
           <Stack direction="row" spacing={1}>
-            <Tooltip title="MCP Settings">
-              <Chip
-                label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP ON' : 'MCP OFF') : 'MCP'}
-                onClick={() => {
-                  setMcpManagerOpen(true);
-                }}
-                size="small"
-                variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
-                color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
-                sx={{
-                  height: 24,
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                }}
-              />
-            </Tooltip>
+            {currentModelSupportsTools() && (
+              <Tooltip title="MCP Settings">
+                <Chip
+                  label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP ON' : 'MCP OFF') : 'MCP'}
+                  onClick={() => {
+                    setMcpManagerOpen(true);
+                  }}
+                  size="small"
+                  variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
+                  color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
+                  sx={{
+                    height: 24,
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                  }}
+                />
+              </Tooltip>
+            )}
             <Tooltip title="Model Settings">
               <IconButton
                 onClick={() => setSettingsOpen(true)}
@@ -821,12 +841,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           config={config}
           onSave={setConfig}
         />
-        <MCPServerManager
-          open={mcpManagerOpen}
-          onClose={() => setMcpManagerOpen(false)}
-          servers={mcpServers}
-          onServersChange={setMcpServers}
-        />
+        {currentModelSupportsTools() && (
+          <MCPServerManager
+            open={mcpManagerOpen}
+            onClose={() => setMcpManagerOpen(false)}
+            servers={mcpServers}
+            onServersChange={setMcpServers}
+          />
+        )}
       </Box>
     );
   }
@@ -874,7 +896,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                       },
                     }}
                   />
-                  {mcpEnabled && mcpServers.length > 0 && (
+                  {currentModelSupportsTools() && mcpEnabled && mcpServers.length > 0 && (
                     <Chip
                       label={`MCP: ${
                         mcpIntegration.getServerStatus().filter(s => s.connected).length
@@ -893,23 +915,25 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   🗑️
                 </IconButton>
               </Tooltip>
-              <Tooltip title="MCP Settings">
-                <Chip
-                  label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP' : 'MCP') : 'MCP'}
-                  onClick={() => {
-                    console.log('MCP button clicked (dialog mode)');
-                    setMcpManagerOpen(true);
-                  }}
-                  size="small"
-                  variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
-                  color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
-                  sx={{
-                    height: 24,
-                    fontSize: '11px',
-                    cursor: 'pointer',
-                  }}
-                />
-              </Tooltip>
+              {currentModelSupportsTools() && (
+                <Tooltip title="MCP Settings">
+                  <Chip
+                    label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP' : 'MCP') : 'MCP'}
+                    onClick={() => {
+                      console.log('MCP button clicked (dialog mode)');
+                      setMcpManagerOpen(true);
+                    }}
+                    size="small"
+                    variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
+                    color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
+                    sx={{
+                      height: 24,
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                    }}
+                  />
+                </Tooltip>
+              )}
               <Tooltip title="Model Settings">
                 <IconButton
                   onClick={() => setSettingsOpen(true)}
@@ -992,12 +1016,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         config={config}
         onSave={setConfig}
       />
-      <MCPServerManager
-        open={mcpManagerOpen}
-        onClose={() => setMcpManagerOpen(false)}
-        servers={mcpServers}
-        onServersChange={setMcpServers}
-      />
+      {currentModelSupportsTools() && (
+        <MCPServerManager
+          open={mcpManagerOpen}
+          onClose={() => setMcpManagerOpen(false)}
+          servers={mcpServers}
+          onServersChange={setMcpServers}
+        />
+      )}
     </>
   );
 };

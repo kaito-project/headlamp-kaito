@@ -30,6 +30,7 @@ import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import yaml from 'js-yaml';
+import { modelSupportsTools } from '../utils/modelUtils';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -175,7 +176,7 @@ function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[]
         name: getCompanyName(model.name),
         url: getHuggingFaceUrl(model.name),
       },
-      supportsTools: model.name.toLowerCase().includes('llama'),
+      supportsTools: modelSupportsTools(model.name),
       logoImageId: getLogo(model.name),
       description: getModelDescription(model.name),
       instanceType: getInstanceType(model.name),
