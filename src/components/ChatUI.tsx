@@ -29,11 +29,6 @@ import { MCPServer } from '../utils/mcpIntegration';
 import { mcpIntegration } from '../utils/mcpIntegration';
 import { modelSupportsTools } from '../utils/modelUtils';
 import ReactMarkdown from 'react-markdown';
-import {
-  request,
-  startPortForward,
-  stopOrDeletePortForward,
-} from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { useTheme } from '@mui/material/styles';
 import {
   resolvePodAndPort,
