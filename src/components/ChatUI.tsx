@@ -301,17 +301,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         mcpEnabled && currentModelSupportsTools() && mcpIntegration.hasTools()
           ? mcpIntegration.getTools()
           : undefined;
-
-      console.log('MCP Debug:', {
-        mcpEnabled,
-        modelSupportsTools: currentModelSupportsTools(),
-        hasTools: mcpIntegration.hasTools(),
-        toolsCount: mcpTools ? Object.keys(mcpTools).length : 0,
-        servers: mcpServers.length,
-        enabledServers: mcpServers.filter(s => s.enabled).length,
-        currentModel: selectedModel?.value,
-      });
-
       const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel(modelId),
         messages: conversationHistory,
@@ -319,17 +308,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         maxTokens,
         maxSteps: 5,
         tools: mcpTools,
-        onStepFinish: async ({ toolResults, finishReason, usage }) => {
-          console.log('Step finished:', {
-            finishReason,
-            toolResultsCount: toolResults?.length || 0,
-            usage,
-          });
-
-          if (toolResults && toolResults.length > 0) {
-            console.log('MCP Tool Results:', JSON.stringify(toolResults, null, 2));
-          }
-        },
       });
 
       let streamedText = '';
@@ -907,10 +885,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 <Tooltip title="MCP Settings">
                   <Chip
                     label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP' : 'MCP') : 'MCP'}
-                    onClick={() => {
-                      console.log('MCP button clicked (dialog mode)');
-                      setMcpManagerOpen(true);
-                    }}
                     size="small"
                     variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
                     color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}

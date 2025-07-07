@@ -77,14 +77,6 @@ export class MCPIntegration {
 
     for (const server of this.servers) {
       try {
-        console.log(`Initializing MCP server: ${server.name}`, {
-          endpoint: server.endpoint,
-          hasApiKey: !!server.apiKey,
-          authMethod: server.authMethod,
-          apiKeyPrefix: server.apiKey ? server.apiKey.substring(0, 8) + '...' : 'none',
-        });
-
-        // Determine the endpoint URL based on authentication method
         let endpointUrl: string;
         let transportOptions: { requestInit?: RequestInit } = {};
 
@@ -106,15 +98,6 @@ export class MCPIntegration {
         } else {
           endpointUrl = server.endpoint;
         }
-
-        console.log('Transport options:', {
-          endpointUrl,
-          hasHeaders: !!transportOptions.requestInit?.headers,
-          headers: transportOptions.requestInit?.headers
-            ? Object.keys(transportOptions.requestInit.headers)
-            : [],
-        });
-
         const transport = new StreamableHTTPClientTransport(new URL(endpointUrl), transportOptions);
 
         const client = await experimental_createMCPClient({
@@ -129,8 +112,6 @@ export class MCPIntegration {
           ...this.clientManager.tools,
           ...tools,
         };
-
-        console.log(`Successfully initialized MCP server: ${server.name}`);
       } catch (error) {
         console.error(`Failed to initialize MCP server ${server.name}:`, error);
       }
@@ -213,13 +194,6 @@ export async function validateMCPEndpoint(
     } else {
       validationUrl = `${endpoint}/health`;
     }
-
-    console.log('Validating MCP endpoint:', {
-      validationUrl,
-      hasAuth: !!apiKey,
-      authMethod,
-      headers: Object.keys(headers),
-    });
 
     const response = await fetch(validationUrl, {
       method: 'GET',
