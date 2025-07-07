@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Dialog,
@@ -14,10 +14,6 @@ import {
   Tooltip,
   TextField,
   Autocomplete,
-  Button,
-  DialogTitle,
-  DialogActions,
-  Slider,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
@@ -35,7 +31,6 @@ import {
   startWorkspacePortForward,
   stopWorkspacePortForward,
   fetchModelsWithRetry,
-  getClusterOrEmpty,
 } from './chatUtils';
 
 interface Message {
