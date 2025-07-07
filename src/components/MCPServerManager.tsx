@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MCPServer } from '../utils/mcpIntegration';
 import {
   Dialog,
   DialogTitle,
@@ -16,15 +17,12 @@ import {
   Chip,
   Stack,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
 } from '@mui/material';
-
-export interface MCPServer {
-  id: string;
-  name: string;
-  endpoint: string;
-  description?: string;
-  enabled: boolean;
-}
 
 interface MCPServerManagerProps {
   open: boolean;
@@ -45,6 +43,8 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
     endpoint: '',
     description: '',
     enabled: true,
+    apiKey: '',
+    authMethod: 'header',
   });
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -57,10 +57,19 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
       endpoint: newServer.endpoint,
       description: newServer.description || '',
       enabled: true,
+      apiKey: newServer.apiKey || '',
+      authMethod: newServer.authMethod || 'header',
     };
 
     onServersChange([...servers, server]);
-    setNewServer({ name: '', endpoint: '', description: '', enabled: true });
+    setNewServer({
+      name: '',
+      endpoint: '',
+      description: '',
+      enabled: true,
+      apiKey: '',
+      authMethod: 'header',
+    });
     setShowAddForm(false);
   };
 
@@ -185,6 +194,32 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                   multiline
                   rows={2}
                 />
+                <TextField
+                  label="API Key (optional)"
+                  value={newServer.apiKey}
+                  onChange={e => setNewServer({ ...newServer, apiKey: e.target.value })}
+                  fullWidth
+                  type="password"
+                  helperText="Leave empty if server doesn't require authentication"
+                />
+                <FormControl fullWidth>
+                  <InputLabel>Authentication Method</InputLabel>
+                  <Select
+                    value={newServer.authMethod || 'header'}
+                    label="Authentication Method"
+                    onChange={e =>
+                      setNewServer({ ...newServer, authMethod: e.target.value as 'url' | 'header' })
+                    }
+                  >
+                    <MenuItem value="header">Authorization Header</MenuItem>
+                    <MenuItem value="url">URL Path</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    {newServer.authMethod === 'url'
+                      ? 'API key will be included in URL path: /api-key/mcp'
+                      : 'API key will be sent in Authorization header as Bearer token'}
+                  </FormHelperText>
+                </FormControl>
                 <Stack direction="row" spacing={1}>
                   <Button
                     onClick={handleAddServer}
@@ -235,6 +270,36 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 multiline
                 rows={2}
               />
+              <TextField
+                label="API Key (optional)"
+                value={editingServer?.apiKey || ''}
+                onChange={e =>
+                  setEditingServer(prev => (prev ? { ...prev, apiKey: e.target.value } : null))
+                }
+                fullWidth
+                type="password"
+                helperText="Leave empty if server doesn't require authentication"
+              />
+              <FormControl fullWidth>
+                <InputLabel>Authentication Method</InputLabel>
+                <Select
+                  value={editingServer?.authMethod || 'header'}
+                  label="Authentication Method"
+                  onChange={e =>
+                    setEditingServer(prev =>
+                      prev ? { ...prev, authMethod: e.target.value as 'url' | 'header' } : null
+                    )
+                  }
+                >
+                  <MenuItem value="header">Authorization Header</MenuItem>
+                  <MenuItem value="url">URL Path</MenuItem>
+                </Select>
+                <FormHelperText>
+                  {editingServer?.authMethod === 'url'
+                    ? 'API key will be included in URL path: /api-key/mcp'
+                    : 'API key will be sent in Authorization header as Bearer token'}
+                </FormHelperText>
+              </FormControl>
             </Stack>
           </DialogContent>
           <DialogActions>

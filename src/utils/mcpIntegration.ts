@@ -1,12 +1,55 @@
 import { experimental_createMCPClient } from 'ai';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
+/**
+ * MCP Integration with API Key Authentication Support
+ *
+ * Supports two authentication methods for MCP servers:
+ * 1. URL Path Authentication: API key embedded in URL path (https://server/<api-key>/mcp)
+ * 2. Header Authentication: API key sent in Authorization header (Bearer token)
+ *
+ * Based on the Model Context Protocol documentation:
+ * - https://modelcontextprotocol.io/docs/concepts/transports
+ *
+ * Example usage:
+ *
+ * // Server with API key in header (default)
+ * const serverWithHeader: MCPServer = {
+ *   id: 'server1',
+ *   name: 'My MCP Server',
+ *   endpoint: 'https://api.example.com/mcp',
+ *   apiKey: 'your-api-key-here',
+ *   authMethod: 'header', // or omit for default
+ *   enabled: true
+ * };
+ *
+ * // Server with API key in URL path
+ * const serverWithUrlAuth: MCPServer = {
+ *   id: 'server2',
+ *   name: 'URL Auth Server',
+ *   endpoint: 'https://api.example.com',
+ *   apiKey: 'your-api-key-here',
+ *   authMethod: 'url',
+ *   enabled: true
+ * };
+ *
+ * // Server without authentication
+ * const publicServer: MCPServer = {
+ *   id: 'server3',
+ *   name: 'Public Server',
+ *   endpoint: 'https://public.example.com/mcp',
+ *   enabled: true
+ * };
+ */
+
 export interface MCPServer {
   id: string;
   name: string;
   endpoint: string;
   description?: string;
   enabled: boolean;
+  apiKey?: string;
+  authMethod?: 'url' | 'header';
 }
 
 export interface MCPClientManager {
@@ -34,7 +77,45 @@ export class MCPIntegration {
 
     for (const server of this.servers) {
       try {
-        const transport = new StreamableHTTPClientTransport(new URL(server.endpoint));
+        console.log(`Initializing MCP server: ${server.name}`, {
+          endpoint: server.endpoint,
+          hasApiKey: !!server.apiKey,
+          authMethod: server.authMethod,
+          apiKeyPrefix: server.apiKey ? server.apiKey.substring(0, 8) + '...' : 'none',
+        });
+
+        // Determine the endpoint URL based on authentication method
+        let endpointUrl: string;
+        let transportOptions: { requestInit?: RequestInit } = {};
+
+        if (server.apiKey) {
+          if (server.authMethod === 'url') {
+            // API key in URL path: https://<mcp-server-address>/<api-key>/mcp
+            const url = new URL(server.endpoint);
+            endpointUrl = `${url.origin}/${server.apiKey}/mcp`;
+          } else {
+            // API key in Authorization header (default)
+            endpointUrl = server.endpoint;
+            transportOptions.requestInit = {
+              headers: {
+                Authorization: `Bearer ${server.apiKey}`,
+                'Content-Type': 'application/json',
+              },
+            };
+          }
+        } else {
+          endpointUrl = server.endpoint;
+        }
+
+        console.log('Transport options:', {
+          endpointUrl,
+          hasHeaders: !!transportOptions.requestInit?.headers,
+          headers: transportOptions.requestInit?.headers
+            ? Object.keys(transportOptions.requestInit.headers)
+            : [],
+        });
+
+        const transport = new StreamableHTTPClientTransport(new URL(endpointUrl), transportOptions);
 
         const client = await experimental_createMCPClient({
           transport,
@@ -48,6 +129,8 @@ export class MCPIntegration {
           ...this.clientManager.tools,
           ...tools,
         };
+
+        console.log(`Successfully initialized MCP server: ${server.name}`);
       } catch (error) {
         console.error(`Failed to initialize MCP server ${server.name}:`, error);
       }
@@ -109,18 +192,49 @@ export class MCPIntegration {
 export const mcpIntegration = new MCPIntegration();
 
 export async function validateMCPEndpoint(
-  endpoint: string
+  endpoint: string,
+  apiKey?: string,
+  authMethod: 'url' | 'header' = 'header'
 ): Promise<{ valid: boolean; error?: string }> {
   try {
-    const response = await fetch(`${endpoint}/health`, {
+    let validationUrl: string;
+    let headers: Record<string, string> = {};
+
+    if (apiKey) {
+      if (authMethod === 'url') {
+        // API key in URL path: https://<mcp-server-address>/<api-key>/health
+        const url = new URL(endpoint);
+        validationUrl = `${url.origin}/${apiKey}/health`;
+      } else {
+        // API key in Authorization header (default)
+        validationUrl = `${endpoint}/health`;
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      }
+    } else {
+      validationUrl = `${endpoint}/health`;
+    }
+
+    console.log('Validating MCP endpoint:', {
+      validationUrl,
+      hasAuth: !!apiKey,
+      authMethod,
+      headers: Object.keys(headers),
+    });
+
+    const response = await fetch(validationUrl, {
       method: 'GET',
-      signal: AbortSignal.timeout(5000),
+      headers,
+      signal: AbortSignal.timeout(10000),
     });
 
     if (response.ok) {
       return { valid: true };
     } else {
-      return { valid: false, error: `Server responded with ${response.status}` };
+      const errorText = await response.text().catch(() => 'Unknown error');
+      return {
+        valid: false,
+        error: `Server responded with ${response.status}: ${errorText}`,
+      };
     }
   } catch (error) {
     return {
