@@ -1,47 +1,6 @@
 import { experimental_createMCPClient } from 'ai';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
-/**
- * MCP Integration with API Key Authentication Support
- *
- * Supports two authentication methods for MCP servers:
- * 1. URL Path Authentication: API key embedded in URL path (https://server/<api-key>/mcp)
- * 2. Header Authentication: API key sent in Authorization header (Bearer token)
- *
- * Based on the Model Context Protocol documentation:
- * - https://modelcontextprotocol.io/docs/concepts/transports
- *
- * Example usage:
- *
- * // Server with API key in header (default)
- * const serverWithHeader: MCPServer = {
- *   id: 'server1',
- *   name: 'My MCP Server',
- *   endpoint: 'https://api.example.com/mcp',
- *   apiKey: 'your-api-key-here',
- *   authMethod: 'header', // or omit for default
- *   enabled: true
- * };
- *
- * // Server with API key in URL path
- * const serverWithUrlAuth: MCPServer = {
- *   id: 'server2',
- *   name: 'URL Auth Server',
- *   endpoint: 'https://api.example.com',
- *   apiKey: 'your-api-key-here',
- *   authMethod: 'url',
- *   enabled: true
- * };
- *
- * // Server without authentication
- * const publicServer: MCPServer = {
- *   id: 'server3',
- *   name: 'Public Server',
- *   endpoint: 'https://public.example.com/mcp',
- *   enabled: true
- * };
- */
-
 export interface MCPServer {
   id: string;
   name: string;
