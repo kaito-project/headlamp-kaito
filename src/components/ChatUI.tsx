@@ -886,6 +886,9 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   <Chip
                     label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP' : 'MCP') : 'MCP'}
                     size="small"
+                    onClick={() => {
+                      setMcpManagerOpen(true);
+                    }}
                     variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
                     color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
                     sx={{
