@@ -143,14 +143,22 @@ export class MCPIntegration {
   }
 
   getServerStatus(): { serverId: string; name: string; connected: boolean; toolCount: number }[] {
-    const totalTools = Object.keys(this.clientManager.tools).length;
     return this.servers.map(server => {
       const client = this.clientManager.clients.get(server.id);
+      let toolCount = 0;
+      if (client && typeof client.tools === 'function') {
+        try {
+          const tools = client.tools();
+          toolCount = Array.isArray(tools) ? tools.length : 0;
+        } catch (error) {
+          console.error(`Error fetching tools for server ${server.name}:`, error);
+        }
+      }
       return {
         serverId: server.id,
         name: server.name,
         connected: !!client,
-        toolCount: Math.floor(totalTools / this.servers.length),
+        toolCount,
       };
     });
   }
