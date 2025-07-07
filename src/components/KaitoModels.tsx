@@ -18,7 +18,6 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import BuildIcon from '@mui/icons-material/Build';
 import { Autocomplete, Pagination } from '@mui/material';
 import { useState, useEffect } from 'react';
 import falconLogo from '../logos/falcon-logo.webp';
