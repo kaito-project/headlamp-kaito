@@ -1,4 +1,6 @@
 # headlamp-kaito
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkaito-project%2Fheadlamp-kaito.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkaito-project%2Fheadlamp-kaito?ref=badge_shield)
+
 
 Headlamp-Kaito enhances the [KAITO VSCode Extension](https://learn.microsoft.com/en-us/azure/aks/aks-extension-kaito) with a modern, intuitive UI built directly into Headlamp. Instead of relying on YAML or CLI workflows, this release introduces a visual experience that simplifies GPU node provisioning and model deployment for AKS users. Key features include:
 
@@ -17,3 +19,7 @@ For more information on developing Headlamp plugins, please refer to:
 - [API Reference](https://headlamp.dev/docs/latest/development/api/), API documentation for what you can do
 - [UI Component Storybook](https://headlamp.dev/docs/latest/development/frontend/#storybook), pre-existing components you can use when creating your plugin.
 - [Plugin Examples](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples), Example plugins you can look at to see how it's done.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkaito-project%2Fheadlamp-kaito.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkaito-project%2Fheadlamp-kaito?ref=badge_large)
