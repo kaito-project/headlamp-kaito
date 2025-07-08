@@ -86,11 +86,7 @@ export class MCPIntegration {
   }
 
   getTools() {
-    return Object.keys(this.clientManager.tools).length > 0 ? this.clientManager.tools : undefined;
-  }
-
-  async refreshClients(): Promise<void> {
-    await this.initializeServers(this.servers);
+    return Object.keys(this.clientManager.tools).length > 0 ? this.clientManager.tools : [];
   }
 
   isReady(): boolean {
