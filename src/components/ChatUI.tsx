@@ -193,7 +193,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
   const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
   const [mcpManagerOpen, setMcpManagerOpen] = useState(false);
-  const [mcpEnabled, setMcpEnabled] = useState(true);
 
   const portForwardIdRef = useRef<string | null>(null);
   const [portForwardStatus, setPortForwardStatus] = useState('');
@@ -211,7 +210,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
   useEffect(() => {
     const initializeMCP = async () => {
-      if (mcpEnabled && mcpServers.length > 0 && currentModelSupportsTools()) {
+      if (mcpServers.length > 0 && currentModelSupportsTools()) {
         try {
           await mcpIntegration.initializeServers(mcpServers);
         } catch (error) {
@@ -221,7 +220,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     };
 
     initializeMCP();
-  }, [mcpServers, mcpEnabled, selectedModel]);
+  }, [mcpServers, selectedModel]);
 
   const handleInputChange = (e: React.FormEvent<HTMLDivElement>) => {
     const text = (e.target as HTMLElement).textContent || '';
@@ -288,7 +287,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       });
 
       const mcpTools =
-        mcpEnabled && currentModelSupportsTools() && mcpIntegration.hasTools()
+        currentModelSupportsTools() && mcpIntegration.hasTools()
           ? mcpIntegration.getTools()
           : undefined;
       const { textStream } = await streamText({
@@ -727,13 +726,13 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             {currentModelSupportsTools() && (
               <Tooltip title="MCP Settings">
                 <Chip
-                  label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP ON' : 'MCP OFF') : 'MCP'}
+                  label={mcpServers.length > 0 ? 'MCP' : 'MCP'}
                   onClick={() => {
                     setMcpManagerOpen(true);
                   }}
                   size="small"
-                  variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
-                  color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
+                  variant={mcpServers.length > 0 ? 'filled' : 'outlined'}
+                  color={mcpServers.length > 0 ? 'success' : 'default'}
                   sx={{
                     height: 24,
                     fontSize: '11px',
@@ -857,7 +856,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                       },
                     }}
                   />
-                  {currentModelSupportsTools() && mcpEnabled && mcpServers.length > 0 && (
+                  {currentModelSupportsTools() && mcpServers.length > 0 && (
                     <Chip
                       label={`MCP: ${
                         mcpIntegration.getServerStatus().filter(s => s.connected).length
@@ -874,13 +873,13 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
               {currentModelSupportsTools() && (
                 <Tooltip title="MCP Settings">
                   <Chip
-                    label={mcpServers.length > 0 ? (mcpEnabled ? 'MCP' : 'MCP') : 'MCP'}
+                    label={mcpServers.length > 0 ? 'MCP' : 'MCP'}
                     size="small"
                     onClick={() => {
                       setMcpManagerOpen(true);
                     }}
-                    variant={mcpEnabled && mcpServers.length > 0 ? 'filled' : 'outlined'}
-                    color={mcpEnabled && mcpServers.length > 0 ? 'success' : 'default'}
+                    variant={mcpServers.length > 0 ? 'filled' : 'outlined'}
+                    color={mcpServers.length > 0 ? 'success' : 'default'}
                     sx={{
                       height: 24,
                       fontSize: '11px',
