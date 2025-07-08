@@ -724,7 +724,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             {currentModelSupportsTools() && (
               <Tooltip title="MCP Settings">
                 <Chip
-                  label={mcpServers.length > 0 ? 'MCP' : []}
+                  label={'MCP'}
                   onClick={() => {
                     setMcpManagerOpen(true);
                   }}
@@ -871,7 +871,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
               {currentModelSupportsTools() && (
                 <Tooltip title="MCP Settings">
                   <Chip
-                    label={mcpServers.length > 0 ? 'MCP' : 'MCP'}
+                    label={'MCP'}
                     size="small"
                     onClick={() => {
                       setMcpManagerOpen(true);
