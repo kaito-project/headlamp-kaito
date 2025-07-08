@@ -108,7 +108,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
 
           {servers.length === 0 && (
             <Alert severity="info" sx={{ mb: 2 }}>
-              No MCP servers configured. Add a server to enable advanced AI capabilities.
+              No MCP servers configured. Add a server to access external tools and data sources.
             </Alert>
           )}
 
