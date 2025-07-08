@@ -29,19 +29,35 @@ export class MCPIntegration {
   }
 
   async initializeServers(servers: MCPServer[]): Promise<void> {
-    this.servers = servers.filter(server => server.enabled);
+    const enabledServers = servers.filter(server => server.enabled);
+    const newServerIds = new Set(enabledServers.map(server => server.id));
+    const existingClientIds = new Set(this.clientManager.clients.keys());
 
-    await this.cleanup();
-    this.clientManager.tools = {};
+    // Remove clients that are no longer in the servers list
+    const clientsToRemove = [...existingClientIds].filter(id => !newServerIds.has(id));
+    for (const clientId of clientsToRemove) {
+      const client = this.clientManager.clients.get(clientId);
+      if (client && typeof client.close === 'function') {
+        try {
+          await client.close();
+        } catch (error) {
+          console.error(`Error closing MCP client ${clientId}:`, error);
+        }
+      }
+      this.clientManager.clients.delete(clientId);
+    }
 
-    for (const server of this.servers) {
+    // Add new servers that don't exist in the clients map
+    const serversToAdd = enabledServers.filter(server => !existingClientIds.has(server.id));
+
+    for (const server of serversToAdd) {
       try {
         let endpointUrl: string;
         let transportOptions: { requestInit?: RequestInit } = {};
 
         if (server.apiKey) {
           if (server.authMethod === 'url') {
-            // API key in URL path: https://<mcp-server-address>/<api-key>/mcp
+            // parse API key in URL path: https://<mcp-server-address>/<api-key>/mcp
             const url = new URL(server.endpoint);
             endpointUrl = `${url.origin}/${server.apiKey}/mcp`;
           } else {
@@ -64,15 +80,28 @@ export class MCPIntegration {
         });
 
         this.clientManager.clients.set(server.id, client);
+      } catch (error) {
+        console.error(`Failed to initialize MCP server ${server.name}:`, error);
+      }
+    }
 
+    // Update servers list and rebuild tools from all active clients
+    this.servers = enabledServers;
+    await this.rebuildTools();
+  }
+
+  private async rebuildTools(): Promise<void> {
+    this.clientManager.tools = {};
+
+    for (const client of this.clientManager.clients.values()) {
+      try {
         const tools = await client.tools();
-
         this.clientManager.tools = {
           ...this.clientManager.tools,
           ...tools,
         };
       } catch (error) {
-        console.error(`Failed to initialize MCP server ${server.name}:`, error);
+        console.error('Error fetching tools from MCP client:', error);
       }
     }
   }
@@ -118,8 +147,12 @@ export class MCPIntegration {
     });
   }
 
-  async cleanup(): Promise<void> {
-    for (const client of this.clientManager.clients.values()) {
+  async cleanup(serverIds?: string[]): Promise<void> {
+    const clientsToClose = serverIds
+      ? serverIds.map(id => this.clientManager.clients.get(id)).filter(Boolean)
+      : Array.from(this.clientManager.clients.values());
+
+    for (const client of clientsToClose) {
       try {
         if (client && typeof client.close === 'function') {
           await client.close();
@@ -128,8 +161,19 @@ export class MCPIntegration {
         console.error('Error closing MCP client:', error);
       }
     }
-    this.clientManager.clients.clear();
-    this.clientManager.tools = {};
+
+    if (serverIds) {
+      // Remove specific clients
+      for (const serverId of serverIds) {
+        this.clientManager.clients.delete(serverId);
+      }
+      // Rebuild tools from remaining clients
+      await this.rebuildTools();
+    } else {
+      // Clean up everything
+      this.clientManager.clients.clear();
+      this.clientManager.tools = {};
+    }
   }
 }
 
