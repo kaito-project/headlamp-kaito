@@ -1,7 +1,7 @@
 version: 0.0.2
 name: headlamp-kaito
 displayName: Headlamp Kaito
-createdAt: '2025-07-3T02:46:50Z'
+createdAt: '2025-07-03T02:46:50Z'
 logoURL: 'https://avatars.githubusercontent.com/u/186863079?s=48&v=4'
 description: This release adds visual indicators to show which models support MCP tool integration in place of previous placeholder icons. Models that can invoke tools now display a build icon with a tooltip, improving clarity for users selecting models with extended capabilities.
 annotations:
