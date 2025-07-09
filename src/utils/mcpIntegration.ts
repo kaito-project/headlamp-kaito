@@ -167,19 +167,19 @@ export class MCPIntegration {
     return Object.keys(this.clientManager.tools).length > 0;
   }
 
-  getServerStatus(): {
+  async getServerStatus(): Promise<{
     serverId: string;
     name: string;
     connected: boolean;
     toolCount: number;
     transportType: string;
-  }[] {
-    return this.servers.map(server => {
+  }[]> {
+    return Promise.all(this.servers.map(async server => {
       const client = this.clientManager.clients.get(server.id);
       let toolCount = 0;
       if (client && typeof client.tools === 'function') {
         try {
-          const tools = client.tools();
+          const tools = await client.tools();
           toolCount = Array.isArray(tools) ? tools.length : 0;
         } catch (error) {
           console.error(`Error fetching tools for server ${server.name}:`, error);
