@@ -1023,41 +1023,4 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   );
 };
 
-const ChatFAB: React.FC<{ onClick: () => void }> = ({ onClick }) => {
-  return (
-    <Fab
-      onClick={onClick}
-      sx={{
-        position: 'fixed',
-        bottom: 24,
-        right: 24,
-        background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-        color: '#ffffff',
-        width: 64,
-        height: 64,
-        boxShadow: '0 8px 32px rgba(59, 130, 246, 0.3)',
-        '&:hover': {
-          transform: 'scale(1.1)',
-          boxShadow: '0 12px 40px rgba(59, 130, 246, 0.4)',
-        },
-        transition: 'all 0.3s ease',
-        zIndex: 1000,
-      }}
-    >
-      <Typography fontSize={24}>🤖</Typography>
-    </Fab>
-  );
-};
-
-const ChatWithFAB: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <ChatFAB onClick={() => setOpen(true)} />
-      <ChatUI open={open} onClose={() => setOpen(false)} namespace="default" />
-    </>
-  );
-};
-
 export default ChatUI;
-export { ChatWithFAB };
