@@ -29,6 +29,7 @@ import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import yaml from 'js-yaml';
+import { modelSupportsTools } from '../utils/modelUtils';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -55,7 +56,7 @@ interface PresetModel {
     name: string;
     url: string;
   };
-
+  supportsTools: boolean;
   logoImageId: string;
   description: string;
   instanceType: string;
@@ -174,7 +175,7 @@ function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[]
         name: getCompanyName(model.name),
         url: getHuggingFaceUrl(model.name),
       },
-
+      supportsTools: modelSupportsTools(model.name),
       logoImageId: getLogo(model.name),
       description: getModelDescription(model.name),
       instanceType: getInstanceType(model.name),
@@ -368,27 +369,11 @@ inference:
                     )}
                   </Box>
                   <Box display="flex" alignItems="center">
-                    {model.cncf && (
-                      <Tooltip title="CNCF Project">
+                    {model.supportsTools && (
+                      <Tooltip title="Supports Tool Calling">
                         <Icon
-                          icon="simple-icons:cncf"
+                          icon="material-symbols:build"
                           style={{ fontSize: 20, marginLeft: '0.5em' }}
-                        />
-                      </Tooltip>
-                    )}
-                    {model.official && (
-                      <Tooltip title="Official Model">
-                        <Icon
-                          icon="mdi:star-circle"
-                          style={{ fontSize: 22, marginLeft: '0.5em' }}
-                        />
-                      </Tooltip>
-                    )}
-                    {model.verifiedPublisher && (
-                      <Tooltip title="Verified Publisher">
-                        <Icon
-                          icon="mdi:check-decagram"
-                          style={{ fontSize: 22, marginLeft: '0.5em' }}
                         />
                       </Tooltip>
                     )}

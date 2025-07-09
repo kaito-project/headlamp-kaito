@@ -38,6 +38,8 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^0.2.14",
+    "@modelcontextprotocol/sdk": "^1.0.3",
+    "@mui/icons-material": "^5.16.7",
     "ai": "^4.3.16",
     "react-markdown": "^10.1.0"
   }

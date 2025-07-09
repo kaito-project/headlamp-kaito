@@ -11,7 +11,6 @@ import {
 } from '@kinvolk/headlamp-plugin/lib/components/common';
 import { useParams } from 'react-router-dom';
 import { useState } from 'react';
-import { DialogContent } from '@mui/material';
 import { Workspace } from './resources/workspace';
 import ChatUI from './ChatUI';
 

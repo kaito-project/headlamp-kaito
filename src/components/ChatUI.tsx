@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Dialog,
@@ -14,31 +14,23 @@ import {
   Tooltip,
   TextField,
   Autocomplete,
-  Button,
-  DialogTitle,
-  DialogActions,
-  Slider,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
 import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
 import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
-
-import React from 'react';
+import MCPServerManager from './MCPServerManager';
+import { MCPServer } from '../utils/mcpIntegration';
+import { mcpIntegration } from '../utils/mcpIntegration';
+import { modelSupportsTools } from '../utils/modelUtils';
 import ReactMarkdown from 'react-markdown';
-import {
-  request,
-  startPortForward,
-  stopOrDeletePortForward,
-} from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { useTheme } from '@mui/material/styles';
 import {
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
   fetchModelsWithRetry,
-  getClusterOrEmpty,
 } from './chatUtils';
 
 interface Message {
@@ -198,6 +190,10 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [isPortForwardRunning, setIsPortForwardRunning] = useState(false);
+
+  const [mcpServers, setMcpServers] = useState<MCPServer[]>([]);
+  const [mcpManagerOpen, setMcpManagerOpen] = useState(false);
+
   const portForwardIdRef = useRef<string | null>(null);
   const [portForwardStatus, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -206,6 +202,25 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const [selectedModel, setSelectedModel] = useState<{ title: string; value: string } | null>(null);
   const [isPortReady, setIsPortReady] = useState(false);
   const [baseURL, setBaseURL] = useState('http://localhost:8080/v1');
+
+  // Helper function to check if current model supports MCP tools
+  const currentModelSupportsTools = (): boolean => {
+    return selectedModel ? modelSupportsTools(selectedModel.value) : false;
+  };
+
+  useEffect(() => {
+    const initializeMCP = async () => {
+      if (mcpServers.length > 0 && currentModelSupportsTools()) {
+        try {
+          await mcpIntegration.initializeServers(mcpServers);
+        } catch (error) {
+          console.error('Failed to initialize MCP servers:', error);
+        }
+      }
+    };
+
+    initializeMCP();
+  }, [mcpServers, selectedModel]);
 
   const handleInputChange = (e: React.FormEvent<HTMLDivElement>) => {
     const text = (e.target as HTMLElement).textContent || '';
@@ -271,11 +286,16 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         name: 'openai-compatible',
       });
 
+      const mcpTools =
+        currentModelSupportsTools() && mcpIntegration.hasTools() ? mcpIntegration.getTools() : [];
+
       const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel(modelId),
         messages: conversationHistory,
         temperature,
         maxTokens,
+        maxSteps: 5,
+        tools: mcpTools,
       });
 
       let streamedText = '';
@@ -458,6 +478,12 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     initiateChatBackend();
   }, [open]);
 
+  useEffect(() => {
+    return () => {
+      mcpIntegration.cleanup();
+    };
+  }, []);
+
   const renderChatContent = (
     messages: Message[],
     messagesEndRef: React.RefObject<HTMLDivElement>,
@@ -479,18 +505,20 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       <MessagesContainer>
         {messages.map(message => (
           <MessageBubble key={message.id} isUser={message.role === 'user'}>
-            <Avatar
-              sx={{
-                width: 32,
-                height: 32,
-                bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
-                color: '#ffffff',
-                fontSize: '14px',
-                fontWeight: 'bold',
-              }}
-            >
-              {message.role === 'user' ? '' : '🤖'}
-            </Avatar>
+            {message.role === 'user' && (
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                }}
+              >
+                {message.role === 'user' ? '' : '🤖'}
+              </Avatar>
+            )}
             <MessageContent isUser={message.role === 'user'}>
               <Box
                 sx={{
@@ -694,6 +722,24 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           }}
         >
           <Stack direction="row" spacing={1}>
+            {currentModelSupportsTools() && (
+              <Tooltip title="MCP Settings">
+                <Chip
+                  label={'MCP'}
+                  onClick={() => {
+                    setMcpManagerOpen(true);
+                  }}
+                  size="small"
+                  variant={mcpServers.length > 0 ? 'filled' : 'outlined'}
+                  color={mcpServers.length > 0 ? 'success' : 'default'}
+                  sx={{
+                    height: 24,
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                  }}
+                />
+              </Tooltip>
+            )}
             <Tooltip title="Model Settings">
               <IconButton
                 onClick={() => setSettingsOpen(true)}
@@ -764,6 +810,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           config={config}
           onSave={setConfig}
         />
+        {currentModelSupportsTools() && (
+          <MCPServerManager
+            open={mcpManagerOpen}
+            onClose={() => setMcpManagerOpen(false)}
+            servers={mcpServers}
+            setServers={setMcpServers}
+          />
+        )}
       </Box>
     );
   }
@@ -783,16 +837,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         <ChatHeader sx={{ background: theme.palette.background.default }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
             <Stack direction="row" alignItems="center" spacing={2}>
-              {' '}
-              <Avatar
-                sx={{
-                  bgcolor: '#2563eb',
-                  width: 40,
-                  height: 40,
-                }}
-              >
-                🤖
-              </Avatar>
               <Box>
                 <Typography variant="h6" fontWeight="600" color={theme.palette.text.primary}>
                   Chat with {selectedModel?.title ?? 'Model'}
@@ -811,15 +855,38 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                       },
                     }}
                   />
+                  {currentModelSupportsTools() && mcpServers.length > 0 && (
+                    <Chip
+                      label={`MCP: ${
+                        mcpIntegration.getServerStatus().filter(s => s.connected).length
+                      }/${mcpServers.filter(s => s.enabled).length}`}
+                      size="small"
+                      color={mcpIntegration.isReady() ? 'success' : 'warning'}
+                      sx={{ fontSize: '10px', height: '20px' }}
+                    />
+                  )}
                 </Stack>
               </Box>
             </Stack>{' '}
             <Stack direction="row" spacing={1}>
-              <Tooltip title="Clear conversation">
-                <IconButton onClick={clearChat} size="small">
-                  🗑️
-                </IconButton>
-              </Tooltip>
+              {currentModelSupportsTools() && (
+                <Tooltip title="MCP Settings">
+                  <Chip
+                    label={'MCP'}
+                    size="small"
+                    onClick={() => {
+                      setMcpManagerOpen(true);
+                    }}
+                    variant={mcpServers.length > 0 ? 'filled' : 'outlined'}
+                    color={mcpServers.length > 0 ? 'success' : 'default'}
+                    sx={{
+                      height: 24,
+                      fontSize: '11px',
+                      cursor: 'pointer',
+                    }}
+                  />
+                </Tooltip>
+              )}
               <Tooltip title="Model Settings">
                 <IconButton
                   onClick={() => setSettingsOpen(true)}
@@ -839,6 +906,11 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   aria-label="Model Settings"
                 >
                   ⚙
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Clear conversation">
+                <IconButton onClick={clearChat} size="small">
+                  🗑️
                 </IconButton>
               </Tooltip>
               <Tooltip title="Close chat">
@@ -902,6 +974,14 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         config={config}
         onSave={setConfig}
       />
+      {currentModelSupportsTools() && (
+        <MCPServerManager
+          open={mcpManagerOpen}
+          onClose={() => setMcpManagerOpen(false)}
+          servers={mcpServers}
+          setServers={setMcpServers}
+        />
+      )}
     </>
   );
 };
