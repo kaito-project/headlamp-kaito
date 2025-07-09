@@ -504,72 +504,74 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   ) => (
     <>
       <MessagesContainer>
-        {messages.map(message => (
-          <MessageBubble key={message.id} isUser={message.role === 'user'}>
-            {message.role === 'user' && (
-              <Avatar
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: message.role === 'user' ? '#3b82f6' : '#64748b',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                }}
-              >
-                {message.role === 'user' ? '' : '🤖'}
-              </Avatar>
-            )}
-            <MessageContent isUser={message.role === 'user'}>
-              <Box
-                sx={{
-                  lineHeight: 1.6,
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  color: 'inherit',
-                  fontSize: '14px',
-                  fontWeight: 400,
-                  '& p': { margin: 0, padding: 0 },
-                  '& strong': { fontWeight: 600 },
-                  '& em': { fontStyle: 'italic' },
-                  '& code': {
-                    backgroundColor:
-                      message.role === 'user' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.05)',
-                    padding: '2px 4px',
-                    borderRadius: '4px',
-                    fontFamily: 'monospace',
-                  },
-                }}
-              >
-                <ReactMarkdown>{message.content}</ReactMarkdown>
-                {message.isLoading && (
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      width: '2px',
-                      height: '18px',
-                      backgroundColor: message.role === 'user' ? '#ffffff' : '#64748b',
-                      marginLeft: '2px',
-                      animation: 'blink 1s infinite',
-                    }}
-                  />
-                )}
-              </Box>
-              <Typography
-                variant="caption"
-                sx={{
-                  display: 'block',
-                  mt: 1,
-                  opacity: 0.8,
-                  fontSize: '11px',
-                  color: 'inherit',
-                }}
-              >
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </Typography>
-            </MessageContent>
-          </MessageBubble>
-        ))}
+        {messages.map(message => {
+          const isUser = message.role === 'user';
+          return (
+            <MessageBubble key={message.id} isUser={isUser}>
+              {isUser && (
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: isUser ? '#3b82f6' : '#64748b',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {isUser ? '' : '🤖'}
+                </Avatar>
+              )}
+              <MessageContent isUser={isUser}>
+                <Box
+                  sx={{
+                    lineHeight: 1.6,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    color: 'inherit',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    '& p': { margin: 0, padding: 0 },
+                    '& strong': { fontWeight: 600 },
+                    '& em': { fontStyle: 'italic' },
+                    '& code': {
+                      backgroundColor: isUser ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.05)',
+                      padding: '2px 4px',
+                      borderRadius: '4px',
+                      fontFamily: 'monospace',
+                    },
+                  }}
+                >
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                  {message.isLoading && (
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: '2px',
+                        height: '18px',
+                        backgroundColor: isUser ? '#ffffff' : '#64748b',
+                        marginLeft: '2px',
+                        animation: 'blink 1s infinite',
+                      }}
+                    />
+                  )}
+                </Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    mt: 1,
+                    opacity: 0.8,
+                    fontSize: '11px',
+                    color: 'inherit',
+                  }}
+                >
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Typography>
+              </MessageContent>
+            </MessageBubble>
+          );
+        })}
         <div ref={messagesEndRef} />
       </MessagesContainer>
       <InputContainer
