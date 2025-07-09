@@ -950,11 +950,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   🗑️
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Clear conversation">
-                <IconButton onClick={clearChat} size="small">
-                  🗑️
-                </IconButton>
-              </Tooltip>
               <Tooltip title="Close chat">
                 <IconButton
                   onClick={() => {
