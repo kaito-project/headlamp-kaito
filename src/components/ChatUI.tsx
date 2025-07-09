@@ -513,6 +513,12 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      mcpIntegration.cleanup();
+    };
+  }, []);
+
   const renderChatContent = (
     messages: Message[],
     messagesEndRef: React.RefObject<HTMLDivElement>,
@@ -753,10 +759,10 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           }}
         >
           <Stack direction="row" spacing={1}>
-            {modelSupportsToolsValue && (
+            {currentModelSupportsTools() && (
               <Tooltip title="MCP Settings">
                 <Chip
-                  label={mcpServers.length > 0 ? 'MCP' : 'MCP'}
+                  label={'MCP'}
                   onClick={() => {
                     setMcpManagerOpen(true);
                   }}
@@ -900,10 +906,10 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
               </Box>
             </Stack>{' '}
             <Stack direction="row" spacing={1}>
-              {modelSupportsToolsValue && (
+              {currentModelSupportsTools() && (
                 <Tooltip title="MCP Settings">
                   <Chip
-                    label={mcpServers.length > 0 ? 'MCP' : 'MCP'}
+                    label={'MCP'}
                     size="small"
                     onClick={() => {
                       setMcpManagerOpen(true);
@@ -937,6 +943,11 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   aria-label="Model Settings"
                 >
                   ⚙
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Clear conversation">
+                <IconButton onClick={clearChat} size="small">
+                  🗑️
                 </IconButton>
               </Tooltip>
               <Tooltip title="Clear conversation">

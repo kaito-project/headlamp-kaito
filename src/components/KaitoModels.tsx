@@ -370,7 +370,7 @@ inference:
                   </Box>
                   <Box display="flex" alignItems="center">
                     {model.supportsTools && (
-                      <Tooltip title="Supports Tools">
+                      <Tooltip title="Supports Tool Calling">
                         <Icon
                           icon="material-symbols:build"
                           style={{ fontSize: 20, marginLeft: '0.5em' }}
