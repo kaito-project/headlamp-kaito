@@ -18,9 +18,30 @@ export interface MCPClientManager {
   tools: any;
 }
 
+export interface MCPServerStatusEvent {
+  type: 'status-changed';
+  serverStatus: {
+    serverId: string;
+    name: string;
+    connected: boolean;
+    toolCount: number;
+    transportType: string;
+  }[];
+}
+
+export type MCPEventListener = (event: MCPServerStatusEvent) => void;
+
 export class MCPIntegration {
   private clientManager: MCPClientManager;
   private servers: MCPServer[];
+  private eventListeners: Set<MCPEventListener> = new Set();
+  private lastServerStatus: {
+    serverId: string;
+    name: string;
+    connected: boolean;
+    toolCount: number;
+    transportType: string;
+  }[] = [];
 
   constructor() {
     this.clientManager = {
@@ -128,6 +149,48 @@ export class MCPIntegration {
 
     this.servers = enabledServers;
     await this.rebuildTools();
+
+    await this.emitStatusChangeEvent();
+  }
+
+  private async emitStatusChangeEvent(): Promise<void> {
+    const currentStatus = await this.getServerStatus();
+
+    const hasChanged = this.hasStatusChanged(this.lastServerStatus, currentStatus);
+
+    if (hasChanged) {
+      this.lastServerStatus = currentStatus;
+      const event: MCPServerStatusEvent = {
+        type: 'status-changed',
+        serverStatus: currentStatus,
+      };
+
+      this.eventListeners.forEach(listener => {
+        try {
+          listener(event);
+        } catch (error) {
+          console.error('Error in MCP event listener:', error);
+        }
+      });
+    }
+  }
+
+  private hasStatusChanged(
+    oldStatus: { serverId: string; connected: boolean; toolCount: number }[],
+    newStatus: { serverId: string; connected: boolean; toolCount: number }[]
+  ): boolean {
+    if (oldStatus.length !== newStatus.length) return true;
+
+    for (let i = 0; i < oldStatus.length; i++) {
+      const old = oldStatus[i];
+      const newItem = newStatus.find(s => s.serverId === old.serverId);
+
+      if (!newItem || old.connected !== newItem.connected || old.toolCount !== newItem.toolCount) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private async rebuildTools(): Promise<void> {
@@ -167,32 +230,44 @@ export class MCPIntegration {
     return Object.keys(this.clientManager.tools).length > 0;
   }
 
-  async getServerStatus(): Promise<{
-    serverId: string;
-    name: string;
-    connected: boolean;
-    toolCount: number;
-    transportType: string;
-  }[]> {
-    return Promise.all(this.servers.map(async server => {
-      const client = this.clientManager.clients.get(server.id);
-      let toolCount = 0;
-      if (client && typeof client.tools === 'function') {
-        try {
-          const tools = await client.tools();
-          toolCount = Array.isArray(tools) ? tools.length : 0;
-        } catch (error) {
-          console.error(`Error fetching tools for server ${server.name}:`, error);
+  addEventListener(listener: MCPEventListener): void {
+    this.eventListeners.add(listener);
+  }
+
+  removeEventListener(listener: MCPEventListener): void {
+    this.eventListeners.delete(listener);
+  }
+
+  async getServerStatus(): Promise<
+    {
+      serverId: string;
+      name: string;
+      connected: boolean;
+      toolCount: number;
+      transportType: string;
+    }[]
+  > {
+    return Promise.all(
+      this.servers.map(async server => {
+        const client = this.clientManager.clients.get(server.id);
+        let toolCount = 0;
+        if (client && typeof client.tools === 'function') {
+          try {
+            const tools = await client.tools();
+            toolCount = Array.isArray(tools) ? tools.length : 0;
+          } catch (error) {
+            console.error(`Error fetching tools for server ${server.name}:`, error);
+          }
         }
-      }
-      return {
-        serverId: server.id,
-        name: server.name,
-        connected: !!client,
-        toolCount,
-        transportType: server.transportType || 'streamableHttp',
-      };
-    });
+        return {
+          serverId: server.id,
+          name: server.name,
+          connected: !!client,
+          toolCount,
+          transportType: server.transportType || 'streamableHttp',
+        };
+      })
+    );
   }
 
   async cleanup(serverIds?: string[]): Promise<void> {
@@ -221,7 +296,10 @@ export class MCPIntegration {
       // Clean up everything
       this.clientManager.clients.clear();
       this.clientManager.tools = {};
+      this.lastServerStatus = [];
     }
+
+    await this.emitStatusChangeEvent();
   }
 }
 
