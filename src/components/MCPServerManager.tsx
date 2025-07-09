@@ -182,14 +182,14 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 <TextField
                   label="Server Name"
                   value={newServer.name}
-                  onChange={e => setNewServer({ ...newServer, name: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, name: e.target.value }))}
                   fullWidth
                   required
                 />
                 <TextField
                   label="Endpoint URL"
                   value={newServer.endpoint}
-                  onChange={e => setNewServer({ ...newServer, endpoint: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, endpoint: e.target.value }))}
                   fullWidth
                   required
                   placeholder={
@@ -206,7 +206,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 <TextField
                   label="Description (optional)"
                   value={newServer.description}
-                  onChange={e => setNewServer({ ...newServer, description: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, description: e.target.value }))}
                   fullWidth
                   multiline
                   rows={2}
@@ -214,7 +214,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 <TextField
                   label="API Key (optional)"
                   value={newServer.apiKey}
-                  onChange={e => setNewServer({ ...newServer, apiKey: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, apiKey: e.target.value }))}
                   fullWidth
                   type="password"
                   helperText="Leave empty if server doesn't require authentication"
@@ -225,10 +225,10 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                     value={newServer.transportType || 'streamableHttp'}
                     label="Transport Type"
                     onChange={e =>
-                      setNewServer({
-                        ...newServer,
+                      setNewServer(prev => ({
+                        ...prev,
                         transportType: e.target.value as 'streamableHttp' | 'sse',
-                      })
+                      }))
                     }
                   >
                     <MenuItem value="streamableHttp">StreamableHTTP</MenuItem>
@@ -246,7 +246,10 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                     value={newServer.authMethod || 'header'}
                     label="Authentication Method"
                     onChange={e =>
-                      setNewServer({ ...newServer, authMethod: e.target.value as 'url' | 'header' })
+                      setNewServer(prev => ({
+                        ...prev,
+                        authMethod: e.target.value as 'url' | 'header',
+                      }))
                     }
                   >
                     <MenuItem value="header">Authorization Header</MenuItem>
