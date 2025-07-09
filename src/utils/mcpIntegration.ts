@@ -286,14 +286,11 @@ export class MCPIntegration {
     }
 
     if (serverIds) {
-      // Remove specific clients
       for (const serverId of serverIds) {
         this.clientManager.clients.delete(serverId);
       }
-      // Rebuild tools from remaining clients
       await this.rebuildTools();
     } else {
-      // Clean up everything
       this.clientManager.clients.clear();
       this.clientManager.tools = {};
       this.lastServerStatus = [];
