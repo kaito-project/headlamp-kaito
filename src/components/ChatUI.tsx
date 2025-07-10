@@ -908,7 +908,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   />
                   {modelSupportsToolsValue && mcpServers.length > 0 && (
                     <Chip
-                      label={`MCP: ${mcpServerStatus.filter(s => s.connected).length}/${
+                      label={`Tools: ${mcpServerStatus.filter(s => s.connected).length}/${
                         mcpServers.filter(s => s.enabled).length
                       }`}
                       size="small"
