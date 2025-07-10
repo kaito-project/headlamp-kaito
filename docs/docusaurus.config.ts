@@ -72,7 +72,7 @@ const config: Config = {
             },
             {
               label: 'Installation',
-              to: '/installation',
+              to: '/getting-started/installation',
             },
           ],
         },
@@ -90,7 +90,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Kaito Project, Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
