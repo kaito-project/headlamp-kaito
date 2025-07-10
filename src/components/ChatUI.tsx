@@ -15,6 +15,7 @@ import {
   TextField,
   Autocomplete,
 } from '@mui/material';
+import { Icon } from '@iconify/react';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
@@ -908,20 +909,33 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             <Stack direction="row" spacing={1}>
               {currentModelSupportsTools() && (
                 <Tooltip title="MCP Settings">
-                  <Chip
-                    label={'MCP'}
-                    size="small"
+                  <IconButton
                     onClick={() => {
                       setMcpManagerOpen(true);
                     }}
-                    variant={mcpServers.length > 0 ? 'filled' : 'outlined'}
-                    color={mcpServers.length > 0 ? 'success' : 'default'}
+                    size="small"
                     sx={{
-                      height: 24,
-                      fontSize: '11px',
-                      cursor: 'pointer',
+                      color:
+                        mcpServers.length > 0
+                          ? theme.palette.success.main
+                          : theme.palette.text.secondary,
+                      fontSize: '18px',
+                      width: 32,
+                      height: 32,
+                      '&:hover': {
+                        backgroundColor: theme.palette.action.hover,
+                        color:
+                          mcpServers.length > 0
+                            ? theme.palette.success.dark
+                            : theme.palette.primary.main,
+                        transform: 'scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
                     }}
-                  />
+                    aria-label="MCP Settings"
+                  >
+                    <Icon icon="material-symbols:build" style={{ fontSize: 20 }} />
+                  </IconButton>
                 </Tooltip>
               )}
               <Tooltip title="Model Settings">
