@@ -22,6 +22,7 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Checkbox,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 
@@ -119,17 +120,15 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
           <List>
             {servers.map(server => (
               <ListItem key={server.id} divider>
+                <Checkbox
+                  checked={server.enabled}
+                  onChange={() => handleToggleServer(server.id)}
+                  sx={{ mr: 2 }}
+                />
                 <ListItemText
                   primary={
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography variant="subtitle1">{server.name}</Typography>
-                      <Chip
-                        label={server.enabled ? 'Enabled' : 'Disabled'}
-                        color={server.enabled ? 'success' : 'default'}
-                        size="small"
-                        onClick={() => handleToggleServer(server.id)}
-                        clickable
-                      />
                       <Chip
                         label={server.transportType || 'streamableHttp'}
                         color="info"
