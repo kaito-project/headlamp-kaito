@@ -23,6 +23,7 @@ import {
   MenuItem,
   FormHelperText,
 } from '@mui/material';
+import { Icon } from '@iconify/react';
 
 interface MCPServerManagerProps {
   open: boolean;
@@ -152,10 +153,10 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 />
                 <ListItemSecondaryAction>
                   <IconButton onClick={() => handleEditServer(server)} size="small">
-                    ✏️
+                    <Icon icon="material-symbols:edit" style={{ fontSize: 20 }} />
                   </IconButton>
                   <IconButton onClick={() => handleDeleteServer(server.id)} size="small">
-                    🗑️
+                    <Icon icon="material-symbols:delete" style={{ fontSize: 20 }} />
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
