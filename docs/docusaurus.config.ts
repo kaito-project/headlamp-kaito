@@ -32,7 +32,7 @@ const config: Config = {
       {
         docs: {
           routeBasePath: '/',
-          sidebarPath: './sidebars.js',
+          sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/kaito-project/headlamp-kaito/edit/main/docs/',
         },
         blog: false,
@@ -46,7 +46,7 @@ const config: Config = {
   themeConfig: {
     image: 'img/kaito-logo.png',
     navbar: {
-      title: 'Headlamp Kaito Plugin',
+      title: 'Headlamp Kaito',
       logo: {
         alt: 'Kaito Logo',
         src: 'img/kaito-logo.png',
