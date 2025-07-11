@@ -176,8 +176,8 @@ export class MCPIntegration {
   }
 
   private hasStatusChanged(
-    oldStatus: { serverId: string; connected: boolean; toolCount: number }[],
-    newStatus: { serverId: string; connected: boolean; toolCount: number }[]
+    oldStatus: { serverId: string; connected: boolean; toolCount: number; transportType: string }[],
+    newStatus: { serverId: string; connected: boolean; toolCount: number; transportType: string }[]
   ): boolean {
     if (oldStatus.length !== newStatus.length) return true;
 
