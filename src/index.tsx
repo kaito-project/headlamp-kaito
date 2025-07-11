@@ -15,10 +15,10 @@
  */
 
 import { registerRoute, registerSidebarEntry } from '@kinvolk/headlamp-plugin/lib';
-import KaitoModels from './components/KaitoModels';
-import KaitoWorkspacesList from './components/KaitoWorkspacesList';
-import { WorkspaceDetail } from './components/KaitoWorkspacesDetail';
 import KaitoChat from './components/KaitoChat';
+import KaitoModels from './components/KaitoModels';
+import { WorkspaceDetail } from './components/KaitoWorkspacesDetail';
+import KaitoWorkspacesList from './components/KaitoWorkspacesList';
 
 // Inspired by kompose plugin:
 // Main sidebar entry

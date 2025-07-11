@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { MCPServer } from '../utils/mcpIntegration';
+import { Icon } from '@iconify/react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Alert,
+  Box,
   Button,
-  TextField,
+  Checkbox,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormHelperText,
+  IconButton,
+  InputLabel,
   List,
   ListItem,
-  ListItemText,
   ListItemSecondaryAction,
-  IconButton,
-  Typography,
-  Box,
-  Chip,
-  Stack,
-  Alert,
-  FormControl,
-  InputLabel,
-  Select,
+  ListItemText,
   MenuItem,
-  FormHelperText,
-  Checkbox,
+  Select,
+  Stack,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { Icon } from '@iconify/react';
+import React, {useState } from 'react';
+import { MCPServer } from '../utils/mcpIntegration';
 
 interface MCPServerManagerProps {
   open: boolean;
