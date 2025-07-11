@@ -1,38 +1,36 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { Icon } from '@iconify/react';
 import {
+  Autocomplete,
+  Avatar,
   Box,
+  Chip,
+  CircularProgress,
   Dialog,
   DialogContent,
-  Typography,
   IconButton,
-  Avatar,
   Paper,
   Stack,
-  Chip,
-  Fab,
-  CircularProgress,
-  Tooltip,
   TextField,
-  Autocomplete,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import { Icon } from '@iconify/react';
-import { styled } from '@mui/system';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { streamText } from 'ai';
-import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
-import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
-import MCPServerManager from './MCPServerManager';
-import { MCPServer, MCPServerStatusEvent } from '../utils/mcpIntegration';
-import { mcpIntegration } from '../utils/mcpIntegration';
-import { modelSupportsTools } from '../utils/modelUtils';
-import ReactMarkdown from 'react-markdown';
 import { useTheme } from '@mui/material/styles';
+import { styled } from '@mui/system';
+import { streamText } from 'ai';
+import React, { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
+import { mcpIntegration, MCPServer, MCPServerStatusEvent } from '../utils/mcpIntegration';
+import { modelSupportsTools } from '../utils/modelUtils';
 import {
+  fetchModelsWithRetry,
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
-  fetchModelsWithRetry,
 } from './chatUtils';
+import MCPServerManager from './MCPServerManager';
+import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
 interface Message {
   id: string;
@@ -205,7 +203,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   >([]);
 
   const portForwardIdRef = useRef<string | null>(null);
-  const [portForwardStatus, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const [models, setModels] = useState<{ title: string; value: string }[]>([]);
@@ -397,8 +394,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
 
   const startPortForwardProcess = async () => {
     setIsPortForwardRunning(true);
-    setPortForwardStatus('Starting port forward...');
-
     try {
       if (!workspaceName) {
         throw new Error('Missing workspace name.');
@@ -432,17 +427,12 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         setIsPortReady(true);
       } catch (err) {
         console.error('Error fetching models from /v1/models:', err);
-        setPortForwardStatus(
-          `Error fetching models: ${err instanceof Error ? err.message : String(err)}`
-        );
         setIsPortReady(false);
       }
 
       portForwardIdRef.current = newPortForwardId;
-      setPortForwardStatus(`Port forward running on localhost:${localPort}`);
     } catch (error) {
       console.error('Port forward error:', error);
-      setPortForwardStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
       setIsPortForwardRunning(false);
       portForwardIdRef.current = null;
     }
@@ -452,18 +442,15 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     const idToStop = portForwardIdRef.current;
     if (!idToStop) {
       setIsPortForwardRunning(false);
-      setPortForwardStatus('Port forward not running');
       return;
     }
 
-    setPortForwardStatus('Stopping port forward...');
     setIsPortReady(false);
     setIsPortForwardRunning(false);
     portForwardIdRef.current = null;
 
     stopWorkspacePortForward(idToStop)
       .then(() => {
-        setPortForwardStatus('Port forward stopped');
         const stopMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
@@ -475,7 +462,6 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       .catch(error => {
         console.error(`Failed to stop port forward with ID ${idToStop}:`, error);
         const errorMsg = error instanceof Error ? error.message : String(error);
-        setPortForwardStatus(`Error stopping: ${errorMsg}`);
         const errorMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
