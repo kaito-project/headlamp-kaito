@@ -852,7 +852,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             open={mcpManagerOpen}
             onClose={() => setMcpManagerOpen(false)}
             servers={mcpServers}
-            onServersChange={setMcpServers}
+            setServers={setMcpServers}
           />
         )}
       </Box>
@@ -1016,7 +1016,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           open={mcpManagerOpen}
           onClose={() => setMcpManagerOpen(false)}
           servers={mcpServers}
-          onServersChange={setMcpServers}
+          setServers={setMcpServers}
         />
       )}
     </>

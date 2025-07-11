@@ -28,14 +28,14 @@ interface MCPServerManagerProps {
   open: boolean;
   onClose: () => void;
   servers: MCPServer[];
-  onServersChange: (servers: MCPServer[]) => void;
+  setServers: (servers: MCPServer[]) => void;
 }
 
 const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   open,
   onClose,
   servers,
-  onServersChange,
+  setServers,
 }) => {
   const [editingServer, setEditingServer] = useState<MCPServer | null>(null);
   const [newServer, setNewServer] = useState<Partial<MCPServer>>({
@@ -63,7 +63,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
       transportType: newServer.transportType || 'streamableHttp',
     };
 
-    onServersChange([...servers, server]);
+    setServers([...servers, server]);
     setNewServer({
       name: '',
       endpoint: '',
@@ -77,11 +77,11 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   };
 
   const handleDeleteServer = (id: string) => {
-    onServersChange(servers.filter(server => server.id !== id));
+    setServers(servers.filter(server => server.id !== id));
   };
 
   const handleToggleServer = (id: string) => {
-    onServersChange(
+    setServers(
       servers.map(server => (server.id === id ? { ...server, enabled: !server.enabled } : server))
     );
   };
@@ -93,9 +93,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   const handleSaveEdit = () => {
     if (!editingServer) return;
 
-    onServersChange(
-      servers.map(server => (server.id === editingServer.id ? editingServer : server))
-    );
+    setServers(servers.map(server => (server.id === editingServer.id ? editingServer : server)));
     setEditingServer(null);
   };
 
