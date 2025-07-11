@@ -106,7 +106,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Manage Model Context Protocol (MCP) servers that provide tools and capabilities to your
-            AI models. Supports both <b>StreamableHTTP</b> and <b>SSE</b> transport types.
+            AI models. Supports both <b>StreamableHTTP</b> and <b>SSE (Deprecated)</b> transport types.
           </Typography>
 
           {servers.length === 0 && (
