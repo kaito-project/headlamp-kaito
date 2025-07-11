@@ -76,7 +76,7 @@ export class MCPIntegration {
     for (const server of serversToAdd) {
       try {
         let transport: StreamableHTTPClientTransport | SSEClientTransport;
-        const transportType = server.transportType || 'streamableHttp'; // Default to streamableHttp
+        const transportType = server.transportType || 'streamableHttp';
 
         if (transportType === 'sse') {
           // SSE Transport
