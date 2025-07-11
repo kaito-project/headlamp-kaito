@@ -316,9 +316,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       });
 
       const mcpTools =
-        modelSupportsToolsValue && mcpIntegration.hasTools()
-          ? mcpIntegration.getTools()
-          : undefined;
+        modelSupportsToolsValue && mcpIntegration.hasTools() ? mcpIntegration.getTools() : [];
       const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel(modelId),
         messages: conversationHistory,
