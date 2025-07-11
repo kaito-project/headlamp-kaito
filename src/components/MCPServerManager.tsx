@@ -22,20 +22,22 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Checkbox,
 } from '@mui/material';
+import { Icon } from '@iconify/react';
 
 interface MCPServerManagerProps {
   open: boolean;
   onClose: () => void;
   servers: MCPServer[];
-  setServers: (servers: MCPServer[]) => void;
+  onServersChange: (servers: MCPServer[]) => void;
 }
 
 const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   open,
   onClose,
   servers,
-  setServers,
+  onServersChange,
 }) => {
   const [editingServer, setEditingServer] = useState<MCPServer | null>(null);
   const [newServer, setNewServer] = useState<Partial<MCPServer>>({
@@ -45,6 +47,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
     enabled: true,
     apiKey: '',
     authMethod: 'header',
+    transportType: 'streamableHttp',
   });
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -59,9 +62,10 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
       enabled: true,
       apiKey: newServer.apiKey || '',
       authMethod: newServer.authMethod || 'header',
+      transportType: newServer.transportType || 'streamableHttp',
     };
 
-    setServers([...servers, server]);
+    onServersChange([...servers, server]);
     setNewServer({
       name: '',
       endpoint: '',
@@ -69,16 +73,17 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
       enabled: true,
       apiKey: '',
       authMethod: 'header',
+      transportType: 'streamableHttp',
     });
     setShowAddForm(false);
   };
 
   const handleDeleteServer = (id: string) => {
-    setServers(servers.filter(server => server.id !== id));
+    onServersChange(servers.filter(server => server.id !== id));
   };
 
   const handleToggleServer = (id: string) => {
-    setServers(
+    onServersChange(
       servers.map(server => (server.id === id ? { ...server, enabled: !server.enabled } : server))
     );
   };
@@ -90,7 +95,9 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   const handleSaveEdit = () => {
     if (!editingServer) return;
 
-    setServers(servers.map(server => (server.id === editingServer.id ? editingServer : server)));
+    onServersChange(
+      servers.map(server => (server.id === editingServer.id ? editingServer : server))
+    );
     setEditingServer(null);
   };
 
@@ -101,7 +108,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Manage Model Context Protocol (MCP) servers that provide tools and capabilities to your
-            AI models. Note: Only <b>streamableHTTP</b> transport is supported.
+            AI models. Supports both <b>StreamableHTTP</b> and <b>SSE</b> transport types.
           </Typography>
 
           {servers.length === 0 && (
@@ -113,16 +120,20 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
           <List>
             {servers.map(server => (
               <ListItem key={server.id} divider>
+                <Checkbox
+                  checked={server.enabled}
+                  onChange={() => handleToggleServer(server.id)}
+                  sx={{ mr: 2 }}
+                />
                 <ListItemText
                   primary={
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography variant="subtitle1">{server.name}</Typography>
                       <Chip
-                        label={server.enabled ? 'Enabled' : 'Disabled'}
-                        color={server.enabled ? 'success' : 'default'}
+                        label={server.transportType || 'streamableHttp'}
+                        color="info"
                         size="small"
-                        onClick={() => handleToggleServer(server.id)}
-                        clickable
+                        variant="outlined"
                       />
                     </Stack>
                   }
@@ -141,10 +152,10 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 />
                 <ListItemSecondaryAction>
                   <IconButton onClick={() => handleEditServer(server)} size="small">
-                    ✏️
+                    <Icon icon="material-symbols:edit" style={{ fontSize: 20 }} />
                   </IconButton>
                   <IconButton onClick={() => handleDeleteServer(server.id)} size="small">
-                    🗑️
+                    <Icon icon="material-symbols:delete" style={{ fontSize: 20 }} />
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
@@ -171,23 +182,31 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 <TextField
                   label="Server Name"
                   value={newServer.name}
-                  onChange={e => setNewServer({ ...newServer, name: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, name: e.target.value }))}
                   fullWidth
                   required
                 />
                 <TextField
                   label="Endpoint URL"
                   value={newServer.endpoint}
-                  onChange={e => setNewServer({ ...newServer, endpoint: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, endpoint: e.target.value }))}
                   fullWidth
                   required
-                  placeholder="http://localhost:3000/mcp"
-                  helperText="MCP server endpoint URL"
+                  placeholder={
+                    newServer.transportType === 'sse'
+                      ? 'http://localhost:3000/sse'
+                      : 'http://localhost:3000/mcp'
+                  }
+                  helperText={
+                    newServer.transportType === 'sse'
+                      ? 'SSE endpoint URL (typically ends with /sse)'
+                      : 'StreamableHTTP endpoint URL (typically ends with /mcp)'
+                  }
                 />
                 <TextField
                   label="Description (optional)"
                   value={newServer.description}
-                  onChange={e => setNewServer({ ...newServer, description: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, description: e.target.value }))}
                   fullWidth
                   multiline
                   rows={2}
@@ -195,18 +214,42 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 <TextField
                   label="API Key (optional)"
                   value={newServer.apiKey}
-                  onChange={e => setNewServer({ ...newServer, apiKey: e.target.value })}
+                  onChange={e => setNewServer(prev => ({ ...prev, apiKey: e.target.value }))}
                   fullWidth
                   type="password"
                   helperText="Leave empty if server doesn't require authentication"
                 />
+                <FormControl fullWidth>
+                  <InputLabel>Transport Type</InputLabel>
+                  <Select
+                    value={newServer.transportType || 'streamableHttp'}
+                    label="Transport Type"
+                    onChange={e =>
+                      setNewServer(prev => ({
+                        ...prev,
+                        transportType: e.target.value as 'streamableHttp' | 'sse',
+                      }))
+                    }
+                  >
+                    <MenuItem value="streamableHttp">StreamableHTTP</MenuItem>
+                    <MenuItem value="sse">Server-Sent Events (SSE) [Deprecated]</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    {newServer.transportType === 'sse'
+                      ? 'Uses Server-Sent Events for server-to-client communication and POST requests for client-to-server communication'
+                      : 'Uses HTTP POST requests with optional SSE streams for bidirectional communication'}
+                  </FormHelperText>
+                </FormControl>
                 <FormControl fullWidth>
                   <InputLabel>Authentication Method</InputLabel>
                   <Select
                     value={newServer.authMethod || 'header'}
                     label="Authentication Method"
                     onChange={e =>
-                      setNewServer({ ...newServer, authMethod: e.target.value as 'url' | 'header' })
+                      setNewServer(prev => ({
+                        ...prev,
+                        authMethod: e.target.value as 'url' | 'header',
+                      }))
                     }
                   >
                     <MenuItem value="header">Authorization Header</MenuItem>
@@ -214,7 +257,9 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                   </Select>
                   <FormHelperText>
                     {newServer.authMethod === 'url'
-                      ? 'API key will be included in URL path: /api-key/mcp'
+                      ? `API key will be included in URL path: /api-key/${
+                          newServer.transportType === 'sse' ? 'sse' : 'mcp'
+                        }`
                       : 'API key will be sent in Authorization header as Bearer token'}
                   </FormHelperText>
                 </FormControl>
@@ -279,6 +324,28 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 helperText="Leave empty if server doesn't require authentication"
               />
               <FormControl fullWidth>
+                <InputLabel>Transport Type</InputLabel>
+                <Select
+                  value={editingServer?.transportType || 'streamableHttp'}
+                  label="Transport Type"
+                  onChange={e =>
+                    setEditingServer(prev =>
+                      prev
+                        ? { ...prev, transportType: e.target.value as 'streamableHttp' | 'sse' }
+                        : null
+                    )
+                  }
+                >
+                  <MenuItem value="streamableHttp">StreamableHTTP</MenuItem>
+                  <MenuItem value="sse">Server-Sent Events (SSE)</MenuItem>
+                </Select>
+                <FormHelperText>
+                  {editingServer?.transportType === 'sse'
+                    ? 'Uses Server-Sent Events for server-to-client communication and POST requests for client-to-server communication'
+                    : 'Uses HTTP POST requests with optional SSE streams for bidirectional communication'}
+                </FormHelperText>
+              </FormControl>
+              <FormControl fullWidth>
                 <InputLabel>Authentication Method</InputLabel>
                 <Select
                   value={editingServer?.authMethod || 'header'}
@@ -294,7 +361,9 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 </Select>
                 <FormHelperText>
                   {editingServer?.authMethod === 'url'
-                    ? 'API key will be included in URL path: /api-key/mcp'
+                    ? `API key will be included in URL path: /api-key/${
+                        editingServer?.transportType === 'sse' ? 'sse' : 'mcp'
+                      }`
                     : 'API key will be sent in Authorization header as Bearer token'}
                 </FormHelperText>
               </FormControl>

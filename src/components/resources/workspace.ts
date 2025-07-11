@@ -91,12 +91,10 @@ export class Workspace extends KubeObject {
   static apiVersion = 'kaito.sh/v1beta1';
   static isNamespaced = true;
 
-  // Note: This workaround is needed to make the plugin compatible with older versions of Headlamp
   static get detailsRoute() {
     return '/kaito/workspaces/:namespace/:name';
   }
 
-  // helper methods for access in KaitoWorkspacesList.tsx
   get status(): WorkspaceStatus | undefined {
     return this.jsonData.status;
   }
