@@ -1,7 +1,7 @@
 {
   "name": "headlamp-kaito",
-  "version": "0.0.1",
-  "description": "A plugin for managing Kaito workspaces with integrated chat interface and MCP tool support.",
+  "version": "0.0.3",
+  "description": "This release adds Model Context Protocol (MCP) tool calling support, enabling models to access external tools and data sources through configurable MCP servers. The new MCP Server Management interface allows users to configure StreamableHTTP and SSE transport protocols, manage authentication methods (Authorization header or URL path), and enable/disable servers dynamically. This significantly expands the capabilities of AI chat sessions by providing access to external APIs, databases, calculation tools, and custom enterprise services through the standardized MCP specification.",
   "scripts": {
     "start": "headlamp-plugin start",
     "build": "headlamp-plugin build",
