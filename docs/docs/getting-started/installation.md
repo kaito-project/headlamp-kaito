@@ -8,12 +8,12 @@ sidebar_position: 1
 
 Before installing the headlamp-kaito plugin, ensure your environment meets the following requirements:
 
-| Component | Requirement | Purpose |
-|-----------|-------------|---------|
-| Headlamp | Version 0.12.0 or higher | Host platform for the plugin |
-| Kubernetes Cluster | Version 1.20+ | Target environment for AI workloads |
-| KAITO Controller | Installed and running | AI workload orchestration |
-| GPU Nodes | Optional but recommended | Hardware acceleration for AI models |
+| Component          | Requirement              | Purpose                             |
+| ------------------ | ------------------------ | ----------------------------------- |
+| Headlamp           | Version 0.12.0 or higher | Host platform for the plugin        |
+| Kubernetes Cluster | Version 1.20+            | Target environment for AI workloads |
+| KAITO Controller   | Installed and running    | AI workload orchestration           |
+| GPU Nodes          | Optional but recommended | Hardware acceleration for AI models |
 
 ### Headlamp Installation Verification
 
@@ -61,19 +61,19 @@ After installation, verify the plugin is correctly loaded:
 
 ### Functional Verification
 
-| Feature | Verification Method | Expected Result |
-|---------|-------------------|-----------------|
-| Workspace List | Navigate to workspace management | Display existing Kaito workspaces |
-| Model Catalog | Access model catalog page | Show available AI models from GitHub |
-| Chat Interface | Select workspace and start chat | Enable AI model interaction |
+| Feature        | Verification Method              | Expected Result                      |
+| -------------- | -------------------------------- | ------------------------------------ |
+| Workspace List | Navigate to workspace management | Display existing Kaito workspaces    |
+| Model Catalog  | Access model catalog page        | Show available AI models from GitHub |
+| Chat Interface | Select workspace and start chat  | Enable AI model interaction          |
 
 ## Common Installation Issues
 
-| Issue | Symptoms | Solution |
-|-------|----------|----------|
-| Plugin Not Visible | Sidebar missing Kaito entry | Restart Headlamp after installation |
-| Route Errors | 404 errors on plugin routes | Verify plugin archive integrity |
-| API Access Issues | Unable to list workspaces | Check Kubernetes cluster connectivity |
+| Issue              | Symptoms                    | Solution                              |
+| ------------------ | --------------------------- | ------------------------------------- |
+| Plugin Not Visible | Sidebar missing Kaito entry | Restart Headlamp after installation   |
+| Route Errors       | 404 errors on plugin routes | Verify plugin archive integrity       |
+| API Access Issues  | Unable to list workspaces   | Check Kubernetes cluster connectivity |
 
 ## Initial Configuration
 
@@ -86,10 +86,6 @@ kubectl get workspaces -A
 ```
 
 This command should return without errors, indicating proper KAITO controller installation.
-
-### Network Configuration
-
-The plugin uses port forwarding for AI model communication. Ensure your Kubernetes cluster allows port forwarding from your Headlamp instance.
 
 ## Next Steps
 
