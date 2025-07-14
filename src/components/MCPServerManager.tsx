@@ -136,18 +136,6 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                         size="small"
                         variant="outlined"
                       />
-                      <Chip
-                        label={server.transportType || 'streamableHttp'}
-                        color="info"
-                        size="small"
-                        variant="outlined"
-                      />
-                      <Chip
-                        label={server.transportType || 'streamableHttp'}
-                        color="info"
-                        size="small"
-                        variant="outlined"
-                      />
                     </Stack>
                   }
                   secondary={
