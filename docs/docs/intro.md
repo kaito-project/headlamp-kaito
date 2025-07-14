@@ -2,36 +2,41 @@
 sidebar_position: 1
 ---
 
-# Introduction
+# Introduction to Headlamp Kaito
 
-![Kaito Logo](/img/kaito-logo.png)
+**Latest Release:** July 3rd, 2025. Headlamp-KAITO v0.0.2.
 
-**WHAT'S NEW!**
-Retrieval-augmented generation (RAG) is live! - RagEngine support with
-LlamaIndex orchestration and Faiss as the default vectorDB, learn about recent updates [here](https://github.com/kaito-project/kaito/issues/734)!
+**First Release:** June 25th, 2025. Headlamp-KAITO v0.0.1.
 
-**Latest Release:** July 2nd, 2025. KAITO v0.5.0.
+Headlamp-KAITO enhances the [KAITO VSCode Extension](https://learn.microsoft.com/en-us/azure/aks/aks-extension-kaito) with a modern, intuitive UI built directly into Headlamp. Instead of relying on YAML or CLI workflows, this release introduces a visual experience that simplifies GPU node provisioning and model deployment for AKS users.
 
-**First Release:** Nov 15th, 2023. KAITO v0.1.0.
+## System Purpose
 
-KAITO is an operator that automates the AI/ML model inference or tuning workload
-in a Kubernetes cluster. The target models are popular open-sourced large
-models such as [falcon](https://huggingface.co/tiiuae) and [phi-3](https://huggingface.co/docs/transformers/main/en/model_doc/phi3).
+The headlamp-kaito plugin serves as a bridge between Headlamp's Kubernetes management capabilities and KAITO's AI workload orchestration. It transforms complex CLI and YAML-based AI model deployment workflows into an intuitive web interface that handles GPU node provisioning, model deployment, and interactive AI chat sessions.
+
+## Integration Points
+
+The plugin connects to several external systems to provide its functionality:
+
+• **Headlamp Plugin API:** Provides UI framework and Kubernetes API access
+• **KAITO Controller:** Manages AI workload deployments and GPU provisioning
+• **Kubernetes API:** Accesses Workspace CRDs and pod management
+• **GitHub Repository:** Retrieves supported model definitions
+• **AI Model Endpoints:** Facilitates chat interactions through port forwarding
 
 ## Key Features
 
 KAITO has the following key differentiations compared to most of the mainstream
 model deployment methodologies built on top of virtual machine infrastructures:
 
-• **Container-based Model Management:** Manage large model files using container images with an OpenAI-compatible server for inference calls
-• **Preset Configurations:** Avoid adjusting workload parameters based on GPU hardware with built-in configurations
-• **Multiple Runtime Support:** Support for popular inference runtimes including [vLLM](https://github.com/vllm-project/vllm) and [transformers](https://github.com/huggingface/transformers)
-• **Auto-provisioning:** Automatically provision GPU nodes based on model requirements
-• **Public Registry:** Host large model images in the public Microsoft Container Registry (MCR) when licenses allow
+• **Enhanced UI:** Interact with KAITO directly in Headlamp through a modern, intuitive interface, eliminating manual CLI steps.
+• **One-click Model Deployment:** Deploy validated models from the KAITO Model Catalog with a single click.
+• **Automatic GPU Provisioning:** KAITO’s controller logic provisions GPU-backed nodes automatically based on model requirements.
+• **Dynamic Model Discovery:** Discover available models dynamically from within the current namespace.
+• **Integrated Port Forwarding:** Built-in port forwarding with real-time connection status and error handling.
+• **AI-powered Chat Assistant:** Get guided troubleshooting and user support through an integrated AI chat assistant.
 
-Using KAITO, the workflow of onboarding large AI inference models in Kubernetes is largely simplified.
-
-## Architecture
+## KAITO Architecture
 
 KAITO follows the classic Kubernetes Custom Resource Definition(CRD)/controller design pattern. Users manage a `workspace` custom resource which describes the GPU requirements and the inference or tuning specification. KAITO controllers automate the deployment by reconciling the `workspace` custom resource.
 
@@ -44,18 +49,6 @@ The major components consist of:
 :::note
 The [gpu-provisioner](https://github.com/Azure/gpu-provisioner) is an open sourced component. It can be replaced by other controllers if they support [Karpenter-core](https://sigs.k8s.io/karpenter) APIs.
 :::
-
-### RAGEngine Architecture
-
-The RAGEngine architecture overview consists of:
-
-• **RAGEngine controller:** It reconciles the `ragengine` custom resource, creating the `RAG Service`.
-• **RAG Service:** This is the service that offer Retrieval Augmented Generation support with LlamaIndex orchestration and leveraging FAISS as the vector DB.
-◦ **Local Embedding:** An embedding model running locally to embed queries and documents within the vector db.
-◦ **Remote Embedding:** An optional embedding model running remotely used to embed queries and documents within the vector db.
-◦ **FAISS:** [Facebook AI Similarity Search](https://github.com/facebookresearch/faiss)
-
-For more information on RAGEngine installation and usage, check the docs [here](https://kaito-project.github.io/kaito/docs/rag).
 
 ## Getting Started
 
