@@ -22,20 +22,22 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Checkbox,
 } from '@mui/material';
+import { Icon } from '@iconify/react';
 
 interface MCPServerManagerProps {
   open: boolean;
   onClose: () => void;
   servers: MCPServer[];
-  setServers: (servers: MCPServer[]) => void;
+  onServersChange: (servers: MCPServer[]) => void;
 }
 
 const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   open,
   onClose,
   servers,
-  setServers,
+  onServersChange,
 }) => {
   const [editingServer, setEditingServer] = useState<MCPServer | null>(null);
   const [newServer, setNewServer] = useState<Partial<MCPServer>>({
@@ -63,7 +65,7 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
       transportType: newServer.transportType || 'streamableHttp',
     };
 
-    setServers([...servers, server]);
+    onServersChange([...servers, server]);
     setNewServer({
       name: '',
       endpoint: '',
@@ -77,11 +79,11 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   };
 
   const handleDeleteServer = (id: string) => {
-    setServers(servers.filter(server => server.id !== id));
+    onServersChange(servers.filter(server => server.id !== id));
   };
 
   const handleToggleServer = (id: string) => {
-    setServers(
+    onServersChange(
       servers.map(server => (server.id === id ? { ...server, enabled: !server.enabled } : server))
     );
   };
@@ -93,7 +95,9 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
   const handleSaveEdit = () => {
     if (!editingServer) return;
 
-    setServers(servers.map(server => (server.id === editingServer.id ? editingServer : server)));
+    onServersChange(
+      servers.map(server => (server.id === editingServer.id ? editingServer : server))
+    );
     setEditingServer(null);
   };
 
@@ -104,7 +108,8 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Manage Model Context Protocol (MCP) servers that provide tools and capabilities to your
-            AI models. Supports both <b>StreamableHTTP</b> and <b>SSE (Deprecated)</b> transport types.
+            AI models. Supports both <b>StreamableHTTP</b> and <b>SSE (Deprecated)</b> transport
+            types.
           </Typography>
 
           {servers.length === 0 && (
@@ -116,17 +121,15 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
           <List>
             {servers.map(server => (
               <ListItem key={server.id} divider>
+                <Checkbox
+                  checked={server.enabled}
+                  onChange={() => handleToggleServer(server.id)}
+                  sx={{ mr: 2 }}
+                />
                 <ListItemText
                   primary={
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography variant="subtitle1">{server.name}</Typography>
-                      <Chip
-                        label={server.enabled ? 'Enabled' : 'Disabled'}
-                        color={server.enabled ? 'success' : 'default'}
-                        size="small"
-                        onClick={() => handleToggleServer(server.id)}
-                        clickable
-                      />
                       <Chip
                         label={server.transportType || 'streamableHttp'}
                         color="info"
@@ -150,10 +153,10 @@ const MCPServerManager: React.FC<MCPServerManagerProps> = ({
                 />
                 <ListItemSecondaryAction>
                   <IconButton onClick={() => handleEditServer(server)} size="small">
-                    ✏️
+                    <Icon icon="material-symbols:edit" style={{ fontSize: 20 }} />
                   </IconButton>
                   <IconButton onClick={() => handleDeleteServer(server.id)} size="small">
-                    🗑️
+                    <Icon icon="material-symbols:delete" style={{ fontSize: 20 }} />
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>

@@ -15,6 +15,7 @@ import {
   TextField,
   Autocomplete,
 } from '@mui/material';
+import { Icon } from '@iconify/react';
 import { styled } from '@mui/system';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
@@ -315,9 +316,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
       });
 
       const mcpTools =
-        modelSupportsToolsValue && mcpIntegration.hasTools()
-          ? mcpIntegration.getTools()
-          : undefined;
+        modelSupportsToolsValue && mcpIntegration.hasTools() ? mcpIntegration.getTools() : [];
       const { textStream } = await streamText({
         model: openAICompatibleProvider.chatModel(modelId),
         messages: conversationHistory,
@@ -761,20 +760,33 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           <Stack direction="row" spacing={1}>
             {currentModelSupportsTools() && (
               <Tooltip title="MCP Settings">
-                <Chip
-                  label={'MCP'}
+                <IconButton
                   onClick={() => {
                     setMcpManagerOpen(true);
                   }}
                   size="small"
-                  variant={mcpServers.length > 0 ? 'filled' : 'outlined'}
-                  color={mcpServers.length > 0 ? 'success' : 'default'}
                   sx={{
-                    height: 24,
-                    fontSize: '11px',
-                    cursor: 'pointer',
+                    color:
+                      mcpServers.length > 0
+                        ? theme.palette.success.main
+                        : theme.palette.text.secondary,
+                    fontSize: '18px',
+                    width: 32,
+                    height: 32,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                      color:
+                        mcpServers.length > 0
+                          ? theme.palette.success.dark
+                          : theme.palette.primary.main,
+                      transform: 'scale(1.1)',
+                    },
+                    transition: 'all 0.2s ease',
                   }}
-                />
+                  aria-label="MCP Settings"
+                >
+                  <Icon icon="material-symbols:build" style={{ fontSize: 20 }} />
+                </IconButton>
               </Tooltip>
             )}
             <Tooltip title="Model Settings">
@@ -795,7 +807,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                 }}
                 aria-label="Model Settings"
               >
-                ⚙
+                <Icon icon="material-symbols:settings" style={{ fontSize: 20 }} />
               </IconButton>
             </Tooltip>
             <IconButton
@@ -818,7 +830,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
               }}
               aria-label="Close chat"
             >
-              ✕
+              <Icon icon="material-symbols:close" style={{ fontSize: 20 }} />
             </IconButton>
           </Stack>
         </Box>
@@ -852,7 +864,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             open={mcpManagerOpen}
             onClose={() => setMcpManagerOpen(false)}
             servers={mcpServers}
-            setServers={setMcpServers}
+            onServersChange={setMcpServers}
           />
         )}
       </Box>
@@ -894,7 +906,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   />
                   {modelSupportsToolsValue && mcpServers.length > 0 && (
                     <Chip
-                      label={`MCP: ${mcpServerStatus.filter(s => s.connected).length}/${
+                      label={`Tools: ${mcpServerStatus.filter(s => s.connected).length}/${
                         mcpServers.filter(s => s.enabled).length
                       }`}
                       size="small"
@@ -908,20 +920,33 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
             <Stack direction="row" spacing={1}>
               {currentModelSupportsTools() && (
                 <Tooltip title="MCP Settings">
-                  <Chip
-                    label={'MCP'}
-                    size="small"
+                  <IconButton
                     onClick={() => {
                       setMcpManagerOpen(true);
                     }}
-                    variant={mcpServers.length > 0 ? 'filled' : 'outlined'}
-                    color={mcpServers.length > 0 ? 'success' : 'default'}
+                    size="small"
                     sx={{
-                      height: 24,
-                      fontSize: '11px',
-                      cursor: 'pointer',
+                      color:
+                        mcpServers.length > 0
+                          ? theme.palette.success.main
+                          : theme.palette.text.secondary,
+                      fontSize: '18px',
+                      width: 32,
+                      height: 32,
+                      '&:hover': {
+                        backgroundColor: theme.palette.action.hover,
+                        color:
+                          mcpServers.length > 0
+                            ? theme.palette.success.dark
+                            : theme.palette.primary.main,
+                        transform: 'scale(1.1)',
+                      },
+                      transition: 'all 0.2s ease',
                     }}
-                  />
+                    aria-label="MCP Settings"
+                  >
+                    <Icon icon="material-symbols:build" style={{ fontSize: 20 }} />
+                  </IconButton>
                 </Tooltip>
               )}
               <Tooltip title="Model Settings">
@@ -942,12 +967,12 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                   }}
                   aria-label="Model Settings"
                 >
-                  ⚙
+                  <Icon icon="material-symbols:settings" style={{ fontSize: 20 }} />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Clear conversation">
                 <IconButton onClick={clearChat} size="small">
-                  🗑️
+                  <Icon icon="material-symbols:delete" style={{ fontSize: 20 }} />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Close chat">
@@ -970,7 +995,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  ✕
+                  <Icon icon="material-symbols:close" style={{ fontSize: 20 }} />
                 </IconButton>
               </Tooltip>
             </Stack>
@@ -1016,7 +1041,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
           open={mcpManagerOpen}
           onClose={() => setMcpManagerOpen(false)}
           servers={mcpServers}
-          setServers={setMcpServers}
+          onServersChange={setMcpServers}
         />
       )}
     </>
