@@ -6,7 +6,7 @@ sidebar_position: 1
 
 ## Prerequisites
 
-Before installing the headlamp-kaito plugin, ensure your environment meets the following requirements:
+Before installing the Headlamp-KAITO plugin, ensure your environment meets the following requirements:
 
 | Component          | Requirement              | Purpose                             |
 | ------------------ | ------------------------ | ----------------------------------- |
@@ -15,9 +15,13 @@ Before installing the headlamp-kaito plugin, ensure your environment meets the f
 | KAITO Controller   | Installed and running    | AI workload orchestration           |
 | GPU Nodes          | Optional but recommended | Hardware acceleration for AI models |
 
-### Headlamp Installation Verification
+### Headlamp Installation
 
-Verify your Headlamp installation by checking the version:
+1. Install Headlamp https://headlamp.dev/
+
+   [![Headlamp Installation](../../../src/logos/headlamp-install.png)](https://headlamp.dev/)
+
+2. Verify your Headlamp installation by checking the version:
 
 ```bash
 headlamp --version
