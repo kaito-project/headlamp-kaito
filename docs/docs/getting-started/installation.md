@@ -55,11 +55,11 @@ For advanced users or development environments, the plugin can be installed manu
 
 After installation, verify the plugin is correctly loaded:
 
-#### UI Verification
+- **Sidebar Navigation**: Navigate to your cluster and check that "KAITO" appears in the Headlamp sidebar
 
 ![Headlamp-Kaito Plugin installation](../../../src/logos/kaito-sidebar.png)
 
-- **Sidebar Navigation**: Navigate to your cluster and check that "KAITO" appears in the Headlamp sidebar
+<!-- add red circle  -->
 
 #### Functional Verification
 
