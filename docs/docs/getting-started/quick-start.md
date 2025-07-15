@@ -4,27 +4,26 @@ sidebar_position: 2
 
 # Quick Start
 
-After installing the headlamp-kaito plugin, you can quickly deploy and interact with AI models through Headlamp's intuitive interface.
+After installing the Headlamp-KAITO plugin, you can quickly deploy and interact with AI models through Headlamp's intuitive interface.
 
 ## Prerequisites
 
 Before starting, ensure you have:
 
-- **Headlamp** installed with the headlamp-kaito plugin enabled
+- **Headlamp** installed with the Headlamp-KAITO plugin enabled
 - **A Kubernetes cluster** with the KAITO controller deployed
-- **Sufficient GPU resources** (Standard_NC24ads_A100_v4 or Standard_NC96ads_A100_v4 instances)
+- **Sufficient GPU resources** (Standard_NC24ads_A100_v4 or Standard_NC96ads_A100_v4 instances recommended)
 
 ## Step 1: Explore the Model Catalog
 
 ### Model Catalog Features
 
-The model catalog provides filtering and search capabilities:
+The model catalog provides a list of KAITO Preset models with filtering and search capabilities:
 
 | Feature         | Description                               |
 | --------------- | ----------------------------------------- |
 | Search          | Filter models by name                     |
 | Category Filter | Filter by company (Meta, Microsoft, etc.) |
-| Pagination      | Navigate through model pages              |
 
 ## Step 2: Deploy Your First Model
 
@@ -37,18 +36,36 @@ The model catalog provides filtering and search capabilities:
    - `preset.name` (the model identifier)
    - `presetOptions` (for models requiring access tokens)
 4. **Modify the YAML** if needed (namespace, resource requests, etc.)
+   - **Note:** You need to edit the YAML in order to deploy it, even if that means just removing a space at the end!
 5. **Click "Apply"** to deploy the Workspace resource to Kubernetes
+
+## Check Workspace Status
+
+Navigate to the Kaito Workspaces via the left sidebar.
 
 ### Workspace Status Indicators
 
 The workspace list displays critical status information:
 
-| Column              | Description            | Status Logic                            |
-| ------------------- | ---------------------- | --------------------------------------- |
-| Resource Ready      | GPU nodes provisioned  | condition.status === 'True' → Green     |
-| Inference Ready     | Model pods running     | condition.status === 'False' → Red      |
-| Job Started         | Deployment job active  | condition.status === 'Unknown' → Yellow |
-| Workspace Succeeded | Overall success status | Tooltip shows condition.message         |
+| Column              | Description            |
+| ------------------- | ---------------------- |
+| Resource Ready      | GPU nodes provisioned  |
+| Inference Ready     | Model pods running     |
+| Job Started         | Deployment job active  |
+| Workspace Succeeded | Overall success status |
+
+### Workspaces Detail Features
+
+Click into any of your workspaces to see the following features:
+
+| Feature           | Description                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| Workspace Details | View Workspace name, Creation details, Annotations                |
+| Resources         | View Count, Instance Type, Preferred Nodes, Node Selector         |
+| Inference         | View Preset Name and Image, Config details, Adapters              |
+| Status            | See real-time deployment and health status                        |
+| Conditions        | View all status conditions and their messages for troubleshooting |
+| Events            | View recent events and logs for each workspace                    |
 
 ## Step 3: Chat with Deployed Model
 
@@ -56,11 +73,20 @@ Once your workspace shows "Inference Ready", you can interact with the model thr
 
 ### Starting a Chat Session
 
-1. Navigate to `/kaito/chat` or click the chat icon in the workspace detail view
-2. Select a workspace from the dropdown (if not already selected)
-3. Wait for port forwarding to establish connection to the model pod
+#### Starting a Chat Session from the Chat Page
 
-### Chat Interface Features
+1. Navigate to `/KAITO/Chat` on the left sidebar
+2. Select a workspace from the dropdown, then select a model from that workspace
+3. Click "Go"
+4. Configure model settings if desired, then chat with your model!
+
+#### Starting a Chat Session from the Workspaces Page
+
+1. Click into your workspace to view its details
+2. Click the Chat icon on the upper right
+3. Configure model settings if desired, then chat with your model!
+
+#### Chat Interface Features
 
 The ChatUI component provides a full-featured chat experience:
 
