@@ -21,6 +21,11 @@ const sidebars: SidebarsConfig = {
       label: 'Getting Started',
       items: ['getting-started/installation', 'getting-started/quick-start'],
     },
+    {
+      type: 'category',
+      label: 'Features',
+      items: ['features/core-features', 'features/custom-fine-tuning', 'features/tool-calling'],
+    },
   ],
 };
 
