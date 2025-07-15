@@ -49,32 +49,3 @@ The major components consist of:
 :::note
 The [gpu-provisioner](https://github.com/Azure/gpu-provisioner) is an open sourced component. It can be replaced by other controllers if they support [Karpenter-core](https://sigs.k8s.io/karpenter) APIs.
 :::
-
-## Getting Started
-
-👉 To get started, please see the [Installation Guide](getting-started/installation)!
-
-👉 For a quick start tutorial, check out [Quick Start](getting-started/quick-start)!
-
-## Community
-
-• **GitHub:** [kaito-project/kaito](https://github.com/kaito-project/kaito)
-• **Slack:** [Join our community](https://join.slack.com/t/kaito-z6a6575/shared_invite/zt-37gh89vw7-odHfqmPRc5oRnDG99SBJNA)
-• **Email:** [kaito-dev@microsoft.com](mailto:kaito-dev@microsoft.com)
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
