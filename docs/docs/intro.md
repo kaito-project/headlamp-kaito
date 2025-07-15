@@ -3,16 +3,16 @@ sidebar_position: 1
 slug: /
 ---
 
-# Introduction to Headlamp Kaito
+# Introduction to Headlamp KAITO
 
-**Latest Release:** July 3rd, 2025. Headlamp-KAITO v0.0.2.
+**Latest Release:** July 14th, 2025. Headlamp-KAITO v0.0.3.
 
 **First Release:** June 25th, 2025. Headlamp-KAITO v0.0.1.
 
 ## Purpose
 
-Headlamp-KAITO enhances the [KAITO VSCode Extension](https://learn.microsoft.com/en-us/azure/aks/aks-extension-kaito) with a modern, intuitive UI built directly into Headlamp. Instead of relying on YAML or CLI workflows, this release introduces a visual experience that simplifies GPU node provisioning and model deployment for AKS users.
-Thisgi plugin serves as a bridge between Headlamp's Kubernetes management capabilities and KAITO's AI workload orchestration. It transforms complex CLI and YAML-based AI model deployment workflows into an intuitive web interface that handles GPU node provisioning, model deployment, and interactive AI chat sessions.
+Headlamp-KAITO enhances the [KAITO VSCode Extension](https://learn.microsoft.com/en-us/azure/aks/aks-extension-kaito) with a modern, intuitive UI built directly into Headlamp. Instead of relying on YAML or CLI workflows, this version introduces a visual experience that simplifies GPU node provisioning and model deployment for AKS users.
+This plugin serves as a bridge between Headlamp's Kubernetes management capabilities and KAITO's AI workload orchestration. It transforms complex CLI and YAML-based AI model deployment workflows into an intuitive web interface that handles GPU node provisioning, model deployment, and interactive AI chat sessions.
 
 ## Integration Points
 
