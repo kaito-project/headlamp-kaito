@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# Tool Calling
+# MCP Tool Calling
 
 Tool calling enables AI models to interact with external systems and execute functions beyond text generation. Headlamp-KAITO integrates with the Model Context Protocol (MCP) to provide powerful tool-calling capabilities directly within your Kubernetes environment.
 

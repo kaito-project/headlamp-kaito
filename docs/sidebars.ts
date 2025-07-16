@@ -24,7 +24,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Features',
-      items: ['features/core-features', 'features/custom-fine-tuning', 'features/tool-calling'],
+      items: ['features/core-features', 'features/mcp-tool-calling', 'features/custom-fine-tuning'],
     },
   ],
 };
