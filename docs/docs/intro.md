@@ -11,24 +11,23 @@ slug: /
 
 ## Purpose
 
-Headlamp-KAITO enhances the [KAITO VSCode Extension](https://learn.microsoft.com/en-us/azure/aks/aks-extension-kaito) with a modern, intuitive UI built directly into Headlamp. Instead of relying on YAML or CLI workflows, this version introduces a visual experience that simplifies GPU node provisioning and model deployment for AKS users.
-This plugin serves as a bridge between Headlamp's Kubernetes management capabilities and KAITO's AI workload orchestration. It transforms complex CLI and YAML-based AI model deployment workflows into an intuitive web interface that handles GPU node provisioning, model deployment, and interactive AI chat sessions.
+Headlamp-KAITO is a Headlamp plugin that enhances the [KAITO VSCode Extension](https://learn.microsoft.com/en-us/azure/aks/aks-extension-kaito) By integrating directly with Headlamp, it eliminates the need for complex CLI commands or manual YAML editing, streamlining GPU node provisioning and AI model deployment with Kubernetes. This plugin bridges Headlamp’s Kubernetes cluster management with KAITO’s AI orchestration tools, allowing users to seamlessly deploy, monitor, and interact with AI models. It also features a built-in AI chat assistant, providing a powerful, interactive experience—all within the Headlamp UI.
 
 ## Key Features
 
-KAITO has the following key differentiations compared to most of the mainstream
-model deployment methodologies built on top of virtual machine infrastructures:
+The Headlamp KAITO plugin offers the following features:
 
-- **Enhanced UI:** Interact with KAITO directly in Headlamp through a modern, intuitive interface, eliminating manual CLI steps.
-- **One-click Model Deployment:** Deploy validated models from the KAITO Model Catalog with a single click.
+- **Modern, Intuitive Interface:** Use KAITO directly within Headlamp through a streamlined UI that removes the need for manual CLI commands and simplifies Kubernetes workflows.
+- **One-click Model Deployment:** Deploy pre-validated models from the KAITO Model Catalog with a single click.
 - **Automatic GPU Provisioning:** KAITO’s controller logic provisions GPU-backed nodes automatically based on model requirements.
-- **Dynamic Model Discovery:** Discover available models dynamically from within the current namespace.
-- **Integrated Port Forwarding:** Built-in port forwarding with real-time connection status and error handling.
-- **AI-powered Chat Assistant:** Get guided troubleshooting and user support through an integrated AI chat assistant.
+- **Dynamic Model Discovery:** Discover available models scoped to your current Kubernetes namespace.
+- **Integrated Port Forwarding:** Access deployed models effortlessly with built-in port forwarding, complete with real-time connection status and error reporting.
+- **AI-powered Chat Assistant:** Receive guided assistance and user support via an embedded AI assistant within the plugin.
+- **MCP Server Support for Tool Calling:** Supports MCP server connection to enable secure, scalable tool calling for advanced AI workflows and automation.
 
 ## KAITO Architecture
 
-KAITO follows the classic Kubernetes Custom Resource Definition(CRD)/controller design pattern. Users manage a `workspace` custom resource which describes the GPU requirements and the inference or tuning specification. KAITO controllers automate the deployment by reconciling the `workspace` custom resource.
+KAITO follows the standard Kubernetes Custom Resource Definition(CRD) controller design pattern. Users manage a `workspace` custom resource that defines GPU requirements along with inference or tuning specifications. The KAITO controllers automate deployment by continuously reconciling the desired state defined in the `workspace` custom resource.
 
 The major components consist of:
 
