@@ -26,8 +26,8 @@ const sidebars: SidebarsConfig = {
       label: 'Features',
       items: [
         'features/core-features',
-        'features/mcp-tool-calling',
         'features/testing-mcp-server',
+        'features/mcp-tool-calling',
         'features/custom-fine-tuning',
       ],
     },
