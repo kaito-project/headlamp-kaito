@@ -17,7 +17,7 @@ Tool calling allows AI models to:
 
 #### Model Compatibility
 
-- Note: Currently, only **Llama models** support tool calling in Headlamp-KAITO. The system provides visual indicators for tool-capable models:
+- Note: Currently, only **Llama models** support tool calling in Headlamp-KAITO. The system provides visual indicators for tool-capable models 🔧:
 
   ![Visual indicator for Model supporting tool calling](../../../src/logos/tool-model.png)
   <!-- add red circle -->
@@ -26,33 +26,16 @@ Tool calling allows AI models to:
 
 ### Authentication Methods
 
-Headlamp-KAITO supports two authentication methods for MCP servers:
+Headlamp-KAITO supports MCP servers using two authentication methods:
 
-#### Authorization Header (Default)
-
-#### URL Path Authentication
+- **Authorization Header**: Credentials are sent via HTTP headers for secure access.
+- **URL Path Authentication**: Credentials are included in the endpoint URL for server authentication.
 
 ### Transport Layer
 
-only streamableHTTP and SSE are supported
+Headlamp-KAITO supports MCP servers using both **streamable HTTP** and **Server-Sent Events (SSE)** protocols. This enables real-time communication and efficient data streaming between the AI model and external tools, ensuring responsive tool execution and seamless integration.
 
-## Chat Interface Integration
-
-### Visual Indicators
-
-When using a tool-enabled model, the chat interface displays:
-
-1. **MCP Chip**: Shows MCP server status in the header
-2. **Connection Status**: Displays connected servers count
-3. **Settings Access**: Click MCP chip to manage servers
-
-### Tool Execution Flow
-
-When sending messages to tool-enabled models:
-
-Tools are discovered automatically from connected MCP servers:
-
-## Adding MCP Servers
+# Adding MCP Servers
 
 Users can add MCP servers through the management interface:
 
