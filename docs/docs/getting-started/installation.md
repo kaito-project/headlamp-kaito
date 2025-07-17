@@ -4,19 +4,30 @@ sidebar_position: 1
 
 # Installation
 
-## Prerequisites
+# Prerequisites
 
 Before installing the Headlamp-KAITO plugin, ensure your environment meets the following requirements:
 
 | Component          | Requirement              | Purpose                             |
 | ------------------ | ------------------------ | ----------------------------------- |
-| Headlamp           | Version 0.12.0 or higher | Host platform for the plugin        |
 | Kubernetes Cluster | Version 1.20+            | Target environment for AI workloads |
 | KAITO Controller   | Installed and running    | AI workload orchestration           |
+| Headlamp           | Version 0.12.0 or higher | Host platform for the plugin        |
 
 ## Kubernetes Cluster with KAITO
 
-The plugin requires a Kubernetes cluster with the KAITO controller installed. KAITO (Kubernetes AI Toolchain Operator) manages AI model deployments and GPU resources.
+The plugin requires a Kubernetes cluster with the Kubernetes AI Toolchain Operator (KAITO) controller installed. KAITO Kubernetes AI Toolchain Operator manages AI model deployments and GPU resources.
+See guidance [here](https://kaito-project.github.io/kaito/docs/installation).
+
+### Kubernetes Context
+
+Ensure Headlamp is connected to a Kubernetes cluster with KAITO controller:
+
+```bash
+kubectl get workspaces -A
+```
+
+This command should return without errors, indicating proper KAITO controller installation.
 
 ## Headlamp Installation
 
@@ -30,16 +41,14 @@ The plugin requires a Kubernetes cluster with the KAITO controller installed. KA
 headlamp --version
 ```
 
-## Headlamp-KAITO Plugin Installation via Plugin Catalog
+## Headlamp-KAITO Plugin Installation
 
-The headlamp-kaito plugin is distributed through Artifact Hub on Headlamp Plugin Catalog, which provides automated installation and integrity verification.
-
-### Installation Process
+The Headlamp-KAITO plugin is distributed through Artifact Hub on Headlamp Plugin Catalog, which provides automated installation and integrity verification.
 
 ![Headlamp-Kaito Plugin installation](../../../src/logos/kaito-plugin-artifacthub.png)
 
 1. **Access Artifact Hub**: Navigate to the Headlamp Plugin Catlog on the left sidebar
-2. **Locate Plugin**: Search for "headlamp-kaito" or browse the Kubernetes plugins section
+2. **Locate Plugin**: Search for "kaito" or browse the plugins
 3. **Install Plugin**: Click the install button to download and install the plugin package
 
 #### Development Installation
@@ -76,18 +85,6 @@ After installation, verify the plugin is correctly loaded:
 | Plugin Not Visible | Sidebar missing Kaito entry | Restart Headlamp after installation   |
 | Route Errors       | 404 errors on plugin routes | Verify plugin archive integrity       |
 | API Access Issues  | Unable to list workspaces   | Check Kubernetes cluster connectivity |
-
-## Initial Configuration
-
-### Kubernetes Context
-
-Ensure Headlamp is connected to a Kubernetes cluster with KAITO controller:
-
-```bash
-kubectl get workspaces -A
-```
-
-This command should return without errors, indicating proper KAITO controller installation.
 
 ## Next Steps
 
