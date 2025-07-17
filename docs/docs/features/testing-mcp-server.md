@@ -141,7 +141,7 @@ spec:
   1. Fork or clone the repo here https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file
 
      ```
-     git clone https://github.com/flux159/mcp-server-kubernetes.git
+     git clone git@github.com:manusa/kubernetes-mcp-server.git
      cd mcp-server-kubernetes
      ```
 

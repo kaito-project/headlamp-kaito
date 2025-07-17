@@ -91,15 +91,23 @@ Once your workspace shows "Inference Ready", you can interact with the model thr
 #### Starting a Chat Session from the Chat Page
 
 1. Navigate to `Chat` on the left sidebar
+   ![Chat Page](../../../src/logos/chat-page.png)
 2. Select a workspace from the dropdown, then select a model from that workspace
+   ![Chat Workspace](../../../src/logos/chat-with-dropdowns.png)
 3. Click "Go"
+   ![Chat Start](../../../src/logos/new-chat-page.png)
+
 4. Configure model settings if desired, then chat with your model!
+   ![Chat Settings](../../../src/logos/model-settings-dialog.png)
+   ![Chat Settings Modify](../../../src/logos/model-settings-popup.png)
 
 #### Starting a Chat Session from the Workspaces Page
 
 1. Click into your workspace to view its details
 2. Click the Chat icon on the upper right
+   ![Chat in Workspace](../../../src/logos/chat-workspace-icon.png)
 3. Configure model settings if desired, then chat with your model!
+   ![Chat Go](../../../src/logos/chat-workspace-action.png)
 
 #### Chat Interface Features
 
