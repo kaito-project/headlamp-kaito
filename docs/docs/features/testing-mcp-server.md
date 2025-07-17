@@ -6,14 +6,14 @@ sidebar_position: 4
 
 ## MCP Kubernetes Integration Guide (with RBAC)
 
-This guide walks you through deploying the MCP Inspector UI and Kubernetes MCP Server inside a Kubernetes cluster with RBAC-based access to the Kubernetes API.
+This guide walks you through deploying the MCP Inspector UI and Kubernetes MCP Server inside a Kubernetes cluster role-based access control (RBAC)-based access to the Kubernetes API.
 
-## 1. Prerequisites
+## Prerequisites
 
 - A working Kubernetes cluster (e.g., AKS, EKS, GKE, or Minikube)
 - kubectl configured for the cluster
 
-## 2. Create a Service Account and RBAC for the Kubernetes MCP Server
+## 1. Create a Service Account and RBAC for the Kubernetes MCP Server
 
 The kubernetes-mcp service account will be used only by the Kubernetes MCP Server, allowing it to read basic cluster resources via the Kubernetes API.
 
@@ -68,7 +68,7 @@ kubectl apply -f mcp-clusterrole.yaml
 kubectl apply -f mcp-clusterrolebinding.yaml
 ```
 
-## 3. Deploy Kubernetes MCP Server
+## 2. Deploy Kubernetes MCP Server
 
 The MCP Server is responsible for handling tool execution related to the Kubernetes API. It must run using the kubernetes-mcp service account defined above.
 
@@ -126,7 +126,7 @@ kubectl apply -f kubernetes-mcp-server.yaml
 kubectl rollout restart deployment kubernetes-mcp-server
 ```
 
-## 4. Deploy MCP Inspector UI (No RBAC Required)
+## 3. Deploy MCP Inspector UI (No RBAC Required)
 
 The Inspector UI is just a client that connects to the MCP server. It does not need Kubernetes API access, so it does not require a service account or RBAC.
 
@@ -178,7 +178,7 @@ kubectl apply -f mcp-inspector.yaml
 kubectl rollout restart deployment mcp-inspector
 ```
 
-## 5. Port Forward (for Local Testing)
+## 4. Port Forward (for Local Testing)
 
 ```bash
 kubectl port-forward deployment/mcp-inspector 6274:6274
@@ -197,7 +197,7 @@ And set the MCP server endpoint to:
 http://localhost:6277/mcp
 ```
 
-## 6. Testing
+## 5. Testing
 
 In the Inspector UI:
 
