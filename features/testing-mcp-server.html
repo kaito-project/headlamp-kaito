@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.8.1">
 <title data-rh="true">Testing your MCP Server | Headlamp Kaito Plugin</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://kaito-project.github.io/headlamp-kaito/img/kaito-logo.png"><meta data-rh="true" name="twitter:image" content="https://kaito-project.github.io/headlamp-kaito/img/kaito-logo.png"><meta data-rh="true" property="og:url" content="https://kaito-project.github.io/headlamp-kaito/features/testing-mcp-server"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Testing your MCP Server | Headlamp Kaito Plugin"><meta data-rh="true" name="description" content="Before connecting your MCP server to Headlamp-KAITO, it&#x27;s recommended to test it independently to ensure it&#x27;s working correctly. This guide provides a complete walkthrough for testing a Kubernetes MCP Server using the MCP Inspector UI."><meta data-rh="true" property="og:description" content="Before connecting your MCP server to Headlamp-KAITO, it&#x27;s recommended to test it independently to ensure it&#x27;s working correctly. This guide provides a complete walkthrough for testing a Kubernetes MCP Server using the MCP Inspector UI."><link data-rh="true" rel="icon" href="/headlamp-kaito/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://kaito-project.github.io/headlamp-kaito/features/testing-mcp-server"><link data-rh="true" rel="alternate" href="https://kaito-project.github.io/headlamp-kaito/features/testing-mcp-server" hreflang="en"><link data-rh="true" rel="alternate" href="https://kaito-project.github.io/headlamp-kaito/features/testing-mcp-server" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Testing your MCP Server","item":"https://kaito-project.github.io/headlamp-kaito/features/testing-mcp-server"}]}</script><link rel="stylesheet" href="/headlamp-kaito/assets/css/styles.1c0ec940.css">
-<script src="/headlamp-kaito/assets/js/runtime~main.469e85ae.js" defer="defer"></script>
+<script src="/headlamp-kaito/assets/js/runtime~main.7c31f009.js" defer="defer"></script>
 <script src="/headlamp-kaito/assets/js/main.30accca9.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -49,7 +49,7 @@
 <ol>
 <li>
 <p>Fork or clone the repo here <a href="https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file" target="_blank" rel="noopener noreferrer">https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file</a></p>
-<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">git clone git@github.com:manusa/kubernetes-mcp-server.git</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">cd mcp-server-kubernetes</span><br></span></code></pre></div></div>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">git clone git@github.com:manusa/kubernetes-mcp-server.git</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">cd kubernetes-mcp-server</span><br></span></code></pre></div></div>
 </li>
 <li>
 <p>Build your Docker image locally. (Must have Docker desktop running in the background)</p>
@@ -79,12 +79,24 @@
 <p>Then open:</p>
 <div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">http://localhost:6274</span><br></span></code></pre></div></div>
 <p>And set the MCP server endpoint to:</p>
-<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">http://localhost:6277/mcp</span><br></span></code></pre></div></div>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">http://kubernetes-mcp-server:8080/mcp</span><br></span></code></pre></div></div>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="5-testing">5. Testing<a href="#5-testing" class="hash-link" aria-label="Direct link to 5. Testing" title="Direct link to 5. Testing">​</a></h2>
 <p>In the Inspector UI:</p>
 <ol>
-<li>Select the MCP server</li>
+<li>Connect to the MCP server via</li>
+</ol>
+<ul>
+<li>Transport Type: <code>StreamableHTTP</code></li>
+<li>URL: <code>http://kubernetes-mcp-server:8080/mcp</code></li>
+<li>Click Connect</li>
+</ul>
+<ol start="2">
+<li>Navigate to Tools (on the same line as Resources)</li>
+</ol>
+<ul>
 <li>Run the pods_list tool</li>
+</ul>
+<ol start="3">
 <li>You should see live pod data returned via the MCP server.</li>
 </ol>
 <p>If you get a &quot;forbidden&quot; error, confirm that:</p>
