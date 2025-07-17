@@ -4,9 +4,22 @@ sidebar_position: 4
 
 # Testing your MCP Server
 
+Before connecting your MCP server to Headlamp-KAITO, it's recommended to test it independently to ensure it's working correctly. This guide provides a complete walkthrough for testing a Kubernetes MCP Server using the MCP Inspector UI.
+
+## Why Test Your MCP Server First?
+
+Testing your MCP server outside of Headlamp-KAITO helps you:
+
+- **Verify Server Functionality**: Ensure your MCP server responds correctly to tool calls
+- **Debug Connection Issues**: Isolate network and authentication problems
+- **Validate Tool Responses**: Confirm that tools return expected data
+- **Test RBAC Permissions**: Verify Kubernetes API access works properly
+
+Once your MCP server passes these tests, you can confidently connect it to Headlamp-KAITO via the [MCP Tool Calling](./mcp-tool-calling.md) interface.
+
 ## MCP Kubernetes Integration Guide (with RBAC)
 
-This guide walks you through deploying the MCP Inspector UI and Kubernetes MCP Server inside a Kubernetes cluster role-based access control (RBAC)-based access to the Kubernetes API.
+This guide walks you through deploying the MCP Inspector UI and Kubernetes MCP Server inside a Kubernetes cluster with role-based access control (RBAC)-based access to the Kubernetes API.
 
 ## Prerequisites
 
@@ -209,3 +222,30 @@ If you get a "forbidden" error, confirm that:
 
 - The MCP server pod is using the kubernetes-mcp service account
 - All three RBAC YAMLs have been applied correctly
+
+## Next Steps: Integrating with Headlamp-KAITO
+
+Once your MCP server is successfully responding to tool calls in the Inspector UI, you can proceed to integrate it with Headlamp-KAITO:
+
+### 1. Connect to Headlamp-KAITO
+
+1. Open Headlamp-KAITO and navigate to a chat interface with a tool-enabled model (Llama models)
+2. Click the **MCP Chip** in the chat header to open the MCP Server Management interface
+3. Add your MCP server using the endpoint URL: `http://kubernetes-mcp-server:8080/mcp`
+
+### 2. Configuration Tips
+
+- **Server Name**: Use a descriptive name like "Kubernetes Tools"
+- **Endpoint URL**: Use the internal Kubernetes service URL for cluster-deployed servers
+- **Authentication**: Configure if your server requires API keys
+- **Transport**: Ensure your server supports streamableHTTP transport
+
+### 3. Validation
+
+After adding your server to Headlamp-KAITO:
+
+- Verify the server shows as "connected" with a green indicator
+- Check that tools are discovered and listed
+- Test tool execution through chat interactions
+
+For detailed integration instructions, see the [MCP Tool Calling](./mcp-tool-calling.md) documentation.
