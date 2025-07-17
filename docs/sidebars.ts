@@ -24,7 +24,12 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Features',
-      items: ['features/core-features', 'features/mcp-tool-calling', 'features/custom-fine-tuning'],
+      items: [
+        'features/core-features',
+        'features/mcp-tool-calling',
+        'features/testing-mcp-server',
+        'features/custom-fine-tuning',
+      ],
     },
   ],
 };
