@@ -18,6 +18,8 @@ Before starting, ensure you have:
 
 ### Model Catalog Features
 
+![Model Catalog](../../../src/logos/model-catalog.png)
+
 The model catalog provides a list of KAITO Preset models with filtering and search capabilities:
 
 | Feature         | Description                               |
@@ -25,19 +27,31 @@ The model catalog provides a list of KAITO Preset models with filtering and sear
 | Search          | Filter models by name                     |
 | Category Filter | Filter by company (Meta, Microsoft, etc.) |
 
+![Model Search](../../../src/logos/model-search.png)
+
 ## Step 2: Deploy Your First Model
 
 ### Deploying a Model
 
+![Model Selection](../../../src/logos/mistral-model.png)
+
 1. **Select a model** from the catalog based on your requirements
 2. **Click "Deploy"** to open the YAML editor dialog
+
 3. **Review the generated Workspace YAML** which includes:
+
    - `instanceType` (automatically selected based on model size)
    - `preset.name` (the model identifier)
    - `presetOptions` (for models requiring access tokens)
+
+![Model Yaml](../../../src/logos/mistral-yaml.png)
+
 4. **Modify the YAML** if needed (namespace, resource requests, etc.)
+
    - **Note:** You need to edit the YAML in order to deploy it, even if that means just removing a space at the end!
+
 5. **Click "Apply"** to deploy the Workspace resource to Kubernetes
+   ![Model Deploy Success](../../../src/logos/apply-success.png)
 
 ## Check Workspace Status
 
@@ -54,6 +68,8 @@ The workspace list displays critical status information:
 | Job Started         | Deployment job active  |
 | Workspace Succeeded | Overall success status |
 
+![Workspaces](../../../src/logos/workspaces.png)
+
 ### Workspaces Detail Features
 
 Click into any of your workspaces to see the following features:
@@ -66,6 +82,8 @@ Click into any of your workspaces to see the following features:
 | Status            | See real-time deployment and health status                        |
 | Conditions        | View all status conditions and their messages for troubleshooting |
 | Events            | View recent events and logs for each workspace                    |
+
+![Workspace Details](../../../src/logos/workspace-detail.png)
 
 ## Step 3: Chat with Deployed Model
 
