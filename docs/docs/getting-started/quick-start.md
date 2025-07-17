@@ -50,16 +50,13 @@ The model catalog provides a list of KAITO Preset models with filtering and sear
 
    - **Note:** You need to edit the YAML in order to deploy it, even if that means just removing a space at the end!
 
-5. **Click "Apply"** to deploy the Workspace resource to Kubernetes
+5. **Click "Apply"** to deploy the Workspace resource to Kubernetes. Wait a few minutes and there will be a visual indicator if the workspace was successfully created.
+
    ![Model Deploy Success](../../../src/logos/apply-success.png)
 
-## Check Workspace Status
+### Check Workspace Status
 
-Navigate to the Kaito Workspaces via the left sidebar.
-
-### Workspace Status Indicators
-
-The workspace list displays critical status information:
+Navigate to the Kaito Workspaces via the left sidebar. The workspace list displays critical status information:
 
 | Column              | Description            |
 | ------------------- | ---------------------- |
@@ -93,7 +90,7 @@ Once your workspace shows "Inference Ready", you can interact with the model thr
 
 #### Starting a Chat Session from the Chat Page
 
-1. Navigate to `/KAITO/Chat` on the left sidebar
+1. Navigate to `Chat` on the left sidebar
 2. Select a workspace from the dropdown, then select a model from that workspace
 3. Click "Go"
 4. Configure model settings if desired, then chat with your model!

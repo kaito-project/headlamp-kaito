@@ -7,7 +7,7 @@ slug: /
 
 **Latest Release:** [July 14th, 2025 &mdash; Headlamp-KAITO v0.0.3](https://github.com/kaito-project/headlamp-kaito/releases/tag/0.0.3)
 
-**First Release:** [June 25th, 2025. Headlamp-KAITO v0.0.1.](https://github.com/kaito-project/headlamp-kaito/releases/tag/0.0.1)
+**First Release:** [June 25th, 2025. Headlamp-KAITO v0.0.1](https://github.com/kaito-project/headlamp-kaito/releases/tag/0.0.1)
 
 ## Purpose
 
