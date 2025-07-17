@@ -83,7 +83,7 @@ kubectl apply -f mcp-clusterrolebinding.yaml
 
 ## 2. Deploy Kubernetes MCP Server
 
-The MCP Server is responsible for handling tool execution related to the Kubernetes API. It must run using the kubernetes-mcp service account defined above.
+The Kubernetes MCP Server handles AI tool requests and must be deployed using the `mcp-service` account created above.
 
 ### kubernetes-mcp-server.yaml
 
@@ -106,7 +106,7 @@ spec:
       automountServiceAccountToken: true
       containers:
         - name: mcp
-          image: chloe608/kubernetes-mcp-server:latest
+          image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
           ports:
             - containerPort: 8080
           env:
@@ -132,6 +132,39 @@ spec:
       targetPort: 8080
 ```
 
+<div style={{background: '#ADD8E6', padding: '1em', borderRadius: '6px', marginRight: '1em'}}>
+
+**Note about the container image**
+
+- The line `image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest` refers to a Docker image that must be available in a container registry like DockerHub. To host your own Docker image like this example, see the following steps:
+
+  1. Fork or clone the repo here https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file
+
+     ```
+     git clone https://github.com/flux159/mcp-server-kubernetes.git
+     cd mcp-server-kubernetes
+     ```
+
+  2. Build your Docker image locally. (Must have Docker desktop running in the background)
+
+     ```
+     docker build -t YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest .
+     ```
+
+  3. Push it to DockerHub (or another registry)
+
+     ```
+     docker push YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
+     ```
+
+  4. You're ready to use your image in your Kubernetes manifest in `kubernetes-mcp-server.yaml`!
+
+     ```
+     image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
+     ```
+
+</div>
+
 Apply and restart:
 
 ```bash
@@ -139,9 +172,9 @@ kubectl apply -f kubernetes-mcp-server.yaml
 kubectl rollout restart deployment kubernetes-mcp-server
 ```
 
-## 3. Deploy MCP Inspector UI (No RBAC Required)
+## 3. Deploy MCP Inspector
 
-The Inspector UI is just a client that connects to the MCP server. It does not need Kubernetes API access, so it does not require a service account or RBAC.
+The Inspector MCP is a UI client that connects to the MCP server. It does not need Kubernetes API access, so it does not require a service account or RBAC.
 
 ### mcp-inspector.yaml
 
