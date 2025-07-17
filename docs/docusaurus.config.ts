@@ -17,6 +17,8 @@ const config: Config = {
 
   organizationName: 'kaito-project',
   projectName: 'headlamp-kaito',
+  trailingSlash: false,
+  deploymentBranch: 'gh-pages',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
