@@ -219,8 +219,6 @@ After completing this quick start:
 
 - **Explore advanced features** in Core Features
 - **Customize model settings** using the settings dialog (⚙️ icon in chat)
-- **Learn about workspace configuration** in Workspace Resources
-- **Understand the technical architecture** in Technical Architecture
 
 ### Additional Resources
 

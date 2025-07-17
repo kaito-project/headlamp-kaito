@@ -142,7 +142,7 @@ spec:
 
      ```
      git clone git@github.com:manusa/kubernetes-mcp-server.git
-     cd mcp-server-kubernetes
+     cd kubernetes-mcp-server
      ```
 
   2. Build your Docker image locally. (Must have Docker desktop running in the background)
@@ -240,15 +240,23 @@ http://localhost:6274
 And set the MCP server endpoint to:
 
 ```bash
-http://localhost:6277/mcp
+http://kubernetes-mcp-server:8080/mcp
 ```
 
 ## 5. Testing
 
 In the Inspector UI:
 
-1. Select the MCP server
-2. Run the pods_list tool
+1. Connect to the MCP server via
+
+- Transport Type: `StreamableHTTP`
+- URL: `http://kubernetes-mcp-server:8080/mcp`
+- Click Connect
+
+2. Navigate to Tools (on the same line as Resources)
+
+- Run the pods_list tool
+
 3. You should see live pod data returned via the MCP server.
 
 If you get a "forbidden" error, confirm that:
