@@ -190,12 +190,17 @@ kubectl run -it --rm --restart=Never curl --image=curlimages/curl -- curl -X POS
 
 ## Next Steps
 
-🎉 Congratulations! You've successfully deployed and tested your first model with the headlamp-kaito plugin.
+Congratulations! You've successfully deployed and tested your first model with the headlamp-kaito plugin.
 
 After completing this quick start:
 
--**Explore advanced features** in Core Features -**Customize model settings** using the settings dialog (⚙️ icon in chat) -**Learn about workspace configuration** in Workspace Resources -**Understand the technical architecture** in Technical Architecture
+- **Explore advanced features** in Core Features
+- **Customize model settings** using the settings dialog (⚙️ icon in chat)
+- **Learn about workspace configuration** in Workspace Resources
+- **Understand the technical architecture** in Technical Architecture
 
 ### Additional Resources
 
--**Learn More:** Explore the full range of supported models in the [presets documentation](https://github.com/kaito-project/kaito/tree/main/presets) -**Advanced Usage:** Learn about [workspace configurations](https://github.com/kaito-project/kaito/blob/main/api/v1alpha1/workspace_types.go) -**Contributing:** See how to [contribute new models](https://github.com/kaito-project/kaito/blob/main/docs/How-to-add-new-models.md)
+- **Learn More:** Explore the full range of supported models in the [presets documentation](https://github.com/kaito-project/kaito/tree/main/presets)
+- **Advanced Usage:** Learn about [workspace configurations](https://github.com/kaito-project/kaito/blob/main/api/v1alpha1/workspace_types.go)
+- **Contributing:** See how to [contribute new models](https://github.com/kaito-project/kaito/blob/main/docs/How-to-add-new-models.md)
