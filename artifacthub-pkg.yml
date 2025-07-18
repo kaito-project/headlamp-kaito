@@ -5,5 +5,5 @@ createdAt: '2025-07-14T11:38:50Z'
 logoURL: 'https://avatars.githubusercontent.com/u/186863079?s=48&v=4'
 description: This release adds Model Context Protocol (MCP) tool calling support, enabling models to access external tools and data sources through configurable MCP servers. The new MCP Server Management interface allows users to configure StreamableHTTP and SSE transport protocols, manage authentication methods (Authorization header or URL path), and enable/disable servers dynamically. This significantly expands the capabilities of AI chat sessions by providing access to external APIs, databases, calculation tools, and custom enterprise services through the standardized MCP specification.
 annotations:
-  headlamp/plugin/archive-url: 'https://github.com/kaito-project/headlamp-kaito/releases/download/0.0.3/headlamp-kaito-0.0.3.tgz'
-  headlamp/plugin/archive-checksum: 'SHA256:5f5048aa7ad43de49bf27c77940cb19d4392452449df5d6ca2c37d3271d6ee59'
+  headlamp/plugin/archive-url: 'https://github.com/kaito-project/headlamp-kaito/releases/download/0.0.3/headlamp-kaito-0.0.3.tar.gz'
+  headlamp/plugin/archive-checksum: 'SHA256:9bbea3650bbeee553fae370319384167ce90efa90ef6d5ebb8321812841c65ab'
