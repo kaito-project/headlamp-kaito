@@ -118,6 +118,8 @@ spec:
               value: '8080'
             - name: DANGEROUSLY_OMIT_AUTH
               value: 'true'
+            - name: ALLOWED_ORIGINS
+              value: '*'
 ---
 apiVersion: v1
 kind: Service
@@ -203,18 +205,26 @@ spec:
               value: 'http://kubernetes-mcp-server:8080/mcp'
             - name: HOST
               value: '0.0.0.0'
+            - name: ALLOWED_ORIGINS
+              value: 'http://20.83.66.22:6274'
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mcp-inspector
 spec:
+  type: LoadBalancer
   selector:
     app: mcp-inspector
   ports:
-    - protocol: TCP
+    - name: ui
+      protocol: TCP
       port: 6274
       targetPort: 6274
+    - name: proxy
+      protocol: TCP
+      port: 6277
+      targetPort: 6277
 ```
 
 Apply and restart:
@@ -224,23 +234,35 @@ kubectl apply -f mcp-inspector.yaml
 kubectl rollout restart deployment mcp-inspector
 ```
 
-## 4. Port Forward (for Local Testing)
+Then run kubectl logs deployment/mcp-inspector and you will see something like this:
+
+```
+Starting MCP inspector...
+⚙️ Proxy server listening on 0.0.0.0:6277
+🔑 Session token: e0fa9ec3071f7857bd47c114b516a66b2c217c53d0f638498dbe76fca6cd6b2a
+   Use this token to authenticate requests or set DANGEROUSLY_OMIT_AUTH=true to disable auth
+
+🚀 MCP Inspector is up and running at:
+   http://0.0.0.0:6274/?MCP_PROXY_AUTH_TOKEN=e0fa9ec3071f7857bd47c114b516a66b2c217c53d0f638498dbe76fca6cd6b2a
+```
+
+Then get the external IP by running:
 
 ```bash
-kubectl port-forward deployment/mcp-inspector 6274:6274
-kubectl port-forward deployment/kubernetes-mcp-server 6277:8080
+kubectl get service mcp-inspector
 ```
 
-Then open:
+Your output should look like this:
 
 ```
-http://localhost:6274
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE
+mcp-inspector   LoadBalancer   10.0.211.173   20.83.66.22   6274:30572/TCP,6277:32271/TCP   5d10h
 ```
 
-And set the MCP server endpoint to:
+Navigate to `http://<external_ip>:<port>/?MCP_PROXY_AUTH_TOKEN=<token>` like this:
 
-```bash
-http://kubernetes-mcp-server:8080/mcp
+```
+http://20.83.66.22:6274/?MCP_PROXY_AUTH_TOKEN=e0fa9ec3071f7857bd47c114b516a66b2c217c53d0f638498dbe76fca6cd6b2a#tools
 ```
 
 ## 5. Testing
