@@ -30,7 +30,7 @@ This guide walks you through deploying the MCP Inspector UI and Kubernetes MCP S
 
 The kubernetes-mcp service account will be used only by the Kubernetes MCP Server, allowing it to read basic cluster resources via the Kubernetes API.
 
-[Download kubernetes-mcp-0.1.0.tgz](../../kubernetes-mcp-0.1.0.tgz) and install with:
+[Download kubernetes-mcp-0.1.0.tgz](../../static/kubernetes-mcp-0.1.0.tgz) and install with:
 
 ```bash
 helm install kubernetes-mcp ./kubernetes-mcp-0.1.0.tgz
