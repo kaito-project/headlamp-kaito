@@ -114,7 +114,7 @@ spec:
       automountServiceAccountToken: true
       containers:
         - name: mcp
-          image: chloe608/kubernetes-mcp-server:latest
+          image: ghcr.io/chloe608/kubernetes-mcp-server
           ports:
             - containerPort: 8080
           env:
@@ -146,10 +146,10 @@ spec:
 
 **Note about the container image**
 
-- The line `image: chloe608/kubernetes-mcp-server:latest` refers to a Docker image that is hosted under
-  [DockerHub: chloe608/kubernetes-mcp-server](https://hub.docker.com/r/chloe608/kubernetes-mcp-server)
+- The line `image: ghcr.io/chloe608/kubernetes-mcp-server:latest` refers to a Github Container registry image that is hosted under
+  [Github Container Registry: chloe608/kubernetes-mcp-server](https://github.com/users/chloe608/packages/container/package/kubernetes-mcp-server)
 
-To host your own Docker image, it must be available in a container registry such as DockerHub. See instructions below to host your own Docker image (if desired). Otherwise, skip to **"Apply and restart"** below this blue block
+To host your own container image, it must be available in a container registry such as Github Container Registry or DockerHub. See instructions below to host your own Docker image (if desired). Otherwise, skip to **"Apply and restart"** below this blue block
 
 1. Fork or clone the repo here https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file
 
