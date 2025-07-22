@@ -36,7 +36,7 @@ The kubernetes-mcp service account will be used only by the Kubernetes MCP Serve
 helm install kubernetes-mcp ./kubernetes-mcp-0.1.0.tgz
 ```
 
-After completing this step, proceed directly to [Step&nbsp;2: Deploy Kubernetes MCP Server](#2-deploy-kubernetes-mcp-server) on this page. If you experience any issues, manually apply the RBAC configuration files by following steps a, b, and c below.
+After completing this step, proceed directly to **[Step&nbsp;2: Deploy Kubernetes MCP Server](#2-deploy-kubernetes-mcp-server)** on this page. If you experience any issues, manually apply the RBAC configuration files by following steps a, b, and c below.
 
 ### a. mcp-serviceaccount.yaml
 
