@@ -114,7 +114,7 @@ spec:
       automountServiceAccountToken: true
       containers:
         - name: mcp
-          image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
+          image: chloe608/kubernetes-mcp-server:latest
           ports:
             - containerPort: 8080
           env:
@@ -146,36 +146,39 @@ spec:
 
 **Note about the container image**
 
-- The line `image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest` refers to a Docker image that must be available in a container registry like DockerHub. To host your own Docker image like this example, see the following steps:
+- The line `image: chloe608/kubernetes-mcp-server:latest` refers to a Docker image that is hosted under
+  [DockerHub: chloe608/kubernetes-mcp-server](https://hub.docker.com/r/chloe608/kubernetes-mcp-server)
 
-  1. Fork or clone the repo here https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file
+To host your own Docker image, it must be available in a container registry such as DockerHub. See instructions below to host your own Docker image (if desired). Otherwise, skip to **"Apply and restart"** below this blue block
 
-     ```
-     git clone git@github.com:manusa/kubernetes-mcp-server.git
-     cd kubernetes-mcp-server
-     ```
+1. Fork or clone the repo here https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file
 
-  2. Build your Docker image locally. (Must have Docker desktop running in the background)
+   ```
+   git clone git@github.com:manusa/kubernetes-mcp-server.git
+   cd kubernetes-mcp-server
+   ```
 
-     ```
-     docker build -t YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest .
-     ```
+2. Build your Docker image locally. (Must have Docker desktop running in the background)
 
-  3. Push it to DockerHub (or another registry)
+   ```
+   docker build -t YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest .
+   ```
 
-     ```
-     docker push YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
-     ```
+3. Push it to DockerHub (or another registry)
 
-  4. You're ready to use your image in your Kubernetes manifest in `kubernetes-mcp-server.yaml`!
+   ```
+   docker push YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
+   ```
 
-     ```
-     image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
-     ```
+4. You're ready to use your image in your Kubernetes manifest in `kubernetes-mcp-server.yaml`!
+
+   ```
+   image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
+   ```
 
 </div>
-
-Apply and restart:
+<br/>
+**Apply and restart:**
 
 ```bash
 kubectl apply -f kubernetes-mcp-server.yaml
