@@ -45,19 +45,19 @@ jobs:
       - run: npm ci
 
       - name: Lint plugin
-        run: npx @kinvolk/headlamp-plugin lint .
+        run: npm run lint-check
 
       - name: Format check
-        run: npx @kinvolk/headlamp-plugin format --check .
+        run: npm run format -- --check
 
       - name: Type check
-        run: npx @kinvolk/headlamp-plugin tsc .
+        run: npm run tsc
 
       - name: Run tests
-        run: npx @kinvolk/headlamp-plugin test .
+        run: npm run test
 
       - name: Build plugin
-        run: npx @kinvolk/headlamp-plugin build .
+        run: npm run build
 
       - name: Create archive
         run: |

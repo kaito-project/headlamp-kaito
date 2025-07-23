@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Autocomplete, TextField, Stack, Button } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { request } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
+import { Autocomplete, Box, Button,Stack, TextField, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import ChatUI from './ChatUI';
 import {
+  fetchModelsWithRetry,
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
-  fetchModelsWithRetry,
 } from './chatUtils';
-import { request } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 
 interface ModelOption {
   title: string;

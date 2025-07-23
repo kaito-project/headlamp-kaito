@@ -1,38 +1,37 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { Icon } from '@iconify/react';
 import {
+  Autocomplete,
+  Avatar,
   Box,
+  Chip,
+  CircularProgress,
   Dialog,
   DialogContent,
-  Typography,
   IconButton,
-  Avatar,
   Paper,
   Stack,
-  Chip,
-  Fab,
-  CircularProgress,
-  Tooltip,
   TextField,
-  Autocomplete,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
+import React, { useEffect,useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
-import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
-import MCPServerManager from './MCPServerManager';
 import { MCPServer, MCPServerStatusEvent } from '../utils/mcpIntegration';
 import { mcpIntegration } from '../utils/mcpIntegration';
 import { modelSupportsTools } from '../utils/modelUtils';
-import ReactMarkdown from 'react-markdown';
-import { useTheme } from '@mui/material/styles';
 import {
+  fetchModelsWithRetry,
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
-  fetchModelsWithRetry,
 } from './chatUtils';
+import MCPServerManager from './MCPServerManager';
+import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
 interface Message {
   id: string;
