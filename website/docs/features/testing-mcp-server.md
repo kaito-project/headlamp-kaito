@@ -114,7 +114,7 @@ spec:
       automountServiceAccountToken: true
       containers:
         - name: mcp
-          image: ghcr.io/chloe608/kubernetes-mcp-server
+          image: ghcr.io/kaito-project/headlamp-kaito/kubernetes-mcp-server:latest
           ports:
             - containerPort: 8080
           env:
