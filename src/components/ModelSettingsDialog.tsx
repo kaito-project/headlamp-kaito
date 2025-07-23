@@ -18,7 +18,8 @@ interface Props {
   open: boolean;
   onClose: () => void;
   config: ModelConfig;
-  onSave: (config: ModelConfig) => void;
+  // eslint-disable-next-line no-unused-vars
+  onSave: (_modelConfig: ModelConfig) => void;
 }
 
 const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave }) => {

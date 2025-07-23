@@ -33,7 +33,8 @@ interface WorkspaceDeploymentDialogProps {
   open: boolean;
   onClose: () => void;
   model: PresetModel | null;
-  onDeploy?: (yamlContent: string) => void;
+  // eslint-disable-next-line no-unused-vars
+  onDeploy?: (_yamlData: string) => void;
 }
 
 const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({

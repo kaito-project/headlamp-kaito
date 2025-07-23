@@ -204,7 +204,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   >([]);
 
   const portForwardIdRef = useRef<string | null>(null);
-  const [portForwardStatus, setPortForwardStatus] = useState('');
+  // eslint-disable-next-line no-unused-vars
+  const [_portForwardStatus, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const [models, setModels] = useState<{ title: string; value: string }[]>([]);
@@ -522,10 +523,13 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     messagesEndRef: React.RefObject<HTMLDivElement>,
     inputRef: React.RefObject<HTMLDivElement>,
     input: string,
-    handleInputChange: (e: React.FormEvent<HTMLDivElement>) => void,
-    handleKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void,
+    // eslint-disable-next-line no-unused-vars
+    handleInputChange: (_e: React.FormEvent<HTMLDivElement>) => void,
+    // eslint-disable-next-line no-unused-vars
+    handleKeyDown: (_e: React.KeyboardEvent<HTMLDivElement>) => void,
     handleSend: () => void,
-    handleChipClick: (text: string) => void,
+    // eslint-disable-next-line no-unused-vars
+    handleChipClick: (_text: string) => void,
     clearChat: () => void,
     theme: any,
     isLoading: boolean,

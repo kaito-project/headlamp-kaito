@@ -168,7 +168,8 @@ function getInstanceType(name: string): string {
 function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[] {
   return supportedModels
     .filter(model => model.name !== 'base')
-    .map((model, i) => ({
+    // eslint-disable-next-line no-unused-vars
+    .map((model, _i) => ({
       name: formatModelName(model.name),
       version: model.tag || '',
       company: {
@@ -249,7 +250,8 @@ const KaitoModels = () => {
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const itemRef = React.useRef({});
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
-  const [editorValue, setEditorValue] = useState('');
+  // eslint-disable-next-line no-unused-vars
+  const [_editorValue, setEditorValue] = useState('');
 
   const filteredModels = presetModels.filter(model => {
     const matchesSearch = model.name.toLowerCase().includes(search.toLowerCase());
