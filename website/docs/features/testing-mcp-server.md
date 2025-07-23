@@ -147,7 +147,7 @@ spec:
 **Note about the container image**
 
 - The line `image: ghcr.io/kaito-project/headlamp-kaito/kubernetes-mcp-server:latest` refers to a Github Container registry image that is hosted under
-  [Github Container Registry: chloe608/kubernetes-mcp-server](https://github.com/users/chloe608/packages/container/package/kubernetes-mcp-server)
+  [Github Container Registry: kaito-project/headlamp-kaito/kubernetes-mcp-server](https://github.com/orgs/kaito-project/packages/container/package/headlamp-kaito%2Fkubernetes-mcp-server)
 
 To host your own container image, it must be available in a container registry such as Github Container Registry or DockerHub. See instructions below to host your own Docker image (if desired). Otherwise, skip to **"Apply and restart"** below this blue block
 
