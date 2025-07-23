@@ -28,6 +28,7 @@ import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import WorkspaceDeploymentDialog from './WorkspaceDeploymentDialog';
 import yaml from 'js-yaml';
 import { modelSupportsTools } from '../utils/modelUtils';
 
@@ -237,19 +238,12 @@ const KaitoModels = () => {
     loadModels();
   }, []);
   function handleDeploy(model: PresetModel) {
-    const yamlString = generateWorkspaceYAML(model);
-    const parsedYaml = yaml.load(yamlString);
-
-    itemRef.current = parsedYaml;
     setActiveModel(model);
-    setEditorValue(yamlString);
     setEditorDialogOpen(true);
   }
 
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
-  const itemRef = React.useRef({});
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
-  const [editorValue, setEditorValue] = useState('');
 
   const filteredModels = presetModels.filter(model => {
     const matchesSearch = model.name.toLowerCase().includes(search.toLowerCase());
@@ -285,28 +279,6 @@ const KaitoModels = () => {
     page * PAGE_OFFSET_COUNT_FOR_MODELS
   );
 
-  function generateWorkspaceYAML(model: PresetModel): string {
-    const modelNameCheck = model.name.toLowerCase();
-    const isLlama = modelNameCheck.includes('llama');
-    return `apiVersion: kaito.sh/v1beta1
-kind: Workspace
-metadata:
-  name: workspace-${modelNameCheck}
-resource:
-  instanceType: ${model.instanceType}
-  labelSelector: 
-    matchLabels:
-      apps: ${modelNameCheck}
-inference:
-    preset:
-      name: ${modelNameCheck}
-      ${
-        isLlama
-          ? `presetOptions:
-            modelAccessSecret: hf-token`
-          : ''
-      }`;
-  }
   return (
     <>
       <SectionHeader
@@ -438,20 +410,17 @@ inference:
         </>
       )}
       <Box textAlign="right" mt={2} mr={2}></Box>
-      {editorDialogOpen && (
-        <EditorDialog
-          item={itemRef.current}
-          open={editorDialogOpen}
-          setOpen={setEditorDialogOpen}
-          onClose={() => setEditorDialogOpen(false)}
-          onEditorChanged={newVal => {
-            setEditorValue(newVal);
-          }}
-          onSave="default"
-          title={`Deploy Model: ${activeModel?.name}`}
-          saveLabel="Apply"
-        />
-      )}
+      <WorkspaceDeploymentDialog
+        open={editorDialogOpen}
+        onClose={() => setEditorDialogOpen(false)}
+        model={activeModel}
+        onDeploy={(yamlContent) => {
+          // Here you could add logic to actually deploy the workspace
+          // For now, we'll use the default EditorDialog save behavior
+          console.log('Deploying workspace with YAML:', yamlContent);
+          setEditorDialogOpen(false);
+        }}
+      />
     </>
   );
 };
