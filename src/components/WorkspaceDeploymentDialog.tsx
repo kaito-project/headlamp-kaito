@@ -44,10 +44,8 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
 }) => {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [labelSelector, setLabelSelector] = useState<string>('');
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [yamlEditorOpen, setYamlEditorOpen] = useState(false);
   const [yamlContent, setYamlContent] = useState('');
-  const [editableYaml, setEditableYaml] = useState('');
 
   const generateWorkspaceYAML = (model: PresetModel, preferredNodes: string[]): string => {
     const modelNameCheck = model.name.toLowerCase();
@@ -90,7 +88,6 @@ inference:
     if (model) {
       const yamlString = generateWorkspaceYAML(model, selectedNodes);
       setYamlContent(yamlString);
-      setEditableYaml(yamlString);
     }
   }, [model, selectedNodes]);
 
@@ -121,23 +118,12 @@ inference:
     }
   };
 
-  const handleYamlSave = () => {
-    console.log('YAML save called with content:', editableYaml);
-    if (onDeploy) {
-      onDeploy(editableYaml);
-    }
-    setYamlEditorOpen(false);
-    onClose();
-  };
-
   const handleReset = () => {
     setSelectedNodes([]);
     setLabelSelector('');
-    setShowAdvanced(false);
     if (model) {
       const yamlString = generateWorkspaceYAML(model, []);
       setYamlContent(yamlString);
-      setEditableYaml(yamlString);
     }
   };
 
