@@ -1,0 +1,20 @@
+# Ignore binary files
+src/logos/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+
+# Ignore build output
+dist/
+build/
+
+# Ignore node_modules
+node_modules/
+
+# Ignore config files that don't need linting
+*.json
+*.yaml
+*.yml
