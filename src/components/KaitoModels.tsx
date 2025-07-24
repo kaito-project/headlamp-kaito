@@ -4,7 +4,6 @@ import {
   Loader,
   SectionHeader,
 } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import {
   Box,
   Button,
