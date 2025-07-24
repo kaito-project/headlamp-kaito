@@ -21,7 +21,7 @@ import {
 import { Autocomplete, Pagination } from '@mui/material';
 import yaml from 'js-yaml';
 import React from 'react';
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 import deepseekLogo from '../logos/deepseek-logo.webp';
 import falconLogo from '../logos/falcon-logo.webp';
 import huggingfaceLogo from '../logos/hugging-face-logo.webp';

@@ -18,7 +18,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 import { streamText } from 'ai';
-import React, { useEffect,useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
 import { MCPServer, MCPServerStatusEvent } from '../utils/mcpIntegration';

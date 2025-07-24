@@ -1,5 +1,5 @@
 import { request } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
-import { Autocomplete, Box, Button,Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
