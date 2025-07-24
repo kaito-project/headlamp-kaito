@@ -247,50 +247,22 @@ Apply and restart:
 kubectl apply -f mcp-inspector.yaml
 kubectl rollout restart deployment mcp-inspector
 ```
-
-Then run
-
+To see the status of your pod services, run:
 ```
-kubectl logs deployment/mcp-inspector
+kubectl run service
 ```
 
-and you will see something like this:
+Then port-forward the MCP-Inspector to a local port:
 
 ```
-Starting MCP inspector...
-⚙️ Proxy server listening on 0.0.0.0:6277
-🔑 Session token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   Use this token to authenticate requests or set DANGEROUSLY_OMIT_AUTH=true to disable auth
-
-🚀 MCP Inspector is up and running at:
-   http://0.0.0.0:6274/?MCP_PROXY_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+kubectl port-forward service/mcp-inspector 6274:6274 6277:6277
 ```
 
-Then get the external IP by running:
-
-```bash
-kubectl get service mcp-inspector
-```
-
-Your output should look like this:
+Once that is running, navigate to
 
 ```
-NAME            TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE
-mcp-inspector   LoadBalancer   10.0.211.173   20.83.66.22   6274:30572/TCP,6277:32271/TCP   5d10h
+http://localhost:6274/
 ```
-
-Navigate to
-
-```
-http://<external_ip>:<port>/?MCP_PROXY_AUTH_TOKEN=<token>
-```
-
-for example:
-
-```
-http://20.83.66.22:6274/?MCP_PROXY_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx#tools
-```
-
 ## 5. Testing
 
 In the in the browser Inspector UI:
