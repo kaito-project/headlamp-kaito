@@ -30,7 +30,8 @@ interface MCPServerManagerProps {
   open: boolean;
   onClose: () => void;
   servers: MCPServer[];
-  onServersChange: (servers: MCPServer[]) => void;
+  // eslint-disable-next-line no-unused-vars
+  onServersChange: (_servers: MCPServer[]) => void;
 }
 
 const MCPServerManager: React.FC<MCPServerManagerProps> = ({
