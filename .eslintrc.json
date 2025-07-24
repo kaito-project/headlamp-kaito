@@ -17,7 +17,7 @@
     "node_modules/"
   ],
   "rules": {
-    "no-unused-vars": "warn",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
     "unused-imports/no-unused-imports": "warn"
   }
 }

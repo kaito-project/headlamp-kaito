@@ -252,8 +252,7 @@ const KaitoModels = () => {
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const itemRef = React.useRef({});
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
-  // eslint-disable-next-line no-unused-vars
-  const [editorValue, setEditorValue] = useState('');
+  const [_editorValue, setEditorValue] = useState('');
 
   const filteredModels = presetModels.filter(model => {
     const matchesSearch = model.name.toLowerCase().includes(search.toLowerCase());
