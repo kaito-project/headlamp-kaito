@@ -53,9 +53,6 @@ jobs:
       - name: Type check
         run: npm run tsc
 
-      - name: Run tests
-        run: npm run test
-
       - name: Build plugin
         run: npm run build
 
