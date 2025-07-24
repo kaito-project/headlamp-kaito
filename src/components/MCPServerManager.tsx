@@ -30,7 +30,6 @@ interface MCPServerManagerProps {
   open: boolean;
   onClose: () => void;
   servers: MCPServer[];
-  // eslint-disable-next-line no-unused-vars
   onServersChange: (_servers: MCPServer[]) => void;
 }
 
