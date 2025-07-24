@@ -24,26 +24,6 @@
     "plugins"
   ],
   "prettier": "@headlamp-k8s/eslint-config/prettier-config",
-  "eslintConfig": {
-    "extends": [
-      "@headlamp-k8s",
-      "prettier",
-      "plugin:jsx-a11y/recommended"
-    ],
-    "ignorePatterns": [
-      "src/logos/**/*",
-      "*.png",
-      "*.jpg",
-      "*.jpeg",
-      "*.gif",
-      "*.webp",
-      "*.svg"
-    ],
-    "rules": {
-      "no-unused-vars": "warn",
-      "unused-imports/no-unused-imports": "warn"
-    }
-  },
   "overrides": {
     "typescript": "5.6.2"
   },
