@@ -166,21 +166,23 @@ function getInstanceType(name: string): string {
 }
 
 function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[] {
-  return supportedModels
-    .filter(model => model.name !== 'base')
-    // eslint-disable-next-line no-unused-vars
-    .map((model, i) => ({
-      name: formatModelName(model.name),
-      version: model.tag || '',
-      company: {
-        name: getCompanyName(model.name),
-        url: getHuggingFaceUrl(model.name),
-      },
-      supportsTools: modelSupportsTools(model.name),
-      logoImageId: getLogo(model.name),
-      description: getModelDescription(model.name),
-      instanceType: getInstanceType(model.name),
-    }));
+  return (
+    supportedModels
+      .filter(model => model.name !== 'base')
+      // eslint-disable-next-line no-unused-vars
+      .map((model, i) => ({
+        name: formatModelName(model.name),
+        version: model.tag || '',
+        company: {
+          name: getCompanyName(model.name),
+          url: getHuggingFaceUrl(model.name),
+        },
+        supportsTools: modelSupportsTools(model.name),
+        logoImageId: getLogo(model.name),
+        description: getModelDescription(model.name),
+        instanceType: getInstanceType(model.name),
+      }))
+  );
 }
 
 const getCompanyName = (name: string): string => {
