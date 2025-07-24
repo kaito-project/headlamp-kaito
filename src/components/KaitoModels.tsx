@@ -168,6 +168,7 @@ function getInstanceType(name: string): string {
 function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[] {
   return supportedModels
     .filter(model => model.name !== 'base')
+    // eslint-disable-next-line no-unused-vars
     .map((model, i) => ({
       name: formatModelName(model.name),
       version: model.tag || '',
@@ -249,6 +250,7 @@ const KaitoModels = () => {
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const itemRef = React.useRef({});
   const [activeModel, setActiveModel] = useState<PresetModel | null>(null);
+  // eslint-disable-next-line no-unused-vars
   const [editorValue, setEditorValue] = useState('');
 
   const filteredModels = presetModels.filter(model => {
