@@ -18,13 +18,6 @@ interface ModelOption {
 
 const KaitoChat: React.FC = () => {
   const theme = useTheme();
-  const location = useLocation();
-
-  // eslint-disable-next-line no-unused-vars
-  const state = (location.state || {}) as {
-    workspaceName?: string;
-    namespace?: string;
-  };
 
   const [models, setModels] = useState<ModelOption[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelOption | null>(null);
