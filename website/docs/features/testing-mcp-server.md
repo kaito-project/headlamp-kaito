@@ -210,20 +210,24 @@ spec:
           image: ghcr.io/modelcontextprotocol/inspector:latest
           ports:
             - containerPort: 6274
+            - containerPort: 6277
           env:
             - name: MCP_URL
               value: 'http://kubernetes-mcp-server:8080/mcp'
             - name: HOST
               value: '0.0.0.0'
+            - name: PORT
+              value: '6277'
+            - name: DANGEROUSLY_OMIT_AUTH
+              value: 'true'
             - name: ALLOWED_ORIGINS
-              value: 'http://20.83.66.22:6274'
+              value: 'http://localhost:6274'
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mcp-inspector
 spec:
-  type: LoadBalancer
   selector:
     app: mcp-inspector
   ports:
