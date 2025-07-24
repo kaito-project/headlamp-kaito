@@ -16,8 +16,7 @@ const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.
 export function WorkspaceDetail() {
   const { name, namespace } = useParams<{ name: string; namespace: string }>();
   const [chatOpen, setChatOpen] = useState(false);
-  // eslint-disable-next-line no-unused-vars
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+  const [_selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
 
   const handleChat = (workspace: Workspace) => {
     setSelectedWorkspace(workspace);

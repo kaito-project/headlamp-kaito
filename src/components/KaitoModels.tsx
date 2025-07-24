@@ -169,8 +169,7 @@ function convertToPresetModels(supportedModels: SupportedModel[]): PresetModel[]
   return (
     supportedModels
       .filter(model => model.name !== 'base')
-      // eslint-disable-next-line no-unused-vars
-      .map((model, i) => ({
+      .map((model, _i) => ({
         name: formatModelName(model.name),
         version: model.tag || '',
         company: {

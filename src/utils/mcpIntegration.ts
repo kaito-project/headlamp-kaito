@@ -28,7 +28,6 @@ export interface MCPServerStatusEvent {
     transportType: string;
   }[];
 }
-// eslint-disable-next-line no-unused-vars
 export type MCPEventListener = (_event: MCPServerStatusEvent) => void;
 
 export class MCPIntegration {
