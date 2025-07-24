@@ -1,13 +1,13 @@
-import React from 'react';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
 } from '@mui/material';
+import React from 'react';
 
 export interface ModelConfig {
   temperature: number;
@@ -18,7 +18,8 @@ interface Props {
   open: boolean;
   onClose: () => void;
   config: ModelConfig;
-  onSave: (config: ModelConfig) => void;
+  // eslint-disable-next-line no-unused-vars
+  onSave: (_config: ModelConfig) => void;
 }
 
 const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave }) => {

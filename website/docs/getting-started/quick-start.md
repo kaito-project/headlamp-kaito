@@ -18,7 +18,7 @@ Before starting, ensure you have:
 
 ### Model Catalog Features
 
-![Model Catalog](../../../src/logos/model-catalog.png)
+![Model Catalog](/img/model-catalog.png)
 
 The model catalog provides a list of KAITO Preset models with filtering and search capabilities:
 
@@ -27,13 +27,13 @@ The model catalog provides a list of KAITO Preset models with filtering and sear
 | Search          | Filter models by name                     |
 | Category Filter | Filter by company (Meta, Microsoft, etc.) |
 
-![Model Search](../../../src/logos/model-search.png)
+![Model Search](/img/model-search.png)
 
 ## Step 2: Deploy Your First Model
 
 ### Deploying a Model
 
-![Model Selection](../../../src/logos/mistral-model.png)
+![Model Selection](/img/mistral-model.png)
 
 1. **Select a model** from the catalog based on your requirements
 2. **Click "Deploy"** to open the YAML editor dialog
@@ -44,7 +44,7 @@ The model catalog provides a list of KAITO Preset models with filtering and sear
    - `preset.name` (the model identifier)
    - `presetOptions` (for models requiring access tokens)
 
-![Model Yaml](../../../src/logos/mistral-yaml.png)
+![Model Yaml](/img/mistral-yaml.png)
 
 4. **Modify the YAML** if needed (namespace, resource requests, etc.)
 
@@ -52,7 +52,7 @@ The model catalog provides a list of KAITO Preset models with filtering and sear
 
 5. **Click "Apply"** to deploy the Workspace resource to Kubernetes. Wait a few minutes and there will be a visual indicator if the workspace was successfully created.
 
-   ![Model Deploy Success](../../../src/logos/apply-success.png)
+   ![Model Deploy Success](/img/apply-success.png)
 
 ### Check Workspace Status
 
@@ -65,7 +65,7 @@ Navigate to the Kaito Workspaces via the left sidebar. The workspace list displa
 | Job Started         | Deployment job active  |
 | Workspace Succeeded | Overall success status |
 
-![Workspaces](../../../src/logos/workspaces.png)
+![Workspaces](/img/workspaces.png)
 
 ### Workspaces Detail Features
 
@@ -80,7 +80,7 @@ Click into any of your workspaces to see the following features:
 | Conditions        | View all status conditions and their messages for troubleshooting |
 | Events            | View recent events and logs for each workspace                    |
 
-![Workspace Details](../../../src/logos/workspace-detail.png)
+![Workspace Details](/img/workspace-detail.png)
 
 ## Step 3: Chat with Deployed Model
 
@@ -91,23 +91,23 @@ Once your workspace shows "Inference Ready", you can interact with the model thr
 #### Starting a Chat Session from the Chat Page
 
 1. Navigate to `Chat` on the left sidebar
-   ![Chat Page](../../../src/logos/chat-page.png)
+   ![Chat Page](/img/chat-page.png)
 2. Select a workspace from the dropdown, then select a model from that workspace
-   ![Chat Workspace](../../../src/logos/chat-with-dropdowns.png)
+   ![Chat Workspace](/img/chat-with-dropdowns.png)
 3. Click "Go"
-   ![Chat Start](../../../src/logos/new-chat-page.png)
+   ![Chat Start](/img/new-chat-page.png)
 
 4. Configure model settings if desired, then chat with your model!
-   ![Chat Settings](../../../src/logos/model-settings-dialog.png)
-   ![Chat Settings Modify](../../../src/logos/model-settings-popup.png)
+   ![Chat Settings](/img/model-settings-dialog.png)
+   ![Chat Settings Modify](/img/model-settings-popup.png)
 
 #### Starting a Chat Session from the Workspaces Page
 
 1. Click into your workspace to view its details
 2. Click the Chat icon on the upper right
-   ![Chat in Workspace](../../../src/logos/chat-workspace-icon.png)
+   ![Chat in Workspace](/img/chat-workspace-icon.png)
 3. Configure model settings if desired, then chat with your model!
-   ![Chat Go](../../../src/logos/chat-workspace-action.png)
+   ![Chat Go](/img/chat-workspace-action.png)
 
 #### Chat Interface Features
 

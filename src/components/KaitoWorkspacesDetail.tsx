@@ -1,25 +1,22 @@
 import {
+  ActionButton,
+  ConditionsSection,
   DetailsGrid,
   MetadataDictGrid,
   NameValueTable,
   SectionBox,
-  ConditionsSection,
-  ContainersSection,
-  OwnedPodsSection,
-  ActionButton,
-  Dialog,
 } from '@kinvolk/headlamp-plugin/lib/components/common';
-import { useParams } from 'react-router-dom';
 import { useState } from 'react';
-import { Workspace } from './resources/workspace';
+import { useParams } from 'react-router-dom';
 import ChatUI from './ChatUI';
+import { Workspace } from './resources/workspace';
 
 const StringArray = ({ items }: { items?: string[] }) => (items?.length ? items.join(', ') : '');
 
 export function WorkspaceDetail() {
   const { name, namespace } = useParams<{ name: string; namespace: string }>();
   const [chatOpen, setChatOpen] = useState(false);
-  const [selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
+  const [_selectedWorkspace, setSelectedWorkspace] = useState<Workspace | null>(null);
 
   const handleChat = (workspace: Workspace) => {
     setSelectedWorkspace(workspace);

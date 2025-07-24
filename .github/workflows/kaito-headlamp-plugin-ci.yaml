@@ -1,0 +1,64 @@
+name: headlamp-kaito-plugin linting, type checking, testing, and pre-release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  PLUGIN_NAME: headlamp-kaito
+  releaseName: latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update package.json version
+        uses: fjogeleit/yaml-update-action@v0.16.1
+        with:
+          valueFile: package.json
+          propertyPath: version
+          value: '${{ env.releaseName }}'
+          commitChange: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - run: npm ci
+
+      - name: Lint plugin
+        run: npm run lint-check
+
+      - name: Format check
+        run: npm run format -- --check
+
+      - name: Type check
+        run: npm run tsc
+        continue-on-error: true
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Create archive
+        run: |
+          mkdir -p ${PLUGIN_NAME}
+          cp dist/main.js package.json ${PLUGIN_NAME}
+          tar -czf ${{ github.event.repository.name }}-latest.tar.gz ${PLUGIN_NAME}

@@ -33,7 +33,7 @@ This command should return without errors, indicating proper KAITO controller in
 
 1. Install Headlamp https://headlamp.dev/
 
-   [![Headlamp Installation](../../../src/logos/headlamp-install.png)](https://headlamp.dev/)
+   [![Headlamp Installation](/img/headlamp-install.png)](https://headlamp.dev/)
 
 2. Verify your Headlamp installation by checking the version:
 
@@ -45,7 +45,7 @@ headlamp --version
 
 The Headlamp-KAITO plugin is distributed through Artifact Hub on Headlamp Plugin Catalog, which provides automated installation and integrity verification.
 
-![Headlamp-Kaito Plugin installation](../../../src/logos/kaito-plugin-artifacthub.png)
+![Headlamp-Kaito Plugin installation](/img/kaito-plugin-artifacthub.png)
 
 1. **Access Artifact Hub**: Navigate to the Headlamp Plugin Catlog on the left sidebar
 2. **Locate Plugin**: Search for "kaito" or browse the plugins
@@ -66,7 +66,7 @@ After installation, verify the plugin is correctly loaded:
 
 - **Sidebar Navigation**: Navigate to your cluster and check that "KAITO" appears in the Headlamp sidebar
 
-![Headlamp-Kaito Plugin installation](../../../src/logos/kaito-sidebar.png)
+![Headlamp-Kaito Plugin installation](/img/kaito-sidebar.png)
 
 <!-- add red circle  -->
 

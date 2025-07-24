@@ -19,7 +19,7 @@ Tool calling allows AI models to:
 
 - Note: Currently, only **Llama models** support tool calling in Headlamp-KAITO. The system provides visual indicators for tool-capable models 🔧:
 
-![Visual indicator for Model supporting tool calling](../../../src/logos/supports-tool-calling.png)
+![Visual indicator for Model supporting tool calling](/img/supports-tool-calling.png)
 
 ## MCP Server Management
 
@@ -37,8 +37,8 @@ Headlamp-KAITO supports MCP servers using both **streamable HTTP** and **Server-
 # Adding MCP Servers
 
 Users can add MCP servers through the management interface:
-![Visual indicator for Model Chat tool calling](../../../src/logos/mcp-settings-dialog.png)
-![MCP Server Management](../../../src/logos/mcp-server-management.png)
+![Visual indicator for Model Chat tool calling](/img/mcp-settings-dialog.png)
+![MCP Server Management](/img/mcp-server-management.png)
 
 1. **Server Name**: Human-readable identifier
 2. **Endpoint URL**: HTTP endpoint for the MCP server
@@ -49,7 +49,7 @@ Users can add MCP servers through the management interface:
 ### Server Status Monitoring
 
 The interface shows real-time server status:
-![MCP Server Status](../../../src/logos/mcp-tools-enabled.png)
+![MCP Server Status](/img/mcp-tools-enabled.png)
 
 - **Connection Status**: Green indicator for connected servers
 - **Tool Count**: Number of tools available from each server
@@ -58,7 +58,7 @@ The interface shows real-time server status:
 ### Configuration Persistence
 
 MCP server configurations are stored in the component state and can be:
-![Visual indicator for toggling MCP Servers](../../../src/logos/loaded-mcp-servers.png)
+![Visual indicator for toggling MCP Servers](/img/loaded-mcp-servers.png)
 
 - **Enabled/Disabled**: Toggle servers on/off
 - **Edited**: Modify server settings
@@ -80,9 +80,9 @@ Authentication Method: Authorization Header
 
 Then click Add Server
 
-![Github MCP Server setup](../../../src/logos/github-mcp-server-example.png)
+![Github MCP Server setup](/img/github-mcp-server-example.png)
 
 You're all set!
 Chat with your model with queries with related to the Github MCP server context. See the available tools for this server at the Github repository: https://github.com/github/github-mcp-server
 
-![Github MCP Server Conversation](../../../src/logos/mcp-conversation.png)
+![Github MCP Server Conversation](/img/mcp-conversation.png)

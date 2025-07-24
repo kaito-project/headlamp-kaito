@@ -1,6 +1,6 @@
-import { experimental_createMCPClient } from 'ai';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { experimental_createMCPClient } from 'ai';
 
 export interface MCPServer {
   id: string;
@@ -28,8 +28,7 @@ export interface MCPServerStatusEvent {
     transportType: string;
   }[];
 }
-
-export type MCPEventListener = (event: MCPServerStatusEvent) => void;
+export type MCPEventListener = (_event: MCPServerStatusEvent) => void;
 
 export class MCPIntegration {
   private clientManager: MCPClientManager;
@@ -82,7 +81,7 @@ export class MCPIntegration {
           // SSE Transport
           let endpointUrl: string;
           let eventSourceInit: EventSourceInit = {};
-          let requestInit: RequestInit = {};
+          const requestInit: RequestInit = {};
 
           if (server.apiKey) {
             if (server.authMethod === 'url') {
@@ -113,7 +112,7 @@ export class MCPIntegration {
         } else {
           // StreamableHTTP Transport (default)
           let endpointUrl: string;
-          let transportOptions: { requestInit?: RequestInit } = {};
+          const transportOptions: { requestInit?: RequestInit } = {};
 
           if (server.apiKey) {
             if (server.authMethod === 'url') {

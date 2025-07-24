@@ -6,8 +6,9 @@
     "start": "headlamp-plugin start",
     "build": "headlamp-plugin build",
     "format": "headlamp-plugin format",
-    "lint": "headlamp-plugin lint",
-    "lint-fix": "headlamp-plugin lint --fix",
+    "lint": "eslint --cache --fix --ext .js,.ts,.tsx src/",
+    "lint-check": "eslint --cache --max-warnings 0 --ext .js,.ts,.tsx src/",
+    "lint-fix": "eslint --cache --fix --ext .js,.ts,.tsx src/",
     "package": "headlamp-plugin package",
     "tsc": "headlamp-plugin tsc",
     "storybook": "headlamp-plugin storybook",
@@ -23,13 +24,6 @@
     "plugins"
   ],
   "prettier": "@headlamp-k8s/eslint-config/prettier-config",
-  "eslintConfig": {
-    "extends": [
-      "@headlamp-k8s",
-      "prettier",
-      "plugin:jsx-a11y/recommended"
-    ]
-  },
   "overrides": {
     "typescript": "5.6.2"
   },

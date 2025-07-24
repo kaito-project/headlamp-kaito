@@ -1,38 +1,37 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { Icon } from '@iconify/react';
 import {
+  Autocomplete,
+  Avatar,
   Box,
+  Chip,
+  CircularProgress,
   Dialog,
   DialogContent,
-  Typography,
   IconButton,
-  Avatar,
   Paper,
   Stack,
-  Chip,
-  Fab,
-  CircularProgress,
-  Tooltip,
   TextField,
-  Autocomplete,
+  Tooltip,
+  Typography,
 } from '@mui/material';
-import { Icon } from '@iconify/react';
+import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { streamText } from 'ai';
+import React, { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
-import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
-import MCPServerManager from './MCPServerManager';
 import { MCPServer, MCPServerStatusEvent } from '../utils/mcpIntegration';
 import { mcpIntegration } from '../utils/mcpIntegration';
 import { modelSupportsTools } from '../utils/modelUtils';
-import ReactMarkdown from 'react-markdown';
-import { useTheme } from '@mui/material/styles';
 import {
+  fetchModelsWithRetry,
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
-  fetchModelsWithRetry,
 } from './chatUtils';
+import MCPServerManager from './MCPServerManager';
+import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
 interface Message {
   id: string;
@@ -205,7 +204,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   >([]);
 
   const portForwardIdRef = useRef<string | null>(null);
-  const [portForwardStatus, setPortForwardStatus] = useState('');
+  const [_, setPortForwardStatus] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const [models, setModels] = useState<{ title: string; value: string }[]>([]);
@@ -523,10 +522,10 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
     messagesEndRef: React.RefObject<HTMLDivElement>,
     inputRef: React.RefObject<HTMLDivElement>,
     input: string,
-    handleInputChange: (e: React.FormEvent<HTMLDivElement>) => void,
-    handleKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void,
+    handleInputChange: (_: React.FormEvent<HTMLDivElement>) => void,
+    handleKeyDown: (_: React.KeyboardEvent<HTMLDivElement>) => void,
     handleSend: () => void,
-    handleChipClick: (text: string) => void,
+    handleChipClick: (_: string) => void,
     clearChat: () => void,
     theme: any,
     isLoading: boolean,

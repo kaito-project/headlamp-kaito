@@ -1,0 +1,23 @@
+{
+  "extends": [
+    "@headlamp-k8s",
+    "prettier",
+    "plugin:jsx-a11y/recommended"
+  ],
+  "ignorePatterns": [
+    "src/logos/**/*",
+    "*.png",
+    "*.jpg",
+    "*.jpeg",
+    "*.gif",
+    "*.webp",
+    "*.svg",
+    "dist/",
+    "build/",
+    "node_modules/"
+  ],
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "unused-imports/no-unused-imports": "warn"
+  }
+}
