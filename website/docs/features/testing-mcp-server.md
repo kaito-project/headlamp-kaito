@@ -121,16 +121,12 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: ENABLE_UNSAFE_SSE_TRANSPORT
-              value: '1'
             - name: HOST
               value: '0.0.0.0'
             - name: PORT
               value: '8080'
-            - name: DANGEROUSLY_OMIT_AUTH
-              value: 'true'
             - name: ALLOWED_ORIGINS
-              value: '*'
+              value: "*"
 ---
 apiVersion: v1
 kind: Service
