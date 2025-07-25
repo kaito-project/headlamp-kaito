@@ -18,7 +18,6 @@ interface Props {
   open: boolean;
   onClose: () => void;
   config: ModelConfig;
-  // eslint-disable-next-line no-unused-vars
   onSave: (_config: ModelConfig) => void;
 }
 
