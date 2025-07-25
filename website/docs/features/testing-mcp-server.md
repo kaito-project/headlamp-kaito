@@ -288,16 +288,182 @@ If you get a "forbidden" error, confirm that:
 
 Once your MCP server is successfully responding to tool calls in the Inspector UI, you can proceed to integrate it with Headlamp-KAITO:
 
-### 1. Connect to Headlamp-KAITO
+**Network connectivity depends on how Headlamp is deployed:**
+
+- **Headlamp running inside Kubernetes** ([in-cluster deployment](https://headlamp.dev/docs/latest/installation/in-cluster)): Can use internal service names (See Option 1)
+- **Headlamp running outside Kubernetes** (desktop app, external web service): Must use external access methods (See Option 2)
+
+### Option 1: Internal Service Access (In-Cluster Headlamp)
+
+If Headlamp is deployed inside the same Kubernetes cluster using the [in-cluster installation](https://headlamp.dev/docs/latest/installation/in-cluster), you can use internal service names:
+
+```
+http://kubernetes-mcp-server:8080/mcp
+```
+
+Or the full FQDN:
+```
+http://kubernetes-mcp-server.default.svc.cluster.local:8080/mcp
+```
+
+**Requirements**: 
+- Headlamp deployed as a Kubernetes workload in the same cluster
+- Both services in the same namespace, or use full FQDN for cross-namespace access
+
+### Option 2: LoadBalancer Service (External Headlamp)
+
+<div style={{background: '#FFE4B5', border: '2px solid #FF8C00', padding: '1em', borderRadius: '6px', marginBottom: '1em'}}>
+
+⚠️ **SECURITY WARNING: LoadBalancer Service**
+
+Using `type: LoadBalancer` exposes your MCP server directly to the internet without authentication. This means:
+- Anyone can access your Kubernetes cluster data through the MCP server
+- No built-in rate limiting or access controls
+- Potential exposure of sensitive cluster information
+
+**Recommendations:**
+- Use LoadBalancer only in development/testing environments
+- For production: Use port-forwarding, ingress with authentication, or VPN access
+- Consider adding authentication to your MCP server
+- Restrict access using network policies or firewall rules
+
+</div>
+
+Update your `kubernetes-mcp-server.yaml`:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-mcp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubernetes-mcp-server
+  template:
+    metadata:
+      labels:
+        app: kubernetes-mcp-server
+    spec:
+      serviceAccountName: kubernetes-mcp
+      automountServiceAccountToken: true
+      containers:
+        - name: mcp
+          image: ghcr.io/kaito-project/headlamp-kaito/kubernetes-mcp-server:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: HOST
+              value: '0.0.0.0'
+            - name: PORT
+              value: '8080'
+            - name: ALLOWED_ORIGINS
+              value: "*"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-mcp-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: kubernetes-mcp-server
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+```
+Changes made: 
+- ALLOWED_ORIGINS: "*"
+- Service Type: LoadBalancer
+
+Similarly, update your `mcp-inspector.yaml`
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-inspector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-inspector
+  template:
+    metadata:
+      labels:
+        app: mcp-inspector
+    spec:
+      containers:
+        - name: mcp-inspector
+          image: ghcr.io/modelcontextprotocol/inspector:latest
+          ports:
+            - containerPort: 6274
+            - containerPort: 6277
+          env:
+            - name: MCP_URL
+              value: 'http://kubernetes-mcp-server:8080/mcp'
+            - name: HOST
+              value: '0.0.0.0'
+            - name: PORT
+              value: '6277'
+            - name: DANGEROUSLY_OMIT_AUTH
+              value: 'true'
+            - name: ALLOWED_ORIGINS
+              value: '*'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-inspector
+spec:
+  type: LoadBalancer
+  selector:
+    app: mcp-inspector
+  ports:
+    - name: ui
+      protocol: TCP
+      port: 6274
+      targetPort: 6274
+    - name: proxy
+      protocol: TCP
+      port: 6277
+      targetPort: 6277
+```
+Changes made: 
+- Service Type: LoadBalancer
+
+If you're using a cloud provider (AKS, EKS, GKE), the LoadBalancer service will automatically provision an external IP. Get the external IP with:
+
+```bash
+kubectl get service kubernetes-mcp-server
+```
+
+Use the external IP in Headlamp-KAITO: `http://EXTERNAL-IP:8080/mcp`
+
+### Option 2: Port Forwarding (Recommended for Security)
+
+**🔒 Secure Option**: Port forwarding keeps your MCP server private and only accessible from your local machine.
+
+If you're using a local cluster or want to test without exposing the service publicly:
+
+```bash
+kubectl port-forward service/kubernetes-mcp-server 8080:8080
+```
+
+Then use in Headlamp-KAITO: `http://localhost:8080/mcp`
+
+**Note**: Port forwarding only works while the command is running and only from the machine running the command.
 
 1. Open Headlamp-KAITO and navigate to a chat interface with a tool-enabled model (Llama models)
 2. Click the **MCP Chip** in the chat header to open the MCP Server Management interface
-3. Add your MCP server using the endpoint URL: `http://kubernetes-mcp-server:8080/mcp`
+3. Add your MCP server using the appropriate endpoint URL:
+   - **LoadBalancer**: `http://EXTERNAL-IP:8080/mcp` (get external IP with `kubectl get service kubernetes-mcp-server`)
+   - **Port Forward**: `http://localhost:8080/mcp` (requires active port-forward session)
 
 ### 2. Configuration Tips
 
 - **Server Name**: Use a descriptive name like "Kubernetes Tools"
-- **Endpoint URL**: Use the internal Kubernetes service URL for cluster-deployed servers
+- **Endpoint URL**: Use the external URL for LoadBalancer or localhost URL for port-forwarding
 - **Authentication**: Configure if your server requires API keys
 - **Transport**: Ensure your server supports streamableHTTP transport
 
