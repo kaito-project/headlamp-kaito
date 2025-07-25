@@ -375,7 +375,7 @@ spec:
             - name: NO_AUTH
               value: 'true'
             - name: ALLOWED_ORIGINS
-              value: 'http://<mcp-inspector-EXTERNAL-IP>:6274,http://localhost:6274,*'
+              value: 'http://<mcp-inspector-EXTERNAL-IP>:6274,http://localhost:6274,*' # Replace <mcp-inspector-EXTERNAL-IP> with the external IP address of the mcp-inspector service
 ---
 apiVersion: v1
 kind: Service
