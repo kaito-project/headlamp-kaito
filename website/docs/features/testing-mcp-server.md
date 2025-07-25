@@ -258,6 +258,8 @@ Then port-forward the MCP-Inspector to a local port:
 kubectl port-forward service/mcp-inspector 6274:6274 6277:6277
 ```
 
+**Note**: Port forwarding only works while the command is running and only from the machine running the command.
+
 Once that is running, navigate to
 
 ```
@@ -440,25 +442,11 @@ kubectl get service kubernetes-mcp-server
 
 Use the external IP in Headlamp-KAITO: `http://EXTERNAL-IP:8080/mcp`
 
-### Option 2: Port Forwarding (Recommended for Security)
-
-**🔒 Secure Option**: Port forwarding keeps your MCP server private and only accessible from your local machine.
-
-If you're using a local cluster or want to test without exposing the service publicly:
-
-```bash
-kubectl port-forward service/kubernetes-mcp-server 8080:8080
-```
-
-Then use in Headlamp-KAITO: `http://localhost:8080/mcp`
-
-**Note**: Port forwarding only works while the command is running and only from the machine running the command.
 
 1. Open Headlamp-KAITO and navigate to a chat interface with a tool-enabled model (Llama models)
 2. Click the **MCP Chip** in the chat header to open the MCP Server Management interface
 3. Add your MCP server using the appropriate endpoint URL:
    - **LoadBalancer**: `http://EXTERNAL-IP:8080/mcp` (get external IP with `kubectl get service kubernetes-mcp-server`)
-   - **Port Forward**: `http://localhost:8080/mcp` (requires active port-forward session)
 
 ### 2. Configuration Tips
 
