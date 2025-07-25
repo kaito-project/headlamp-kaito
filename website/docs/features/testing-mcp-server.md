@@ -5,6 +5,7 @@ sidebar_position: 4
 # Testing your MCP Server
 
 Before connecting your MCP server to Headlamp-KAITO, it's recommended to test it independently to ensure it's working correctly. This guide provides a complete walkthrough for testing a Kubernetes MCP Server using the MCP Inspector UI.
+> **Note:** Headlamp-KAITO allows you to test MCP Server tool calling support, but does not currently support deploying MCP servers to your cluster. Deployment support is coming soon!
 
 ## Why Test Your MCP Server First?
 
