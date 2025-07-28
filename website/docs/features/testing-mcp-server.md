@@ -5,6 +5,7 @@ sidebar_position: 4
 # Testing your MCP Server
 
 Before connecting your MCP server to Headlamp-KAITO, it's recommended to test it independently to ensure it's working correctly. This guide provides a complete walkthrough for testing a Kubernetes MCP Server using the MCP Inspector UI.
+> **Note:** Headlamp-KAITO allows you to test MCP Server tool calling support, but does not currently support deploying MCP servers to your cluster. Deployment support is coming soon!
 
 ## Why Test Your MCP Server First?
 
@@ -94,10 +95,200 @@ kubectl apply -f mcp-clusterrolebinding.yaml
 
 ## 2. Deploy Kubernetes MCP Server
 
-The Kubernetes MCP Server handles AI tool requests and must be deployed using the `mcp-service` account created above.
+The Kubernetes MCP Server handles AI tool requests and must be deployed using the `kubernetes-mcp` account created above.
 
 ### kubernetes-mcp-server.yaml
 
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-mcp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubernetes-mcp-server
+  template:
+    metadata:
+      labels:
+        app: kubernetes-mcp-server
+    spec:
+      serviceAccountName: kubernetes-mcp
+      automountServiceAccountToken: true
+      containers:
+        - name: mcp
+          image: ghcr.io/kaito-project/headlamp-kaito/kubernetes-mcp-server:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: HOST
+              value: '0.0.0.0'
+            - name: PORT
+              value: '8080'
+            - name: ALLOWED_ORIGINS
+              value: "*"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-mcp-server
+spec:
+  selector:
+    app: kubernetes-mcp-server
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+```
+
+## 3. Deploy MCP Inspector
+
+The MCP Inspector is a UI client that connects to an MCP server. It does not need Kubernetes API access, so it does not require a service account or RBAC.
+
+### mcp-inspector.yaml
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-inspector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-inspector
+  template:
+    metadata:
+      labels:
+        app: mcp-inspector
+    spec:
+      containers:
+        - name: mcp-inspector
+          image: ghcr.io/modelcontextprotocol/inspector:latest
+          ports:
+            - containerPort: 6274
+            - containerPort: 6277
+          env:
+            - name: MCP_URL
+              value: 'http://kubernetes-mcp-server:8080/mcp'
+            - name: HOST
+              value: '0.0.0.0'
+            - name: PORT
+              value: '6277'
+            - name: DANGEROUSLY_OMIT_AUTH
+              value: 'true'
+            - name: ALLOWED_ORIGINS
+              value: 'http://localhost:6274'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-inspector
+spec:
+  selector:
+    app: mcp-inspector
+  ports:
+    - name: ui
+      protocol: TCP
+      port: 6274
+      targetPort: 6274
+    - name: proxy
+      protocol: TCP
+      port: 6277
+      targetPort: 6277
+```
+
+Apply and restart:
+
+```bash
+kubectl apply -f mcp-inspector.yaml
+kubectl rollout restart deployment mcp-inspector
+```
+To see the status of your pod services, run:
+```
+kubectl run service
+```
+
+Then port-forward the MCP-Inspector to a local port:
+
+```
+kubectl port-forward service/mcp-inspector 6274:6274 6277:6277
+```
+
+Once that is running, navigate to
+
+```
+http://localhost:6274/
+```
+**Note**: Port forwarding only works while the command is running and only from the machine running the command.
+
+## 5. Testing
+
+In the in the browser Inspector UI:
+
+1. Connect to the MCP server via
+
+- Transport Type: `StreamableHTTP`
+- URL: `http://kubernetes-mcp-server:8080/mcp`
+- Click Connect
+
+2. Navigate to Tools (on the same line as Resources), click List Tools to see what tools the connected MCP offers (in this case, the Kubernetes MCP server).
+
+- Try running the `pods_list` tool
+
+3. You should see live pod data returned via the Kubernetes MCP server.
+
+If you get a "forbidden" error, confirm that:
+
+- The MCP server pod is using the kubernetes-mcp service account
+- Port forwarding is currently running in terminal
+
+## Next Steps: Integrating with Headlamp-KAITO
+
+Once your MCP server is successfully responding to tool calls in the Inspector UI, you can proceed to integrate it with Headlamp-KAITO:
+
+**Network connectivity depends on how Headlamp was installed:**
+
+- **Headlamp running inside Kubernetes** ([in-cluster installation](https://headlamp.dev/docs/latest/installation/in-cluster)): Can use internal service names (See Option 1)
+- **Headlamp running outside Kubernetes** (desktop app, external web service): Must use external access methods (See Option 2)
+
+### Option 1: Internal Service Access (Headlamp Installed In-Cluster)
+
+If Headlamp is deployed inside the same Kubernetes cluster using the [in-cluster installation](https://headlamp.dev/docs/latest/installation/in-cluster), you can use internal service names directly:
+
+```
+http://kubernetes-mcp-server:8080/mcp
+```
+
+Or the full FQDN:
+```
+http://kubernetes-mcp-server.default.svc.cluster.local:8080/mcp
+```
+
+**Requirements**: 
+- Headlamp deployed as a Kubernetes workload in the same cluster as the Kubernetes MCP and MCP Inspector  
+- Both services in the same namespace, or use full FQDN for cross-namespace access
+
+### Option 2: LoadBalancer Service (Headlamp Intalled as External/Browser App)
+
+:::warning
+Security Risks with LoadBalancer Service
+
+Using `type: LoadBalancer` exposes your MCP server directly to the internet without authentication. This means:
+- Anyone can access your Kubernetes cluster data through the MCP server
+- No built-in rate limiting or access controls
+- Potential exposure of sensitive cluster information
+
+**Recommendations:**
+- Use LoadBalancer only in development/testing environments
+- For production: Use port-forwarding, ingress with authentication, or VPN access
+- Consider adding authentication to your MCP server
+- Restrict access using network policies or firewall rules
+
+:::
+
+Update your `kubernetes-mcp-server.yaml`:
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -137,6 +328,7 @@ kind: Service
 metadata:
   name: kubernetes-mcp-server
 spec:
+  type: LoadBalancer
   selector:
     app: kubernetes-mcp-server
   ports:
@@ -144,56 +336,11 @@ spec:
       port: 8080
       targetPort: 8080
 ```
+**Changes made:**
+- env: ENABLE_UNSAFE_SSE_TRANSPORT, DANGEROUSLY_OMIT_AUTH
+- Service type: LoadBalancer
 
-<div style={{background: '#ADD8E6', padding: '1em', borderRadius: '6px', marginRight: '1em'}}>
-
-**Note about the container image**
-
-- The line `image: ghcr.io/kaito-project/headlamp-kaito/kubernetes-mcp-server:latest` refers to a Github Container registry image that is hosted under
-  [Github Container Registry: kaito-project/headlamp-kaito/kubernetes-mcp-server](https://github.com/orgs/kaito-project/packages/container/package/headlamp-kaito%2Fkubernetes-mcp-server)
-
-To host your own container image, it must be available in a container registry such as Github Container Registry or DockerHub. See instructions below to host your own Docker image (if desired). Otherwise, skip to **"Apply and restart"** below this blue block
-
-1. Fork or clone the repo here https://github.com/manusa/kubernetes-mcp-server?tab=readme-ov-file
-
-   ```
-   git clone git@github.com:manusa/kubernetes-mcp-server.git
-   cd kubernetes-mcp-server
-   ```
-
-2. Build your Docker image locally. (Must have Docker desktop running in the background)
-
-   ```
-   docker build -t YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest .
-   ```
-
-3. Push it to DockerHub (or another registry)
-
-   ```
-   docker push YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
-   ```
-
-4. You're ready to use your image in your Kubernetes manifest in `kubernetes-mcp-server.yaml`!
-
-   ```
-   image: YOUR_DOCKER_USERNAME/kubernetes-mcp-server:latest
-   ```
-
-</div>
-<br/>
-**Apply and restart:**
-
-```bash
-kubectl apply -f kubernetes-mcp-server.yaml
-kubectl rollout restart deployment kubernetes-mcp-server
-```
-
-## 3. Deploy MCP Inspector
-
-The Inspector MCP is a UI client that connects to the MCP server. It does not need Kubernetes API access, so it does not require a service account or RBAC.
-
-### mcp-inspector.yaml
-
+Similarly, update your `mcp-inspector.yaml`
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -214,13 +361,22 @@ spec:
           image: ghcr.io/modelcontextprotocol/inspector:latest
           ports:
             - containerPort: 6274
+            - containerPort: 6277
           env:
             - name: MCP_URL
               value: 'http://kubernetes-mcp-server:8080/mcp'
             - name: HOST
               value: '0.0.0.0'
+            - name: PORT
+              value: '6277'
+            - name: DANGEROUSLY_OMIT_AUTH
+              value: 'true'
+            - name: DISABLE_CONFIG_AUTH
+              value: 'true'
+            - name: NO_AUTH
+              value: 'true'
             - name: ALLOWED_ORIGINS
-              value: 'http://20.83.66.22:6274'
+              value: 'http://<mcp-inspector-EXTERNAL-IP>:6274,http://localhost:6274,*' # Replace <mcp-inspector-EXTERNAL-IP> with the external IP address of the mcp-inspector service
 ---
 apiVersion: v1
 kind: Service
@@ -240,92 +396,25 @@ spec:
       port: 6277
       targetPort: 6277
 ```
+Changes made: 
+- env: DISABLE_CONFIG_AUTH, NO_AUTH, ALLOWED_ORIGINS
+- Service type: LoadBalancer
 
-Apply and restart:
-
-```bash
-kubectl apply -f mcp-inspector.yaml
-kubectl rollout restart deployment mcp-inspector
-```
-
-Then run
-
-```
-kubectl logs deployment/mcp-inspector
-```
-
-and you will see something like this:
-
-```
-Starting MCP inspector...
-⚙️ Proxy server listening on 0.0.0.0:6277
-🔑 Session token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   Use this token to authenticate requests or set DANGEROUSLY_OMIT_AUTH=true to disable auth
-
-🚀 MCP Inspector is up and running at:
-   http://0.0.0.0:6274/?MCP_PROXY_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-Then get the external IP by running:
+If you're using a cloud provider (AKS, EKS, GKE), the LoadBalancer service will automatically provision an external IP. Get the external IP with:
 
 ```bash
-kubectl get service mcp-inspector
+kubectl get service
 ```
-
-Your output should look like this:
-
-```
-NAME            TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE
-mcp-inspector   LoadBalancer   10.0.211.173   20.83.66.22   6274:30572/TCP,6277:32271/TCP   5d10h
-```
-
-Navigate to
-
-```
-http://<external_ip>:<port>/?MCP_PROXY_AUTH_TOKEN=<token>
-```
-
-for example:
-
-```
-http://20.83.66.22:6274/?MCP_PROXY_AUTH_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx#tools
-```
-
-## 5. Testing
-
-In the in the browser Inspector UI:
-
-1. Connect to the MCP server via
-
-- Transport Type: `StreamableHTTP`
-- URL: `http://kubernetes-mcp-server:8080/mcp`
-- Click Connect
-
-2. Navigate to Tools (on the same line as Resources)
-
-- Run the `pods_list` tool
-
-3. You should see live pod data returned via the MCP server.
-
-If you get a "forbidden" error, confirm that:
-
-- The MCP server pod is using the kubernetes-mcp service account
-- All three RBAC YAMLs have been applied correctly
-
-## Next Steps: Integrating with Headlamp-KAITO
-
-Once your MCP server is successfully responding to tool calls in the Inspector UI, you can proceed to integrate it with Headlamp-KAITO:
-
-### 1. Connect to Headlamp-KAITO
 
 1. Open Headlamp-KAITO and navigate to a chat interface with a tool-enabled model (Llama models)
 2. Click the **MCP Chip** in the chat header to open the MCP Server Management interface
-3. Add your MCP server using the endpoint URL: `http://kubernetes-mcp-server:8080/mcp`
+3. Add your MCP server using the appropriate endpoint URL:
+   - **LoadBalancer**: `http://kubernetes-mcp-server-EXTERNAL-IP:8080/mcp` (get external IP with `kubectl get service kubernetes-mcp-server`)
 
 ### 2. Configuration Tips
 
 - **Server Name**: Use a descriptive name like "Kubernetes Tools"
-- **Endpoint URL**: Use the internal Kubernetes service URL for cluster-deployed servers
+- **Endpoint URL**: Use the external URL for LoadBalancer or localhost URL for port-forwarding
 - **Authentication**: Configure if your server requires API keys
 - **Transport**: Ensure your server supports streamableHTTP transport
 
