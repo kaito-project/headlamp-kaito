@@ -191,7 +191,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               value={requiredNodes}
               onChange={(e) => setRequiredNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
               disabled={disabled}
-              placeholder="e.g., 3"
+              placeholder="e.g., 2"
               helperText="Specify the exact number of nodes. If not selected, Kaito will auto-provision this many nodes."
               size="small"
               inputProps={{ min: 1 }}
