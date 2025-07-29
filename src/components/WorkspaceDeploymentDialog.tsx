@@ -100,7 +100,6 @@ inference:
         
       } catch (error) {
         console.error('Error parsing YAML:', error);
-        console.log('YAML that failed to parse:', yamlString);
       }
     }
   };
@@ -226,11 +225,10 @@ inference:
           item={itemRef.current}
           open={editorDialogOpen}
           onClose={() => {
-            console.log('EditorDialog onClose called');
             setEditorDialogOpen(false);
+            onClose(); 
           }}
           onEditorChanged={newVal => {
-            console.log('EditorDialog onEditorChanged:', newVal);
             setEditorValue(newVal);
           }}
           onSave="default"
