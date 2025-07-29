@@ -52,8 +52,8 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   const itemRef = useRef({});
 
   const generateWorkspaceYAML = (model: PresetModel, preferredNodes: string[]): string => {
-    const modelNameCheck = model.name.toLowerCase();
-    const isLlama = modelNameCheck.includes('llama');
+    const modelNameCheck = model.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const isLlama = model.name.toLowerCase().includes('llama');
     
     // Use different label selector based on whether nodes are selected
     const labelSelector = preferredNodes.length > 0 
@@ -79,7 +79,7 @@ resource:`;
 
     yamlString += `
   instanceType: Standard_NC80adis_H100_v5
-  labelSelector: 
+  labelSelector:
     matchLabels:
       ${labelSelector}`;
 
@@ -95,7 +95,7 @@ resource:`;
     yamlString += `
 inference:
   preset:
-    name: ${modelNameCheck}
+    name: ${model.name.toLowerCase()}
     accessMode: private`;
 
     if (isLlama) {
@@ -103,9 +103,6 @@ inference:
     presetOptions:
       modelAccessSecret: hf-token`;
     }
-
-    yamlString += `
-# Edit this YAML to make changes before clicking Apply (e.g. add an empty line)`;
 
     return yamlString;
   };
