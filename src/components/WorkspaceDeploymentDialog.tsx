@@ -54,6 +54,11 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
     const modelNameCheck = model.name.toLowerCase();
     const isLlama = modelNameCheck.includes('llama');
     
+    // Use different label selector based on whether nodes are selected
+    const labelSelector = preferredNodes.length > 0 
+      ? `node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5`
+      : `apps: ${modelNameCheck}`;
+    
     let yamlString = `apiVersion: kaito.sh/v1beta1
 kind: Workspace
 metadata:
@@ -62,7 +67,7 @@ resource:
   instanceType: ${model.instanceType}
   labelSelector: 
     matchLabels:
-      apps: ${modelNameCheck}`;
+      ${labelSelector}`;
 
     if (preferredNodes.length > 0) {
       yamlString += `
@@ -83,6 +88,9 @@ inference:
     presetOptions:
       modelAccessSecret: hf-token`;
     }
+
+    yamlString += `
+# Edit this YAML to make changes before clicking Apply (e.g. add an empty line)`;
 
     return yamlString;
   };
