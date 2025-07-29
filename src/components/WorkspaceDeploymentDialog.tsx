@@ -70,8 +70,11 @@ resource:`;
       const nodeCount = typeof requiredNodes === 'number' && requiredNodes > 0 
         ? requiredNodes 
         : preferredNodes.length;
-      yamlString += `
+      
+      if (nodeCount > 1) {
+        yamlString += `
   count: ${nodeCount}`;
+      }
     }
 
     yamlString += `
