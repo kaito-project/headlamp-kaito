@@ -15,6 +15,8 @@ import {
   ListItemText,
   Button,
   Collapse,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { fetchAvailableNodes } from './chatUtils';
@@ -61,15 +63,27 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [autoFilterGPU, setAutoFilterGPU] = useState(true);
 
   const fetchNodes = async (selector?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const fetchedNodes = await fetchAvailableNodes(selector);
+      let finalSelector = selector;
+      
+      // Auto-filter for GPU nodes if enabled
+      if (autoFilterGPU) {
+        const gpuSelector = 'accelerator=nvidia';
+        finalSelector = selector 
+          ? `${gpuSelector},${selector}`
+          : gpuSelector;
+      }
+      
+      const fetchedNodes = await fetchAvailableNodes(finalSelector);
       setNodes(fetchedNodes);
-      if (fetchedNodes.length === 0 && selector) {
-        setError('No nodes match the specified label selector');
+      if (fetchedNodes.length === 0 && finalSelector) {
+        const nodeType = autoFilterGPU ? 'GPU nodes' : 'nodes';
+        setError(`No ${nodeType} match the specified criteria`);
       }
     } catch (err) {
       setError('Failed to fetch nodes');
@@ -81,7 +95,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
 
   useEffect(() => {
     fetchNodes(labelSelector);
-  }, [labelSelector]);
+  }, [labelSelector, autoFilterGPU]);
 
   const handleLabelSelectorChange = (value: string) => {
     if (onLabelSelectorChange) {
@@ -125,34 +139,32 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
       {showLabelSelector && (
         <Box mb={2}>
           <Stack spacing={1}>
-            <TextField
-              fullWidth
-              label="Node Label Selector (optional)"
-              value={labelSelector}
-              onChange={(e) => handleLabelSelectorChange(e.target.value)}
-              disabled={disabled}
-              placeholder="e.g., node-type=gpu,kubernetes.io/arch=amd64"
-              helperText="Filter nodes by labels. Use comma-separated key=value pairs."
-              size="small"
-            />
-            
-            <Button
-              variant="text"
-              size="small"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              startIcon={<Icon icon={showAdvanced ? 'mdi:chevron-up' : 'mdi:chevron-down'} />}
-              sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
-            >
-              Quick Selectors
-            </Button>
+            {/* Node Selection Header with Quick Selectors */}
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="subtitle2" component="h3">
+                Node Selection
+              </Typography>
+              <Button
+                variant="text"
+                size="small"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                startIcon={<Icon icon={showAdvanced ? 'mdi:chevron-up' : 'mdi:chevron-down'} />}
+                sx={{ textTransform: 'none' }}
+              >
+                Quick Selectors
+              </Button>
+            </Stack>
             
             <Collapse in={showAdvanced}>
-              <Box>
+              <Box mb={2}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Common label selectors:
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                  {COMMON_LABEL_SELECTORS.map((preset) => (
+                  {COMMON_LABEL_SELECTORS.filter(preset => 
+                    // Hide GPU-related selectors when auto-filter is enabled
+                    autoFilterGPU ? !preset.value.includes('accelerator=nvidia') : true
+                  ).map((preset) => (
                     <Chip
                       key={preset.value}
                       label={preset.label}
@@ -166,9 +178,50 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
                 </Stack>
               </Box>
             </Collapse>
+
+            <TextField
+              fullWidth
+              label={autoFilterGPU ? "Additional GPU Node Filters (optional)" : "Node Label Selector (optional)"}
+              value={labelSelector}
+              onChange={(e) => handleLabelSelectorChange(e.target.value)}
+              disabled={disabled}
+              placeholder={autoFilterGPU 
+                ? "e.g., kubernetes.io/arch=amd64,node.kubernetes.io/instance-type=Standard_NC24ads_A100_v4"
+                : "e.g., accelerator=nvidia,kubernetes.io/arch=amd64"
+              }
+              helperText={autoFilterGPU 
+                ? "Add additional filters for GPU nodes. GPU filtering (accelerator=nvidia) is already applied."
+                : "Filter nodes by labels. Use comma-separated key=value pairs."
+              }
+              size="small"
+            />
           </Stack>
         </Box>
       )}
+
+      {/* GPU Filter Toggle */}
+      <Box mb={2} display="flex" justifyContent="flex-end">
+        <Box>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={autoFilterGPU}
+                onChange={(e) => setAutoFilterGPU(e.target.checked)}
+                disabled={disabled}
+                size="small"
+              />
+            }
+            label={
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography variant="body2">
+                  Show GPU nodes only
+                </Typography>
+              </Stack>
+            }
+            sx={{ margin: 0 }}
+          />
+        </Box>
+      </Box>
 
       <FormControl fullWidth disabled={disabled}>
         <Autocomplete
@@ -183,8 +236,8 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
           renderInput={(params) => (
             <TextField
               {...params}
-              label="Preferred Nodes"
-              placeholder={selectedNodes.length === 0 ? "Select nodes (optional)" : ""}
+              label={autoFilterGPU ? "Preferred GPU Nodes" : "Preferred Nodes"}
+              placeholder={selectedNodes.length === 0 ? `Select ${autoFilterGPU ? 'GPU ' : ''}nodes (optional)` : ""}
               size="small"
             />
           )}
