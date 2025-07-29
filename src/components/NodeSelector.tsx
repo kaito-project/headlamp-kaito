@@ -64,6 +64,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [autoFilterGPU, setAutoFilterGPU] = useState(true);
+  const [maxNodes, setMaxNodes] = useState<number | ''>('');
 
   const fetchNodes = async (selector?: string) => {
     setLoading(true);
@@ -71,7 +72,6 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
     try {
       let finalSelector = selector;
       
-      // Auto-filter for GPU nodes if enabled
       if (autoFilterGPU) {
         const gpuSelector = 'accelerator=nvidia';
         finalSelector = selector 
@@ -132,6 +132,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
   const clearSelection = () => {
     onNodesChange([]);
     handleLabelSelectorChange('');
+    setMaxNodes('');
   };
 
   return (
@@ -139,21 +140,15 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
       {showLabelSelector && (
         <Box mb={2}>
           <Stack spacing={1}>
-            {/* Node Selection Header with Quick Selectors */}
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="subtitle2" component="h3">
-                Node Selection
-              </Typography>
-              <Button
-                variant="text"
-                size="small"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                startIcon={<Icon icon={showAdvanced ? 'mdi:chevron-up' : 'mdi:chevron-down'} />}
-                sx={{ textTransform: 'none' }}
-              >
-                Quick Selectors
-              </Button>
-            </Stack>
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              startIcon={<Icon icon={showAdvanced ? 'mdi:chevron-up' : 'mdi:chevron-down'} />}
+              sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
+            >
+              Quick Selectors
+            </Button>
             
             <Collapse in={showAdvanced}>
               <Box mb={2}>
@@ -181,6 +176,19 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
 
             <TextField
               fullWidth
+              label="Maximum Nodes (optional)"
+              type="number"
+              value={maxNodes}
+              onChange={(e) => setMaxNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+              disabled={disabled}
+              placeholder="e.g., 3"
+              helperText="Limit the number of nodes that can be selected. Leave empty for no limit."
+              size="small"
+              inputProps={{ min: 1 }}
+            />
+
+            <TextField
+              fullWidth
               label={autoFilterGPU ? "Additional GPU Node Filters (optional)" : "Node Label Selector (optional)"}
               value={labelSelector}
               onChange={(e) => handleLabelSelectorChange(e.target.value)}
@@ -190,7 +198,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
                 : "e.g., accelerator=nvidia,kubernetes.io/arch=amd64"
               }
               helperText={autoFilterGPU 
-                ? "Add additional filters for GPU nodes. GPU filtering (accelerator=nvidia) is already applied."
+                ? "Add additional filters for GPU nodes."
                 : "Filter nodes by labels. Use comma-separated key=value pairs."
               }
               size="small"
@@ -199,7 +207,6 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
         </Box>
       )}
 
-      {/* GPU Filter Toggle */}
       <Box mb={2} display="flex" justifyContent="flex-end">
         <Box>
           <FormControlLabel
@@ -229,7 +236,11 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
           options={availableNodeOptions}
           value={availableNodeOptions.filter(option => selectedNodes.includes(option.value))}
           onChange={(_, newValue) => {
-            onNodesChange(newValue.map(option => option.value));
+            // Enforce maximum nodes limit if specified
+            const limitedValue = maxNodes && typeof maxNodes === 'number' && newValue.length > maxNodes
+              ? newValue.slice(0, maxNodes)
+              : newValue;
+            onNodesChange(limitedValue.map(option => option.value));
           }}
           getOptionLabel={(option) => option.label}
           loading={loading}
@@ -237,7 +248,11 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
             <TextField
               {...params}
               label={autoFilterGPU ? "Preferred GPU Nodes" : "Preferred Nodes"}
-              placeholder={selectedNodes.length === 0 ? `Select ${autoFilterGPU ? 'GPU ' : ''}nodes (optional)` : ""}
+              placeholder={
+                selectedNodes.length === 0 
+                  ? `Select ${autoFilterGPU ? 'GPU ' : ''}nodes${maxNodes ? ` (max ${maxNodes})` : ''} (optional)` 
+                  : ""
+              }
               size="small"
             />
           )}
@@ -287,7 +302,19 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
             </Box>
           ) : (
             <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <span>{helperText}</span>
+              <Box>
+                <span>{helperText}</span>
+                {maxNodes && typeof maxNodes === 'number' && (
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Selected: {selectedNodes.length}/{maxNodes} nodes
+                    {selectedNodes.length >= maxNodes && (
+                      <span style={{ color: 'orange', marginLeft: 4 }}>
+                        (Maximum reached)
+                      </span>
+                    )}
+                  </Typography>
+                )}
+              </Box>
               {(selectedNodes.length > 0 || labelSelector) && (
                 <Button
                   size="small"
