@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,9 +11,9 @@ import {
   Divider,
   Paper,
   Alert,
-  TextField,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
+import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import NodeSelector from './NodeSelector';
 import yaml from 'js-yaml';
 
@@ -45,10 +45,10 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
 }) => {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [labelSelector, setLabelSelector] = useState<string>('');
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [yamlEditorOpen, setYamlEditorOpen] = useState(false);
-  const [yamlContent, setYamlContent] = useState('');
-  const [editableYaml, setEditableYaml] = useState('');
+  const [editorDialogOpen, setEditorDialogOpen] = useState(false);
+  const [editorValue, setEditorValue] = useState('');
+  
+  const itemRef = useRef({});
 
   const generateWorkspaceYAML = (model: PresetModel, preferredNodes: string[]): string => {
     const modelNameCheck = model.name.toLowerCase();
@@ -87,76 +87,37 @@ inference:
     return yamlString;
   };
 
-  useEffect(() => {
+  const handleDeploy = () => {
     if (model) {
       const yamlString = generateWorkspaceYAML(model, selectedNodes);
-      setYamlContent(yamlString);
-      setEditableYaml(yamlString);
-    }
-  }, [model, selectedNodes]);
-
-  const handleReviewAndDeploy = () => {
-    console.log('Review & Deploy button clicked');
-    console.log('Current state:', { selectedNodes, model: model?.name });
-    
-    if (model) {
-      const yamlData = generateWorkspaceYAML(model, selectedNodes);
-      setYamlContent(yamlData);
-      setYamlEditorOpen(true);
-    }
-  };
-
-  const handleDeployFromYaml = async () => {
-    try {
-      console.log('Deploying from YAML editor');
       
-      if (onDeploy) {
-        await onDeploy(yamlContent);
+      try {
+        const parsedYaml = yaml.load(yamlString);
+
+        itemRef.current = parsedYaml;
+        setEditorValue(yamlString);
+        setEditorDialogOpen(true);
+        
+      } catch (error) {
+        console.error('Error parsing YAML:', error);
+        console.log('YAML that failed to parse:', yamlString);
       }
-      
-      setYamlEditorOpen(false);
-      onClose();
-    } catch (error) {
-      console.error('Error deploying YAML:', error);
-      // You might want to show an error message to the user here
     }
-  };
-
-  const handleYamlSave = () => {
-    console.log('YAML save called with content:', editableYaml);
-    if (onDeploy) {
-      onDeploy(editableYaml);
-    }
-    setYamlEditorOpen(false);
-    onClose();
   };
 
   const handleReset = () => {
     setSelectedNodes([]);
     setLabelSelector('');
-    setShowAdvanced(false);
-    if (model) {
-      const yamlString = generateWorkspaceYAML(model, []);
-      setYamlContent(yamlString);
-      setEditableYaml(yamlString);
-    }
   };
 
   if (!model) return null;
 
-  console.log('WorkspaceDeploymentDialog render:', { 
-    open, 
-    yamlEditorOpen, 
-    model: model?.name,
-    yamlContentLength: yamlContent.length,
-    selectedNodes
-  });
+  const yamlPreview = generateWorkspaceYAML(model, selectedNodes);
 
   return (
     <>
-      {/* Main Configuration Dialog */}
       <Dialog
-        open={open && !yamlEditorOpen}
+        open={open && !editorDialogOpen}
         onClose={onClose}
         maxWidth="md"
         fullWidth
@@ -181,7 +142,7 @@ inference:
         <DialogContent>
           <Stack spacing={3}>
             <Alert severity="info">
-              Configure deployment options for your Kaito workspace. You can optionally select specific nodes
+              Optionally select specific nodes
               for deployment, or leave the selection empty to use Kaito's automatic GPU provisioning.
             </Alert>
 
@@ -236,7 +197,7 @@ inference:
                 })}
               >
                 <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                  {yamlContent}
+                  {yamlPreview}
                 </pre>
               </Paper>
             </Box>
@@ -251,7 +212,7 @@ inference:
             Cancel
           </Button>
           <Button 
-            onClick={handleReviewAndDeploy} 
+            onClick={handleDeploy} 
             variant="contained"
             startIcon={<Icon icon="mdi:rocket-launch" />}
           >
@@ -260,43 +221,23 @@ inference:
         </DialogActions>
       </Dialog>
 
-      {/* YAML Editor Dialog */}
-      <Dialog
-        open={yamlEditorOpen}
-        onClose={() => setYamlEditorOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>Review and Edit Workspace Configuration</DialogTitle>
-        <DialogContent>
-          <TextField
-            multiline
-            fullWidth
-            rows={20}
-            value={yamlContent}
-            onChange={(e) => setYamlContent(e.target.value)}
-            variant="outlined"
-            sx={{
-              fontFamily: 'monospace',
-              fontSize: '12px',
-              '& .MuiInputBase-input': {
-                fontFamily: 'monospace',
-                fontSize: '12px',
-              },
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setYamlEditorOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleDeployFromYaml} 
-            variant="contained" 
-            color="primary"
-          >
-            Deploy
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {editorDialogOpen && itemRef.current && (
+        <EditorDialog
+          item={itemRef.current}
+          open={editorDialogOpen}
+          onClose={() => {
+            console.log('EditorDialog onClose called');
+            setEditorDialogOpen(false);
+          }}
+          onEditorChanged={newVal => {
+            console.log('EditorDialog onEditorChanged:', newVal);
+            setEditorValue(newVal);
+          }}
+          onSave="default"
+          title={`Deploy Model: ${model.name}`}
+          saveLabel="Apply"
+        />
+      )}
     </>
   );
 };
