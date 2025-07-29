@@ -47,6 +47,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   const [labelSelector, setLabelSelector] = useState<string>('');
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const [editorValue, setEditorValue] = useState('');
+  const [requiredNodes, setRequiredNodes] = useState<number | ''>('');
   
   const itemRef = useRef({});
 
@@ -56,14 +57,24 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
     
     // Use different label selector based on whether nodes are selected
     const labelSelector = preferredNodes.length > 0 
-      ? `node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5`
+      ? `node.kubernetes.io/instance-type: ${model.instanceType}`
       : `apps: ${modelNameCheck}`;
     
     let yamlString = `apiVersion: kaito.sh/v1beta1
 kind: Workspace
 metadata:
   name: workspace-${modelNameCheck}
-resource:
+resource:`;
+
+    if (preferredNodes.length > 0 || (typeof requiredNodes === 'number' && requiredNodes > 0)) {
+      const nodeCount = typeof requiredNodes === 'number' && requiredNodes > 0 
+        ? requiredNodes 
+        : preferredNodes.length;
+      yamlString += `
+  count: ${nodeCount}`;
+    }
+
+    yamlString += `
   instanceType: ${model.instanceType}
   labelSelector: 
     matchLabels:
@@ -115,6 +126,15 @@ inference:
   const handleReset = () => {
     setSelectedNodes([]);
     setLabelSelector('');
+    setRequiredNodes('');
+  };
+
+  const handleRequiredNodesChange = (
+    requiredNodesValue: number | '', 
+    isExactMatch: boolean, 
+    willAutoProvision: boolean
+  ) => {
+    setRequiredNodes(requiredNodesValue);
   };
 
   if (!model) return null;
@@ -164,6 +184,7 @@ inference:
                 onNodesChange={setSelectedNodes}
                 labelSelector={labelSelector}
                 onLabelSelectorChange={setLabelSelector}
+                onRequiredNodesChange={handleRequiredNodesChange}
                 helperText="Select specific nodes for model deployment. If no nodes are selected, Kaito will automatically provision GPU resources."
               />
             </Paper>
