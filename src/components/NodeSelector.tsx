@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Chip,
   Typography,
   TextField,
@@ -12,7 +9,6 @@ import {
   Stack,
   Autocomplete,
   Checkbox,
-  ListItemText,
   Button,
   Collapse,
   FormControlLabel,
@@ -176,13 +172,13 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
 
             <TextField
               fullWidth
-              label="Maximum Nodes (optional)"
+              label="Specify Number of Nodes (optional)"
               type="number"
               value={maxNodes}
               onChange={(e) => setMaxNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
               disabled={disabled}
               placeholder="e.g., 3"
-              helperText="Limit the number of nodes that can be selected. Leave empty for no limit."
+              helperText="Specify the number of nodes that can be selected. Leave empty for autoprovisioning."
               size="small"
               inputProps={{ min: 1 }}
             />
