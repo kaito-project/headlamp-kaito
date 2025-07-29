@@ -66,22 +66,14 @@ metadata:
   name: workspace-${modelNameCheck}
 resource:`;
 
-    if (preferredNodes.length > 0 || (typeof requiredNodes === 'number' && requiredNodes > 0)) {
-      const nodeCount = typeof requiredNodes === 'number' && requiredNodes > 0 
+    if (preferredNodes.length > 1 || (typeof requiredNodes === 'number' && requiredNodes > 1)) {
+      const nodeCount = typeof requiredNodes === 'number' && requiredNodes > 1 
         ? requiredNodes 
         : preferredNodes.length;
       
-      if (nodeCount > 1) {
-        yamlString += `
+      yamlString += `
   count: ${nodeCount}`;
-      }
     }
-
-    yamlString += `
-  instanceType: Standard_NC80adis_H100_v5
-  labelSelector:
-    matchLabels:
-      ${labelSelector}`;
 
     if (preferredNodes.length > 0) {
       yamlString += `
@@ -91,6 +83,12 @@ resource:`;
     - ${node}`;
       });
     }
+
+    yamlString += `
+  instanceType: Standard_NC80adis_H100_v5
+  labelSelector:
+    matchLabels:
+      ${labelSelector}`;
 
     yamlString += `
 inference:
