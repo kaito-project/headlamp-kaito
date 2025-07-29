@@ -13,6 +13,7 @@ import {
   Collapse,
   FormControlLabel,
   Switch,
+  Alert,
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 import { fetchAvailableNodes } from './chatUtils';
@@ -36,6 +37,7 @@ interface NodeSelectorProps {
   disabled?: boolean;
   showLabelSelector?: boolean;
   helperText?: string;
+  onRequiredNodesChange?: (requiredNodes: number | '', isExactMatch: boolean, willAutoProvision: boolean) => void;
 }
 
 const COMMON_LABEL_SELECTORS = [
@@ -54,13 +56,14 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
   disabled = false,
   showLabelSelector = true,
   helperText = 'Select specific nodes for model deployment. Leave empty to use Kaito GPU provisioner.',
+  onRequiredNodesChange,
 }) => {
   const [nodes, setNodes] = useState<NodeInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [autoFilterGPU, setAutoFilterGPU] = useState(true);
-  const [maxNodes, setMaxNodes] = useState<number | ''>('');
+  const [requiredNodes, setRequiredNodes] = useState<number | ''>('');
 
   const fetchNodes = async (selector?: string) => {
     setLoading(true);
@@ -92,6 +95,17 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
   useEffect(() => {
     fetchNodes(labelSelector);
   }, [labelSelector, autoFilterGPU]);
+
+  // Notify parent about required nodes status
+  useEffect(() => {
+    if (onRequiredNodesChange && typeof requiredNodes === 'number') {
+      const isExactMatch = selectedNodes.length === requiredNodes;
+      const willAutoProvision = selectedNodes.length === 0;
+      onRequiredNodesChange(requiredNodes, isExactMatch, willAutoProvision);
+    } else if (onRequiredNodesChange) {
+      onRequiredNodesChange('', true, false);
+    }
+  }, [requiredNodes, selectedNodes.length, onRequiredNodesChange]);
 
   const handleLabelSelectorChange = (value: string) => {
     if (onLabelSelectorChange) {
@@ -128,7 +142,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
   const clearSelection = () => {
     onNodesChange([]);
     handleLabelSelectorChange('');
-    setMaxNodes('');
+    setRequiredNodes('');
   };
 
   return (
@@ -174,11 +188,11 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               fullWidth
               label="Specify Number of Nodes (optional)"
               type="number"
-              value={maxNodes}
-              onChange={(e) => setMaxNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+              value={requiredNodes}
+              onChange={(e) => setRequiredNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
               disabled={disabled}
               placeholder="e.g., 3"
-              helperText="Specify the number of nodes that can be selected. Leave empty for autoprovisioning."
+              helperText="Specify the exact number of nodes. If not selected, Kaito will auto-provision this many nodes."
               size="small"
               inputProps={{ min: 1 }}
             />
@@ -232,11 +246,8 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
           options={availableNodeOptions}
           value={availableNodeOptions.filter(option => selectedNodes.includes(option.value))}
           onChange={(_, newValue) => {
-            // Enforce maximum nodes limit if specified
-            const limitedValue = maxNodes && typeof maxNodes === 'number' && newValue.length > maxNodes
-              ? newValue.slice(0, maxNodes)
-              : newValue;
-            onNodesChange(limitedValue.map(option => option.value));
+            const selectedNodeNames = newValue.map(option => option.value);
+            onNodesChange(selectedNodeNames);
           }}
           getOptionLabel={(option) => option.label}
           loading={loading}
@@ -246,7 +257,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               label={autoFilterGPU ? "Preferred GPU Nodes" : "Preferred Nodes"}
               placeholder={
                 selectedNodes.length === 0 
-                  ? `Select ${autoFilterGPU ? 'GPU ' : ''}nodes${maxNodes ? ` (max ${maxNodes})` : ''} (optional)` 
+                  ? `Select ${autoFilterGPU ? 'GPU ' : ''}nodes${requiredNodes ? ` (need exactly ${requiredNodes})` : ''} (optional)` 
                   : ""
               }
               size="small"
@@ -300,18 +311,26 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Box>
                 <span>{helperText}</span>
-                {maxNodes && typeof maxNodes === 'number' && (
+                {requiredNodes && typeof requiredNodes === 'number' && (
                   <Typography variant="caption" color="text.secondary" display="block">
-                    Selected: {selectedNodes.length}/{maxNodes} nodes
-                    {selectedNodes.length >= maxNodes && (
-                      <span style={{ color: 'orange', marginLeft: 4 }}>
-                        (Maximum reached)
+                    Selected: {selectedNodes.length}/{requiredNodes}
+                    {selectedNodes.length !== requiredNodes && (
+                      <span style={{ color: selectedNodes.length === 0 ? 'orange' : 'red', marginLeft: 4 }}>
+                        {selectedNodes.length === 0 
+                          ? '(Will auto-provision)' 
+                          : `(Need ${requiredNodes - selectedNodes.length} more)`
+                        }
+                      </span>
+                    )}
+                    {selectedNodes.length === requiredNodes && (
+                      <span style={{ color: 'green', marginLeft: 4 }}>
+                       Exact requirement met
                       </span>
                     )}
                   </Typography>
                 )}
               </Box>
-              {(selectedNodes.length > 0 || labelSelector) && (
+              {(selectedNodes.length > 0 || labelSelector || requiredNodes) && (
                 <Button
                   size="small"
                   onClick={clearSelection}
