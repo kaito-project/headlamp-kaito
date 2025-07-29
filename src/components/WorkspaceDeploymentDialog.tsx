@@ -57,7 +57,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
     
     // Use different label selector based on whether nodes are selected
     const labelSelector = preferredNodes.length > 0 
-      ? `node.kubernetes.io/instance-type: ${model.instanceType}`
+      ? `node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5`
       : `apps: ${modelNameCheck}`;
     
     let yamlString = `apiVersion: kaito.sh/v1beta1
@@ -78,7 +78,7 @@ resource:`;
     }
 
     yamlString += `
-  instanceType: ${model.instanceType}
+  instanceType: Standard_NC80adis_H100_v5
   labelSelector: 
     matchLabels:
       ${labelSelector}`;
@@ -95,7 +95,8 @@ resource:`;
     yamlString += `
 inference:
   preset:
-    name: ${modelNameCheck}`;
+    name: ${modelNameCheck}
+    accessMode: private`;
 
     if (isLlama) {
       yamlString += `
