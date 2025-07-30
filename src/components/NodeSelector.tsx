@@ -30,13 +30,13 @@ interface NodeInfo {
 
 interface NodeSelectorProps {
   selectedNodes: string[];
-  onNodesChange: (nodes: string[]) => void;
+  onNodesChange: (_nodes: string[]) => void;
   labelSelector?: string;
-  onLabelSelectorChange?: (selector: string) => void;
+  onLabelSelectorChange?: (_selector: string) => void;
   disabled?: boolean;
   showLabelSelector?: boolean;
   helperText?: string;
-  onRequiredNodesChange?: (requiredNodes: number | '', isExactMatch: boolean, willAutoProvision: boolean) => void;
+  onRequiredNodesChange?: (_requiredNodes: number | '', _isExactMatch: boolean, _willAutoProvision: boolean) => void;
 }
 
 const COMMON_LABEL_SELECTORS = [
