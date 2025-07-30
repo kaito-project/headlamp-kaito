@@ -34,19 +34,19 @@ interface WorkspaceDeploymentDialogProps {
   open: boolean;
   onClose: () => void;
   model: PresetModel | null;
-  onDeploy?: (yamlContent: string) => void;
+  onDeploy?: (_yamlContent: string) => void;
 }
 
 const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   open,
   onClose,
   model,
-  onDeploy,
+  onDeploy: _onDeploy,
 }) => {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [labelSelector, setLabelSelector] = useState<string>('');
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
-  const [editorValue, setEditorValue] = useState('');
+  const [_editorValue, setEditorValue] = useState('');
   const [requiredNodes, setRequiredNodes] = useState<number | ''>('');
   
   const itemRef = useRef({});
@@ -133,8 +133,8 @@ inference:
 
   const handleRequiredNodesChange = (
     requiredNodesValue: number | '', 
-    isExactMatch: boolean, 
-    willAutoProvision: boolean
+    _isExactMatch: boolean, 
+    _willAutoProvision: boolean
   ) => {
     setRequiredNodes(requiredNodesValue);
   };
