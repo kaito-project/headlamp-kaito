@@ -324,7 +324,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
                     )}
                     {selectedNodes.length === requiredNodes && (
                       <span style={{ color: 'green', marginLeft: 4 }}>
-                       Exact requirement met
+                      Exact requirement met
                       </span>
                     )}
                   </Typography>
