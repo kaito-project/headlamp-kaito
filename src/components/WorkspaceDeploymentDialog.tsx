@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Box,
-  Typography,
-  Stack,
-  Divider,
-  Paper,
-  Alert,
-} from '@mui/material';
 import { Icon } from '@iconify/react';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import NodeSelector from './NodeSelector';
+import {
+  Alert,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
 import yaml from 'js-yaml';
+import React, { useRef,useState } from 'react';
+import NodeSelector from './NodeSelector';
 
 interface PresetModel {
   name: string;

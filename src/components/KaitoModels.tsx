@@ -19,17 +19,16 @@ import {
 } from '@mui/material';
 import { Autocomplete, Pagination } from '@mui/material';
 import yaml from 'js-yaml';
-import React from 'react';
 import { useEffect, useState } from 'react';
 import deepseekLogo from '../logos/deepseek-logo.webp';
 import falconLogo from '../logos/falcon-logo.webp';
+import huggingfaceLogo from '../logos/hugging-face-logo.webp';
 import llamaLogo from '../logos/llama-logo.webp';
 import mistralLogo from '../logos/mistral-logo.webp';
 import phiLogo from '../logos/phi-logo.webp';
 import qwenLogo from '../logos/qwen-logo.webp';
-import huggingfaceLogo from '../logos/hugging-face-logo.webp';
-import WorkspaceDeploymentDialog from './WorkspaceDeploymentDialog';
 import { modelSupportsTools } from '../utils/modelUtils';
+import WorkspaceDeploymentDialog from './WorkspaceDeploymentDialog';
 
 // took inspiration from app catalog from plugin https://github.com/headlamp-k8s/plugins/tree/main/app-catalog
 export const PAGE_OFFSET_COUNT_FOR_MODELS = 9;
@@ -413,7 +412,7 @@ const KaitoModels = () => {
         open={editorDialogOpen}
         onClose={() => setEditorDialogOpen(false)}
         model={activeModel}
-        onDeploy={(yamlContent) => {
+        onDeploy={(_yamlContent) => {
           setEditorDialogOpen(false);
         }}
       />

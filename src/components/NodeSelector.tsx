@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { Icon } from '@iconify/react';
 import {
+  Autocomplete,
   Box,
-  FormControl,
+  Button,
+  Checkbox,
   Chip,
-  Typography,
-  TextField,
+  Collapse,
+  FormControl,
+  FormControlLabel,
   FormHelperText,
   Stack,
-  Autocomplete,
-  Checkbox,
-  Button,
-  Collapse,
-  FormControlLabel,
   Switch,
-  Alert,
+  TextField,
+  Typography,
 } from '@mui/material';
-import { Icon } from '@iconify/react';
+import React, { useEffect,useState } from 'react';
 import { fetchAvailableNodes } from './chatUtils';
 
 interface NodeInfo {
