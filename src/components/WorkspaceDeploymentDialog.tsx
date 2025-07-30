@@ -66,13 +66,13 @@ metadata:
   name: workspace-${modelNameCheck}
 resource:`;
 
-    if (preferredNodes.length > 1 || (typeof requiredNodes === 'number' && requiredNodes > 1)) {
-      const nodeCount = typeof requiredNodes === 'number' && requiredNodes > 1 
-        ? requiredNodes 
-        : preferredNodes.length;
-      
+    if (preferredNodes.length > 0) {
+      const nodeCount = preferredNodes.length;
       yamlString += `
   count: ${nodeCount}`;
+    } else if (typeof requiredNodes === 'number' && requiredNodes > 1) {
+      yamlString += `
+  count: ${requiredNodes}`;
     }
 
     if (preferredNodes.length > 0) {
@@ -109,8 +109,11 @@ inference:
     if (model) {
       const yamlString = generateWorkspaceYAML(model, selectedNodes);
       
+      console.log('Generated YAML:', yamlString);
+      
       try {
         const parsedYaml = yaml.load(yamlString);
+        console.log('Parsed YAML object:', parsedYaml);
 
         itemRef.current = parsedYaml;
         setEditorValue(yamlString);
