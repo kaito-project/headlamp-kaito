@@ -57,7 +57,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
     
     // Use different label selector based on whether nodes are selected
     const labelSelector = preferredNodes.length > 0 
-      ? `node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5`
+      ? "node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5"
       : `apps: ${modelNameCheck}`;
     
     let yamlString = `apiVersion: kaito.sh/v1beta1
