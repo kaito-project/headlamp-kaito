@@ -14,7 +14,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import React, { useEffect,useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fetchAvailableNodes } from './chatUtils';
 
 interface NodeInfo {
@@ -36,14 +36,24 @@ interface NodeSelectorProps {
   disabled?: boolean;
   showLabelSelector?: boolean;
   helperText?: string;
-  onRequiredNodesChange?: (_requiredNodes: number | '', _isExactMatch: boolean, _willAutoProvision: boolean) => void;
+  onRequiredNodesChange?: (
+    _requiredNodes: number | '',
+    _isExactMatch: boolean,
+    _willAutoProvision: boolean
+  ) => void;
 }
 
 const COMMON_LABEL_SELECTORS = [
   { label: 'GPU Nodes', value: 'accelerator=nvidia' },
   { label: 'AMD64 Architecture', value: 'kubernetes.io/arch=amd64' },
-  { label: 'Standard NC24 Instances', value: 'node.kubernetes.io/instance-type=Standard_NC24ads_A100_v4' },
-  { label: 'Standard NC96 Instances', value: 'node.kubernetes.io/instance-type=Standard_NC96ads_A100_v4' },
+  {
+    label: 'Standard NC24 Instances',
+    value: 'node.kubernetes.io/instance-type=Standard_NC24ads_A100_v4',
+  },
+  {
+    label: 'Standard NC96 Instances',
+    value: 'node.kubernetes.io/instance-type=Standard_NC96ads_A100_v4',
+  },
   { label: 'GPU + AMD64', value: 'accelerator=nvidia,kubernetes.io/arch=amd64' },
 ];
 
@@ -69,14 +79,12 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
     setError(null);
     try {
       let finalSelector = selector;
-      
+
       if (autoFilterGPU) {
         const gpuSelector = 'accelerator=nvidia';
-        finalSelector = selector 
-          ? `${gpuSelector},${selector}`
-          : gpuSelector;
+        finalSelector = selector ? `${gpuSelector},${selector}` : gpuSelector;
       }
-      
+
       const fetchedNodes = await fetchAvailableNodes(finalSelector);
       setNodes(fetchedNodes);
       if (fetchedNodes.length === 0 && finalSelector) {
@@ -158,17 +166,17 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
             >
               Quick Selectors
             </Button>
-            
+
             <Collapse in={showAdvanced}>
               <Box mb={2}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Common label selectors:
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
-                  {COMMON_LABEL_SELECTORS.filter(preset => 
+                  {COMMON_LABEL_SELECTORS.filter(preset =>
                     // Hide GPU-related selectors when auto-filter is enabled
                     autoFilterGPU ? !preset.value.includes('accelerator=nvidia') : true
-                  ).map((preset) => (
+                  ).map(preset => (
                     <Chip
                       key={preset.value}
                       label={preset.label}
@@ -188,7 +196,9 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               label="Specify Number of Nodes (optional)"
               type="number"
               value={requiredNodes}
-              onChange={(e) => setRequiredNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+              onChange={e =>
+                setRequiredNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))
+              }
               disabled={disabled}
               placeholder="e.g., 2"
               helperText="Specify the exact number of nodes. If not selected, Kaito will auto-provision this many nodes."
@@ -198,17 +208,23 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
 
             <TextField
               fullWidth
-              label={autoFilterGPU ? "Additional GPU Node Filters (optional)" : "Node Label Selector (optional)"}
-              value={labelSelector}
-              onChange={(e) => handleLabelSelectorChange(e.target.value)}
-              disabled={disabled}
-              placeholder={autoFilterGPU 
-                ? "e.g., kubernetes.io/arch=amd64,node.kubernetes.io/instance-type=Standard_NC24ads_A100_v4"
-                : "e.g., accelerator=nvidia,kubernetes.io/arch=amd64"
+              label={
+                autoFilterGPU
+                  ? 'Additional GPU Node Filters (optional)'
+                  : 'Node Label Selector (optional)'
               }
-              helperText={autoFilterGPU 
-                ? "Add additional filters for GPU nodes."
-                : "Filter nodes by labels. Use comma-separated key=value pairs."
+              value={labelSelector}
+              onChange={e => handleLabelSelectorChange(e.target.value)}
+              disabled={disabled}
+              placeholder={
+                autoFilterGPU
+                  ? 'e.g., kubernetes.io/arch=amd64,node.kubernetes.io/instance-type=Standard_NC24ads_A100_v4'
+                  : 'e.g., accelerator=nvidia,kubernetes.io/arch=amd64'
+              }
+              helperText={
+                autoFilterGPU
+                  ? 'Add additional filters for GPU nodes.'
+                  : 'Filter nodes by labels. Use comma-separated key=value pairs.'
               }
               size="small"
             />
@@ -222,16 +238,14 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
             control={
               <Switch
                 checked={autoFilterGPU}
-                onChange={(e) => setAutoFilterGPU(e.target.checked)}
+                onChange={e => setAutoFilterGPU(e.target.checked)}
                 disabled={disabled}
                 size="small"
               />
             }
             label={
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="body2">
-                  Show GPU nodes only
-                </Typography>
+                <Typography variant="body2">Show GPU nodes only</Typography>
               </Stack>
             }
             sx={{ margin: 0 }}
@@ -248,31 +262,30 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
             const selectedNodeNames = newValue.map(option => option.value);
             onNodesChange(selectedNodeNames);
           }}
-          getOptionLabel={(option) => option.label}
+          getOptionLabel={option => option.label}
           loading={loading}
-          renderInput={(params) => (
+          renderInput={params => (
             <TextField
               {...params}
-              label={autoFilterGPU ? "Preferred GPU Nodes" : "Preferred Nodes"}
+              label={autoFilterGPU ? 'Preferred GPU Nodes' : 'Preferred Nodes'}
               placeholder={
-                selectedNodes.length === 0 
-                  ? `Select ${autoFilterGPU ? 'GPU ' : ''}nodes${requiredNodes ? ` (need exactly ${requiredNodes})` : ''} (optional)` 
-                  : ""
+                selectedNodes.length === 0
+                  ? `Select ${autoFilterGPU ? 'GPU ' : ''}nodes${
+                      requiredNodes ? ` (need exactly ${requiredNodes})` : ''
+                    } (optional)`
+                  : ''
               }
               size="small"
             />
           )}
           renderOption={(props, option, { selected }) => (
             <li {...props}>
-              <Checkbox
-                checked={selected}
-                style={{ marginRight: 8 }}
-              />
+              <Checkbox checked={selected} style={{ marginRight: 8 }} />
               <Box sx={{ flex: 1 }}>
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <Typography variant="body2">{option.node.name}</Typography>
-                  <Icon 
-                    icon={getNodeStatus(option.node).icon} 
+                  <Icon
+                    icon={getNodeStatus(option.node).icon}
                     color={getNodeStatus(option.node).color}
                     width={16}
                     height={16}
@@ -314,17 +327,19 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
                   <Typography variant="caption" color="text.secondary" display="block">
                     Selected: {selectedNodes.length}/{requiredNodes}
                     {selectedNodes.length !== requiredNodes && (
-                      <span style={{ color: selectedNodes.length === 0 ? 'orange' : 'red', marginLeft: 4 }}>
-                        {selectedNodes.length === 0 
-                          ? '(Will auto-provision)' 
-                          : `(Need ${requiredNodes - selectedNodes.length} more)`
-                        }
+                      <span
+                        style={{
+                          color: selectedNodes.length === 0 ? 'orange' : 'red',
+                          marginLeft: 4,
+                        }}
+                      >
+                        {selectedNodes.length === 0
+                          ? '(Will auto-provision)'
+                          : `(Need ${requiredNodes - selectedNodes.length} more)`}
                       </span>
                     )}
                     {selectedNodes.length === requiredNodes && (
-                      <span style={{ color: 'green', marginLeft: 4 }}>
-                      Exact requirement met
-                      </span>
+                      <span style={{ color: 'green', marginLeft: 4 }}>Exact requirement met</span>
                     )}
                   </Typography>
                 )}
@@ -351,8 +366,10 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
           <Box display="flex" flexWrap="wrap" gap={1}>
             {selectedNodes.map(nodeName => {
               const node = nodes.find(n => n.name === nodeName);
-              const status = node ? getNodeStatus(node) : { color: 'default', icon: 'mdi:help', text: 'Unknown' };
-              
+              const status = node
+                ? getNodeStatus(node)
+                : { color: 'default', icon: 'mdi:help', text: 'Unknown' };
+
               return (
                 <Chip
                   key={nodeName}

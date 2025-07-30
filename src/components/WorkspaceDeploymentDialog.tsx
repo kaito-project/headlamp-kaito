@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import yaml from 'js-yaml';
-import React, { useRef,useState } from 'react';
+import React, { useRef, useState } from 'react';
 import NodeSelector from './NodeSelector';
 
 interface PresetModel {
@@ -48,18 +48,19 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const [_editorValue, setEditorValue] = useState('');
   const [requiredNodes, setRequiredNodes] = useState<number | ''>('');
-  
+
   const itemRef = useRef({});
 
   const generateWorkspaceYAML = (model: PresetModel, preferredNodes: string[]): string => {
     const modelNameCheck = model.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const isLlama = model.name.toLowerCase().includes('llama');
-    
+
     // Use different label selector based on whether nodes are selected
-    const labelSelector = preferredNodes.length > 0 
-      ? "node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5"
-      : `apps: ${modelNameCheck}`;
-    
+    const labelSelector =
+      preferredNodes.length > 0
+        ? 'node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5'
+        : `apps: ${modelNameCheck}`;
+
     let yamlString = `apiVersion: kaito.sh/v1beta1
 kind: Workspace
 metadata:
@@ -108,9 +109,9 @@ inference:
   const handleDeploy = () => {
     if (model) {
       const yamlString = generateWorkspaceYAML(model, selectedNodes);
-      
+
       console.log('Generated YAML:', yamlString);
-      
+
       try {
         const parsedYaml = yaml.load(yamlString);
         console.log('Parsed YAML object:', parsedYaml);
@@ -118,7 +119,6 @@ inference:
         itemRef.current = parsedYaml;
         setEditorValue(yamlString);
         setEditorDialogOpen(true);
-        
       } catch (error) {
         console.error('Error parsing YAML:', error);
       }
@@ -132,8 +132,8 @@ inference:
   };
 
   const handleRequiredNodesChange = (
-    requiredNodesValue: number | '', 
-    _isExactMatch: boolean, 
+    requiredNodesValue: number | '',
+    _isExactMatch: boolean,
     _willAutoProvision: boolean
   ) => {
     setRequiredNodes(requiredNodesValue);
@@ -151,16 +151,14 @@ inference:
         maxWidth="md"
         fullWidth
         PaperProps={{
-          sx: { minHeight: '60vh', maxHeight: '90vh' }
+          sx: { minHeight: '60vh', maxHeight: '90vh' },
         }}
       >
         <DialogTitle>
           <Stack direction="row" alignItems="center" spacing={2}>
             <Icon icon="mdi:rocket-launch" width={24} height={24} />
             <Box>
-              <Typography variant="h6">
-                Deploy Model: {model.name}
-              </Typography>
+              <Typography variant="h6">Deploy Model: {model.name}</Typography>
               <Typography variant="body2" color="text.secondary">
                 {model.company.name} • {model.version} • {model.instanceType}
               </Typography>
@@ -171,16 +169,20 @@ inference:
         <DialogContent>
           <Stack spacing={3}>
             <Alert severity="info">
-              Optionally select specific nodes
-              for deployment, or leave the selection empty to use Kaito's automatic GPU provisioning.
+              Optionally select specific nodes for deployment, or leave the selection empty to use
+              Kaito's automatic GPU provisioning.
             </Alert>
 
             <Paper variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+              >
                 <Icon icon="mdi:server" width={20} height={20} />
                 Node Selection
               </Typography>
-              
+
               <NodeSelector
                 selectedNodes={selectedNodes}
                 onNodesChange={setSelectedNodes}
@@ -194,8 +196,8 @@ inference:
             {selectedNodes.length > 0 && (
               <Alert severity="success">
                 <Typography variant="body2">
-                  <strong>{selectedNodes.length} node(s) selected</strong> for deployment.
-                  The model will be scheduled on these specific nodes.
+                  <strong>{selectedNodes.length} node(s) selected</strong> for deployment. The model
+                  will be scheduled on these specific nodes.
                 </Typography>
               </Alert>
             )}
@@ -203,8 +205,8 @@ inference:
             {selectedNodes.length === 0 && (
               <Alert severity="info">
                 <Typography variant="body2">
-                  <strong>Automatic GPU Provisioning:</strong> No specific nodes selected. 
-                  Kaito will automatically provision the required GPU resources for this model.
+                  <strong>Automatic GPU Provisioning:</strong> No specific nodes selected. Kaito
+                  will automatically provision the required GPU resources for this model.
                 </Typography>
               </Alert>
             )}
@@ -226,9 +228,7 @@ inference:
                   overflow: 'auto',
                 })}
               >
-                <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                  {yamlPreview}
-                </pre>
+                <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{yamlPreview}</pre>
               </Paper>
             </Box>
           </Stack>
@@ -241,8 +241,8 @@ inference:
           <Button onClick={onClose} color="inherit">
             Cancel
           </Button>
-          <Button 
-            onClick={handleDeploy} 
+          <Button
+            onClick={handleDeploy}
             variant="contained"
             startIcon={<Icon icon="mdi:rocket-launch" />}
           >
@@ -257,7 +257,7 @@ inference:
           open={editorDialogOpen}
           onClose={() => {
             setEditorDialogOpen(false);
-            onClose(); 
+            onClose();
           }}
           onEditorChanged={newVal => {
             setEditorValue(newVal);

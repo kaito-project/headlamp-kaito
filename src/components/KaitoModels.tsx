@@ -412,7 +412,7 @@ const KaitoModels = () => {
         open={editorDialogOpen}
         onClose={() => setEditorDialogOpen(false)}
         model={activeModel}
-        onDeploy={(_yamlContent) => {
+        onDeploy={_yamlContent => {
           setEditorDialogOpen(false);
         }}
       />

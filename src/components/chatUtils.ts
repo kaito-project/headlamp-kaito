@@ -6,10 +6,10 @@ import {
 import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 
 export async function fetchAvailableNodes(labelSelector?: string) {
-  const endpoint = labelSelector 
+  const endpoint = labelSelector
     ? `/api/v1/nodes?labelSelector=${encodeURIComponent(labelSelector)}`
     : '/api/v1/nodes';
-  
+
   try {
     const nodesResp = await request(endpoint);
     return (nodesResp?.items || []).map((node: any) => ({
