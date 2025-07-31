@@ -44,8 +44,6 @@ interface NodeSelectorProps {
 }
 
 const COMMON_LABEL_SELECTORS = [
-  { label: 'NVIDIA Nodes', value: 'accelerator=nvidia' },
-  { label: 'AMD64 Architecture', value: 'kubernetes.io/arch=amd64' },
   {
     label: 'Standard NC24 Instances',
     value: 'node.kubernetes.io/instance-type=Standard_NC24ads_A100_v4',
