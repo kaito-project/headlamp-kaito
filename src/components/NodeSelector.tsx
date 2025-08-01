@@ -154,8 +154,8 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
   return (
     <Box>
       {showLabelSelector && (
-        <Box mb={2}>
-          <Stack spacing={1}>
+        <Box mb={1}>
+          <Stack spacing={2}>
             <Button
               variant="text"
               size="small"
@@ -167,7 +167,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
             </Button>
 
             <Collapse in={showAdvanced}>
-              <Box mb={2}>
+              <Box>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Common label selectors:
                 </Typography>
@@ -190,21 +190,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               </Box>
             </Collapse>
 
-            <TextField
-              fullWidth
-              label="Specify Number of Nodes (optional)"
-              type="number"
-              value={requiredNodes}
-              onChange={e =>
-                setRequiredNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))
-              }
-              disabled={disabled}
-              placeholder="e.g., 2"
-              helperText="Specify the exact number of nodes. If not selected, Kaito will auto-provision this many nodes."
-              size="small"
-              inputProps={{ min: 1 }}
-            />
-
+            
             <TextField
               fullWidth
               label={
@@ -227,6 +213,21 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               }
               size="small"
             />
+             <TextField
+              fullWidth
+              label="Specify Number of Nodes (optional)"
+              type="number"
+              value={requiredNodes}
+              onChange={e =>
+                setRequiredNodes(e.target.value === '' ? '' : parseInt(e.target.value, 10))
+              }
+              disabled={disabled}
+              placeholder="e.g., 2"
+              helperText="Specify the exact number of nodes. If not selected, Kaito will auto-provision this many nodes."
+              size="small"
+              inputProps={{ min: 1 }}
+            />
+
           </Stack>
         </Box>
       )}
