@@ -24,14 +24,14 @@ import { DEFAULT_OPENAI_CONFIG } from '../config/openai';
 import { MCPServer, MCPServerStatusEvent } from '../utils/mcpIntegration';
 import { mcpIntegration } from '../utils/mcpIntegration';
 import { modelSupportsTools } from '../utils/modelUtils';
+import MCPServerManager from './MCPServerManager';
+import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 import {
   fetchModelsWithRetry,
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
 } from './resources/chatUtils';
-import MCPServerManager from './MCPServerManager';
-import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
 interface Message {
   id: string;
