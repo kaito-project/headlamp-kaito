@@ -66,7 +66,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
 
   const handleNodesChange = async (nodeNames: string[]) => {
     setSelectedNodes(nodeNames);
-    
+
     if (nodeNames.length > 0) {
       try {
         const allNodes = await fetchAvailableNodes();
@@ -81,7 +81,11 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
     }
   };
 
-  const generateWorkspaceYAML = (model: PresetModel, preferredNodes: string[], nodeData: NodeInfo[]): string => {
+  const generateWorkspaceYAML = (
+    model: PresetModel,
+    preferredNodes: string[],
+    nodeData: NodeInfo[]
+  ): string => {
     const modelNameCheck = model.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const isLlama = model.name.toLowerCase().includes('llama');
 

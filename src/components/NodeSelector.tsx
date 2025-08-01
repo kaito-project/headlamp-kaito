@@ -190,7 +190,6 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               </Box>
             </Collapse>
 
-            
             <TextField
               fullWidth
               label={
@@ -213,7 +212,7 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               }
               size="small"
             />
-             <TextField
+            <TextField
               fullWidth
               label="Specify Number of Nodes (optional)"
               type="number"
@@ -227,7 +226,6 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
               size="small"
               inputProps={{ min: 1 }}
             />
-
           </Stack>
         </Box>
       )}
