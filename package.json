@@ -5,7 +5,8 @@
   "scripts": {
     "start": "headlamp-plugin start",
     "build": "headlamp-plugin build",
-    "format": "headlamp-plugin format",
+    "format": "prettier --config package.json --write src",
+    "format-check": "prettier --config package.json --check src",
     "lint": "eslint --cache --fix --ext .js,.ts,.tsx src/",
     "lint-check": "eslint --cache --max-warnings 0 --ext .js,.ts,.tsx src/",
     "lint-fix": "eslint --cache --fix --ext .js,.ts,.tsx src/",

@@ -5,6 +5,25 @@ import {
 } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
 
+export async function fetchAvailableNodes(labelSelector?: string) {
+  const endpoint = labelSelector
+    ? `/api/v1/nodes?labelSelector=${encodeURIComponent(labelSelector)}`
+    : '/api/v1/nodes';
+
+  try {
+    const nodesResp = await request(endpoint);
+    return (nodesResp?.items || []).map((node: any) => ({
+      name: node.metadata.name,
+      labels: node.metadata.labels || {},
+      ready: node.status?.conditions?.find((c: any) => c.type === 'Ready')?.status === 'True',
+      taints: node.spec?.taints || [],
+    }));
+  } catch (error) {
+    console.error('Failed to fetch nodes:', error);
+    return [];
+  }
+}
+
 export async function resolvePodAndPort(namespace: string, workspaceName: string) {
   const labelSelector = `kaito.sh/workspace=${workspaceName}`;
   const podsResp = await request(

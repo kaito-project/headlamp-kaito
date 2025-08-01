@@ -2,7 +2,6 @@ import { KubeObject } from '@kinvolk/headlamp-plugin/lib/k8s/cluster';
 import { KubeObjectInterface } from '@kinvolk/headlamp-plugin/lib/k8s/cluster';
 
 export type ModelName = string;
-export type ModelImageAccessMode = 'public' | 'private';
 export type TuningMethod = 'lora' | 'qlora';
 export interface ResourceSpec {
   count?: number;
@@ -20,7 +19,6 @@ export interface ResourceSpec {
 
 export interface PresetMeta {
   name: ModelName;
-  accessMode?: ModelImageAccessMode;
 }
 
 export interface PresetOptions {

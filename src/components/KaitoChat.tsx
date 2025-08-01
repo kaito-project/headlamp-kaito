@@ -2,13 +2,13 @@ import { request } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { Autocomplete, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { useEffect, useState } from 'react';
-import ChatUI from './ChatUI';
 import {
   fetchModelsWithRetry,
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
-} from './chatUtils';
+} from '../utils/chatUtils';
+import ChatUI from './ChatUI';
 
 interface ModelOption {
   title: string;
