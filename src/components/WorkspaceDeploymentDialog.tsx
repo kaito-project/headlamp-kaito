@@ -1,5 +1,3 @@
-import React, { useRef, useState } from 'react';
-
 import { Icon } from '@iconify/react';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import {
@@ -16,7 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import yaml from 'js-yaml';
-
+import React, { useRef, useState } from 'react';
 import { fetchAvailableNodes } from './chatUtils';
 import NodeSelector from './NodeSelector';
 
