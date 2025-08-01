@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { fetchAvailableNodes } from './resources/chatUtils';
+import { fetchAvailableNodes } from '../utils/chatUtils';
 
 interface NodeInfo {
   name: string;

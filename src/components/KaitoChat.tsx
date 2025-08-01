@@ -8,7 +8,7 @@ import {
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
-} from './resources/chatUtils';
+} from '../utils/chatUtils';
 
 interface ModelOption {
   title: string;

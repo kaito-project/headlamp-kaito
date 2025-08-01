@@ -16,7 +16,7 @@ import {
 import yaml from 'js-yaml';
 import React, { useRef, useState } from 'react';
 import NodeSelector from './NodeSelector';
-import { fetchAvailableNodes } from './resources/chatUtils';
+import { fetchAvailableNodes } from '../utils/chatUtils';
 
 interface NodeInfo {
   name: string;
