@@ -16,6 +16,18 @@ import {
 import yaml from 'js-yaml';
 import React, { useRef, useState } from 'react';
 import NodeSelector from './NodeSelector';
+import { fetchAvailableNodes } from './chatUtils';
+
+interface NodeInfo {
+  name: string;
+  labels: Record<string, string>;
+  ready: boolean;
+  taints: Array<{
+    key: string;
+    value?: string;
+    effect: string;
+  }>;
+}
 
 interface PresetModel {
   name: string;
@@ -44,6 +56,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   onDeploy: _onDeploy,
 }) => {
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
+  const [selectedNodeData, setSelectedNodeData] = useState<NodeInfo[]>([]);
   const [labelSelector, setLabelSelector] = useState<string>('');
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const [_editorValue, setEditorValue] = useState('');
@@ -51,15 +64,37 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
 
   const itemRef = useRef({});
 
-  const generateWorkspaceYAML = (model: PresetModel, preferredNodes: string[]): string => {
+  const handleNodesChange = async (nodeNames: string[]) => {
+    setSelectedNodes(nodeNames);
+    
+    if (nodeNames.length > 0) {
+      try {
+        const allNodes = await fetchAvailableNodes();
+        const selectedNodesData = allNodes.filter(node => nodeNames.includes(node.name));
+        setSelectedNodeData(selectedNodesData);
+      } catch (error) {
+        console.error('Error fetching node data:', error);
+        setSelectedNodeData([]);
+      }
+    } else {
+      setSelectedNodeData([]);
+    }
+  };
+
+  const generateWorkspaceYAML = (model: PresetModel, preferredNodes: string[], nodeData: NodeInfo[]): string => {
     const modelNameCheck = model.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const isLlama = model.name.toLowerCase().includes('llama');
 
-    // Use different label selector based on whether nodes are selected
-    const labelSelector =
-      preferredNodes.length > 0
-        ? 'node.kubernetes.io/instance-type: Standard_NC80adis_H100_v5'
-        : `apps: ${modelNameCheck}`;
+    let instanceType = 'Standard_NC80adis_H100_v5'; // fallback
+    let labelSelectorValue = `apps: ${modelNameCheck}`;
+
+    if (preferredNodes.length > 0 && nodeData.length > 0) {
+      const firstNodeInstanceType = nodeData[0].labels['node.kubernetes.io/instance-type'];
+      if (firstNodeInstanceType) {
+        instanceType = firstNodeInstanceType;
+        labelSelectorValue = `node.kubernetes.io/instance-type: ${instanceType}`;
+      }
+    }
 
     let yamlString = `apiVersion: kaito.sh/v1beta1
 kind: Workspace
@@ -86,10 +121,10 @@ resource:`;
     }
 
     yamlString += `
-  instanceType: Standard_NC80adis_H100_v5
+  instanceType: ${instanceType}
   labelSelector:
     matchLabels:
-      ${labelSelector}`;
+      ${labelSelectorValue}`;
 
     yamlString += `
 inference:
@@ -107,7 +142,7 @@ inference:
 
   const handleDeploy = () => {
     if (model) {
-      const yamlString = generateWorkspaceYAML(model, selectedNodes);
+      const yamlString = generateWorkspaceYAML(model, selectedNodes, selectedNodeData);
 
       console.log('Generated YAML:', yamlString);
 
@@ -126,6 +161,7 @@ inference:
 
   const handleReset = () => {
     setSelectedNodes([]);
+    setSelectedNodeData([]);
     setLabelSelector('');
     setRequiredNodes('');
   };
@@ -140,7 +176,7 @@ inference:
 
   if (!model) return null;
 
-  const yamlPreview = generateWorkspaceYAML(model, selectedNodes);
+  const yamlPreview = generateWorkspaceYAML(model, selectedNodes, selectedNodeData);
 
   return (
     <>
@@ -184,7 +220,7 @@ inference:
 
               <NodeSelector
                 selectedNodes={selectedNodes}
-                onNodesChange={setSelectedNodes}
+                onNodesChange={handleNodesChange}
                 labelSelector={labelSelector}
                 onLabelSelectorChange={setLabelSelector}
                 onRequiredNodesChange={handleRequiredNodesChange}
