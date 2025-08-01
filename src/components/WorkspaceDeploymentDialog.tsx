@@ -169,7 +169,7 @@ inference:
           <Stack spacing={3}>
             <Alert severity="info">
               Optionally select specific nodes for deployment, or leave the selection empty to use
-              Kaito's automatic GPU provisioning.
+              KAITO's automatic GPU provisioning.
             </Alert>
 
             <Paper variant="outlined" sx={{ p: 2 }}>
