@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import yaml from 'js-yaml';
 import React, { useRef, useState } from 'react';
-import { fetchAvailableNodes } from './chatUtils';
+import { fetchAvailableNodes } from './resources/chatUtils';
 import NodeSelector from './NodeSelector';
 
 interface NodeInfo {

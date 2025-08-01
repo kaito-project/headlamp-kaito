@@ -29,7 +29,7 @@ import {
   resolvePodAndPort,
   startWorkspacePortForward,
   stopWorkspacePortForward,
-} from './chatUtils';
+} from './resources/chatUtils';
 import MCPServerManager from './MCPServerManager';
 import ModelSettingsDialog, { ModelConfig } from './ModelSettingsDialog';
 
