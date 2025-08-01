@@ -94,8 +94,7 @@ resource:`;
     yamlString += `
 inference:
   preset:
-    name: ${model.name.toLowerCase()}
-    accessMode: private`;
+    name: ${model.name.toLowerCase()}`;
 
     if (isLlama) {
       yamlString += `
