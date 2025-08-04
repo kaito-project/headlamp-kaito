@@ -1,7 +1,7 @@
 {
   "name": "headlamp-kaito",
-  "version": "0.0.4",
-  "description": "This is a patch release for 0.0.3. v0.0.3 adds Model Context Protocol (MCP) tool calling support, enabling models to access external tools and data sources through configurable MCP servers. The new MCP Server Management interface allows users to configure StreamableHTTP and SSE transport protocols, manage authentication methods (Authorization header or URL path), and enable/disable servers dynamically. This significantly expands the capabilities of AI chat sessions by providing access to external APIs, databases, calculation tools, and custom enterprise services through the standardized MCP specification.",
+  "version": "0.0.5",
+  "description": "This release 0.0.5 supports multi-node distributed inference and allows users to choose preferred nodes to deploy their model to.",
   "scripts": {
     "start": "headlamp-plugin start",
     "build": "headlamp-plugin build",
