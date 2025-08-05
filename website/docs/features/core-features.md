@@ -99,7 +99,6 @@ Headlamp-KAITO provides a comprehensive set of features designed to simplify AI 
 
 ### Modern UI/UX
 
-- **Responsive Design**: Mobile-friendly responsive interface
 - **Dark/Light Mode**: Support for both dark and light themes
 - **Accessibility**: WCAG compliant accessibility features
 - **Intuitive Navigation**: User-friendly navigation and workflow design
