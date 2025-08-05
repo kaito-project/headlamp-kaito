@@ -28,6 +28,7 @@ const sidebars: SidebarsConfig = {
         'features/core-features',
         'features/testing-mcp-server',
         'features/mcp-tool-calling',
+        'features/multi-node-distributed-inference',
         'features/custom-fine-tuning',
       ],
     },
