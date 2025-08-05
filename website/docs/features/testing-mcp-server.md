@@ -141,6 +141,12 @@ spec:
       port: 8080
       targetPort: 8080
 ```
+Apply and restart:
+
+```bash
+kubectl apply -f kubernetes-mcp-server.yaml
+kubectl rollout restart deployment kubernetes-mcp-server
+```
 
 ## 3. Deploy MCP Inspector
 
