@@ -38,6 +38,7 @@ The model catalog provides a list of KAITO Preset models with filtering and sear
 
 1. **Select a model** from the catalog based on your requirements
 2. **Click "Deploy"** to open the YAML editor dialog
+- Optionally specify nodes for deployment. For more information, see [multi-node-distributed-inference](../features/multi-node-distributed-inference.md).
 
 3. **Review the generated Workspace YAML** which includes:
 

@@ -1,30 +1,301 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  /* KAITO logo colors */
+  --ifm-color-primary: #1cabe1;
+  --ifm-color-primary-dark: #0a4767;
+  --ifm-color-primary-darker: #0a2d3e;
+  --ifm-color-primary-darkest: #0a2d3e;
+  --ifm-color-primary-light: #3db8e5;
+  --ifm-color-primary-lighter: #6cc7ea;
+  --ifm-color-primary-lightest: #eefbfd;
+  
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.6;
+  --ifm-font-weight-base: 400;
+  --ifm-font-weight-semibold: 600;
+  --ifm-font-weight-bold: 700;
+  
+  --ifm-spacing-horizontal: 1.5rem;
+  --ifm-spacing-vertical: 1.5rem;
+  --ifm-global-radius: 12px;
+  --ifm-button-border-radius: 8px;
+  
+  --ifm-code-font-size: 90%;
+  --ifm-code-background: #f8fafc;
+  --ifm-code-border-radius: 6px;
+  --ifm-code-padding-horizontal: 0.5rem;
+  --ifm-code-padding-vertical: 0.125rem;
+  
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f8fafc;
+  --ifm-card-background-color: #ffffff;
+  
+  --ifm-global-shadow-lw: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --ifm-global-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --ifm-global-shadow-tl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  --ifm-color-emphasis-200: #e2e8f0;
+  --ifm-color-emphasis-300: #cbd5e1;
+  
+  --docusaurus-highlighted-code-line-bg: rgba(28, 171, 225, 0.1);
+  
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.95);
+  --ifm-navbar-shadow: var(--ifm-global-shadow-md);
+  --ifm-navbar-height: 4rem;
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #6cc7ea;
+  --ifm-color-primary-dark: #3db8e5;
+  --ifm-color-primary-darker: #1cabe1;
+  --ifm-color-primary-darkest: #0a4767;
+  --ifm-color-primary-light: #9dd4ed;
+  --ifm-color-primary-lighter: #c4e4f2;
+  --ifm-color-primary-lightest: #eefbfd;
+  
+  --ifm-background-color: #0f172a;
+  --ifm-background-surface-color: #1e293b;
+  --ifm-card-background-color: #1e293b;
+  
+  --ifm-code-background: #1e293b;
+  --ifm-color-emphasis-200: #334155;
+  --ifm-color-emphasis-300: #475569;
+  
+  --docusaurus-highlighted-code-line-bg: rgba(61, 184, 229, 0.2);
+  
+  --ifm-navbar-background-color: rgba(15, 23, 42, 0.95);
+}
+
+.navbar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+  transition: all 0.3s ease;
+}
+
+.navbar__brand {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.button {
+  background: var(--ifm-color-primary);
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: var(--ifm-global-shadow-lw);
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ifm-global-shadow-md);
+  background: var(--ifm-color-primary-dark);
+}
+
+.button--secondary {
+  background: transparent;
+  border: 2px solid var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+.button--secondary:hover {
+  background: var(--ifm-color-primary);
+  color: white;
+}
+
+.theme-code-block {
+  border-radius: var(--ifm-global-radius);
+  box-shadow: var(--ifm-global-shadow-lw);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  overflow: hidden;
+}
+
+.prism-code {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.table-of-contents {
+  border-radius: var(--ifm-global-radius);
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  padding: 1rem;
+}
+
+table {
+  border-radius: var(--ifm-global-radius);
+  overflow: hidden;
+  box-shadow: var(--ifm-global-shadow-lw);
+  border: 1px solid var(--ifm-color-emphasis-200);
+}
+
+table thead {
+  background: var(--ifm-color-primary);
+  color: white;
+}
+
+table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+}
+
+table tr:nth-child(even) {
+  background: var(--ifm-background-surface-color);
+}
+
+.alert {
+  border-radius: var(--ifm-global-radius);
+  border: none;
+  box-shadow: var(--ifm-global-shadow-lw);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.alert--info {
+  background: rgba(28, 171, 225, 0.1);
+  border-left: 4px solid var(--ifm-color-primary);
+}
+
+.alert--warning {
+  background: rgba(251, 191, 36, 0.1);
+  border-left: 4px solid #f59e0b;
+}
+
+.alert--danger {
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid #ef4444;
+}
+
+.alert--success {
+  background: rgba(34, 197, 94, 0.1);
+  border-left: 4px solid #22c55e;
+}
+
+.theme-doc-sidebar-container {
+  border-right: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.menu__link {
+  border-radius: 8px;
+  margin: 0.125rem 0;
+  transition: all 0.2s ease;
+  color: var(--ifm-font-color-base);
+}
+
+.menu__link:hover {
+  background: rgba(28, 171, 225, 0.1);
+  transform: translateX(4px);
+  color: var(--ifm-color-primary-darker);
+  text-decoration: none;
+}
+
+.menu__link--active {
+  background: var(--ifm-color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .menu__link--active {
+  color: white;
+}
+
+.markdown h1 {
+  color: var(--ifm-color-primary);
+  font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.markdown h2 {
+  color: var(--ifm-color-primary-darker);
+  font-weight: 600;
+  border-bottom: 2px solid var(--ifm-color-emphasis-200);
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.markdown h3 {
+  color: var(--ifm-color-primary-dark);
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer {
+  background: var(--ifm-color-primary-darker);
+}
+
+.footer__link-item:hover {
+  color: var(--ifm-color-primary-lighter);
+  text-decoration: none;
+}
+
+.header-github-link:before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z' fill='%23334155'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+[data-theme='dark'] .header-github-link:before {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z' fill='%23cbd5e1'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.hero {
+  background: var(--ifm-color-primary);
+  color: white;
+}
+
+.hero__title {
+  font-weight: 700;
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.hero__subtitle {
+  font-size: 1.25rem;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .hero__title {
+    font-size: 2.5rem;
+  }
+  
+  .markdown h1 {
+    font-size: 2rem;
+  }
+}
+
+.announcement {
+  background: var(--ifm-color-primary);
+  font-weight: 500;
+}
+
+.announcement a {
+  color: white;
+  text-decoration: underline;
+}
+
+.button:focus,
+.menu__link:focus,
+a:focus {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
