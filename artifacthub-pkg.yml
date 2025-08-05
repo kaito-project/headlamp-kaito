@@ -6,4 +6,4 @@ logoURL: 'https://avatars.githubusercontent.com/u/186863079?s=48&v=4'
 description: This release 0.0.5 supports multi-node distributed inference and allows users to choose preferred nodes to deploy their model to.
 annotations:
   headlamp/plugin/archive-url: 'https://github.com/kaito-project/headlamp-kaito/releases/download/0.0.5/headlamp-kaito-0.0.5.tar.gz'
-  headlamp/plugin/archive-checksum: 'SHA256:494680e42f6b903cf58e3c1ba43167c2ca627ab93f38780003157434d8f5edc9'
+  headlamp/plugin/archive-checksum: 'SHA256:e1c0d91cb3ab3537d6a5a0ce30b44b6ce9edb4e6afbeac8c9164fc009ff98080'
