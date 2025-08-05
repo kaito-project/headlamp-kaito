@@ -131,6 +131,8 @@ table {
   overflow: hidden;
   box-shadow: var(--ifm-global-shadow-lw);
   border: 1px solid var(--ifm-color-emphasis-200);
+  width: 100%;
+  table-layout: auto;
 }
 
 table thead {
