@@ -115,13 +115,13 @@ Once your workspace shows "Inference Ready", you can interact with the model thr
 
 The ChatUI component provides a full-featured chat experience:
 
-| Feature           | Description                  | Implementation                          |
-| ----------------- | ---------------------------- | --------------------------------------- |
-| Message Streaming | Real-time response display   | streamText() with textStream            |
-| Model Selection   | Choose from available models | Autocomplete with /v1/models data       |
-| Message History   | Conversation persistence     | messages state array                    |
-| Markdown Support  | Rich text formatting         | ReactMarkdown component                 |
-| Error Handling    | Fallback responses           | Try-catch with connection timeout logic |
+| Feature           | Description                  |
+| ----------------- | ---------------------------- |
+| Message Streaming | Real-time response display   |
+| Model Selection   | Choose from available models |
+| Message History   | Conversation persistence     |
+| Markdown Support  | Rich text formatting         |
+| Error Handling    | Fallback responses           |
 
 ## Legacy CLI Method (Optional)
 
