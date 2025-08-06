@@ -151,6 +151,8 @@ const NodeSelector: React.FC<NodeSelectorProps> = ({
     setRequiredNodes('');
   };
 
+  const isAutoProvisioningMode = selectedNodes.length === 0;
+
   return (
     <Box>
       {showLabelSelector && (

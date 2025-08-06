@@ -20,6 +20,7 @@ import yaml from 'js-yaml';
 import React, { useRef, useState } from 'react';
 import { fetchAvailableNodes } from '../utils/chatUtils';
 import NodeSelector from './NodeSelector';
+import SKUSelector from './SKUSelector';
 
 interface NodeInfo {
   name: string;
@@ -61,6 +62,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
   const [selectedNodeData, setSelectedNodeData] = useState<NodeInfo[]>([]);
   const [labelSelector, setLabelSelector] = useState<string>('');
+  const [selectedSKU, setSelectedSKU] = useState<string>('');
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const [_editorValue, setEditorValue] = useState('');
   const [requiredNodes, setRequiredNodes] = useState<number | ''>('');
@@ -88,7 +90,8 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   const generateWorkspaceYAML = (
     model: PresetModel,
     preferredNodes: string[],
-    nodeData: NodeInfo[]
+    nodeData: NodeInfo[],
+    selectedSKU?: string
   ): string => {
     const modelNameCheck = model.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const isLlama = model.name.toLowerCase().includes('llama');
@@ -96,7 +99,11 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
     let instanceType = 'Standard_NC80adis_H100_v5'; // fallback
     let labelSelectorValue = `apps: ${modelNameCheck}`;
 
-    if (preferredNodes.length > 0 && nodeData.length > 0) {
+    // Use selected SKU if in auto-provisioning mode and SKU is selected
+    if (preferredNodes.length === 0 && selectedSKU) {
+      instanceType = selectedSKU;
+      labelSelectorValue = `node.kubernetes.io/instance-type: ${instanceType}`;
+    } else if (preferredNodes.length > 0 && nodeData.length > 0) {
       const firstNodeInstanceType = nodeData[0].labels['node.kubernetes.io/instance-type'];
       if (firstNodeInstanceType) {
         instanceType = firstNodeInstanceType;
@@ -150,7 +157,7 @@ inference:
 
   const handleDeploy = () => {
     if (model) {
-      const yamlString = generateWorkspaceYAML(model, selectedNodes, selectedNodeData);
+      const yamlString = generateWorkspaceYAML(model, selectedNodes, selectedNodeData, selectedSKU);
 
       console.log('Generated YAML:', yamlString);
 
@@ -171,6 +178,7 @@ inference:
     setSelectedNodes([]);
     setSelectedNodeData([]);
     setLabelSelector('');
+    setSelectedSKU('');
     setRequiredNodes('');
     setNodeSelectionExpanded(false);
   };
@@ -185,7 +193,7 @@ inference:
 
   if (!model) return null;
 
-  const yamlPreview = generateWorkspaceYAML(model, selectedNodes, selectedNodeData);
+  const yamlPreview = generateWorkspaceYAML(model, selectedNodes, selectedNodeData, selectedSKU);
 
   return (
     <>
@@ -262,6 +270,36 @@ inference:
                 />
               </AccordionDetails>
             </Accordion>
+
+            {selectedNodes.length === 0 && (
+              <Box mt={2}>
+                <Accordion variant="outlined">
+                  <AccordionSummary
+                    expandIcon={<Icon icon="mdi:chevron-down" />}
+                    sx={{ 
+                      backgroundColor: theme => theme.palette.background.default,
+                      '&:hover': {
+                        backgroundColor: theme => theme.palette.action.hover,
+                      }
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Icon icon="mdi:chip" width={20} height={20} />
+                      <Typography variant="subtitle1">
+                        GPU SKU Selection (Auto-Provisioning, Optional)
+                      </Typography>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <SKUSelector
+                      selectedSKU={selectedSKU}
+                      onSKUChange={setSelectedSKU}
+                      isAutoProvisioningMode={selectedNodes.length === 0}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
+            )}
 
             
 
