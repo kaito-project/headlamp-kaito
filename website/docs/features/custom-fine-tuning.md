@@ -31,7 +31,6 @@ The temperature parameter controls the randomness of AI model responses. The Mod
 - **Range**: 0.0 to 1.0
 - **Step**: 0.01
 - **Default**: 0.7
-- **UI Implementation**: `src/components/ModelSettingsDialog.tsx` (lines 55-65)
 
 Lower temperature values produce more deterministic and focused responses, while higher values increase creativity and randomness.
 
@@ -42,7 +41,6 @@ The max tokens parameter limits the length of AI model responses. The configurat
 - **Range**: 100 to 4000 tokens
 - **Step**: 50 tokens
 - **Default**: 1000 tokens
-- **UI Implementation**: `src/components/ModelSettingsDialog.tsx` (lines 66-77)
 
 This parameter directly affects response length and computational resource usage during AI interactions.
 
@@ -67,7 +65,7 @@ The top_k parameter restricts responses to the top k most likely tokens. The Mod
 - **UI Implementation**: `src/components/ModelSettingsDialog.tsx` (lines 89-99)
 
 Increasing top_k focuses the model’s output on the most probable tokens, while a value of 0 disables this restriction for broader responses.
-## Integration with Chat Interface
+## Integration with Chat
 
 Once fine-tuning is complete, your custom model can be used in the chat interface:
 

@@ -141,6 +141,11 @@ spec:
       port: 8080
       targetPort: 8080
 ```
+Apply:
+
+```bash
+kubectl apply -f kubernetes-mcp-server.yaml
+```
 
 ## 3. Deploy MCP Inspector
 
@@ -199,11 +204,10 @@ spec:
       targetPort: 6277
 ```
 
-Apply and restart:
+Apply:
 
 ```bash
 kubectl apply -f mcp-inspector.yaml
-kubectl rollout restart deployment mcp-inspector
 ```
 To see the status of your pod services, run:
 ```
@@ -340,6 +344,13 @@ spec:
 - env: ENABLE_UNSAFE_SSE_TRANSPORT, DANGEROUSLY_OMIT_AUTH
 - Service type: LoadBalancer
 
+Apply and restart:
+
+```bash
+kubectl apply -f kubernetes-mcp-server.yaml
+kubectl rollout restart deployment kubernetes-mcp-server
+```
+
 Similarly, update your `mcp-inspector.yaml`
 ```yaml
 apiVersion: apps/v1
@@ -399,6 +410,13 @@ spec:
 Changes made: 
 - env: DISABLE_CONFIG_AUTH, NO_AUTH, ALLOWED_ORIGINS
 - Service type: LoadBalancer
+
+Apply and restart:
+
+```bash
+kubectl apply -f mcp-inspector.yaml
+kubectl rollout restart deployment mcp-inspector
+```
 
 If you're using a cloud provider (AKS, EKS, GKE), the LoadBalancer service will automatically provision an external IP. Get the external IP with:
 

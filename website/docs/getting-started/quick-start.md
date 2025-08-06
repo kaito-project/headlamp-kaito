@@ -14,6 +14,7 @@ Before starting, ensure you have:
 - **A Kubernetes cluster** with the KAITO controller deployed
 - **Sufficient GPU resources** (Standard_NC24ads_A100_v4 or Standard_NC96ads_A100_v4 instances recommended)
 
+![Demo](../../../src/logos/readme-demo.gif)
 ## Step 1: Explore the Model Catalog
 
 ### Model Catalog Features
@@ -37,6 +38,7 @@ The model catalog provides a list of KAITO Preset models with filtering and sear
 
 1. **Select a model** from the catalog based on your requirements
 2. **Click "Deploy"** to open the YAML editor dialog
+- Optionally specify nodes for deployment. For more information, see [multi-node-distributed-inference](../features/multi-node-distributed-inference.md).
 
 3. **Review the generated Workspace YAML** which includes:
 
