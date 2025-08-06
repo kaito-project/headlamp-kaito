@@ -247,7 +247,7 @@ inference:
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <Icon icon="mdi:server" width={20} height={20} />
                   <Typography variant="subtitle1">
-                    Node Selection (Optional)
+                    Node Selection (Optional, click to expand)
                   </Typography>
                 </Stack>
               </AccordionSummary>
