@@ -14,6 +14,7 @@ import React from 'react';
 interface SKUSelectorProps {
   selectedSKU: string;
   onSKUChange: (_sku: string) => void;
+  onGPUCountChange?: (_gpuCount: number) => void;
   disabled?: boolean;
   isAutoProvisioningMode?: boolean;
 }
@@ -80,11 +81,17 @@ const POPULAR_GPU_SKUS = [
 const SKUSelector: React.FC<SKUSelectorProps> = ({
   selectedSKU,
   onSKUChange,
+  onGPUCountChange,
   disabled = false,
   isAutoProvisioningMode = true,
 }) => {
   const handleSKUChange = (sku: string) => {
     onSKUChange(sku);
+    
+    if (onGPUCountChange) {
+      const selectedOption = POPULAR_GPU_SKUS.find(option => option.value === sku);
+      onGPUCountChange(selectedOption?.gpuCount || 0);
+    }
   };
 
   if (!isAutoProvisioningMode) {
@@ -158,6 +165,13 @@ const SKUSelector: React.FC<SKUSelectorProps> = ({
             <Icon icon="mdi:rocket-launch" width={12} height={12} style={{ marginRight: 4 }} />
             Auto-provisioning with {POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)?.label}
           </Typography>
+          {POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)?.gpuCount && 
+           POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)!.gpuCount > 1 && (
+            <Typography variant="caption" color="info.main" display="block" mt={0.5}>
+              <Icon icon="mdi:content-copy" width={12} height={12} style={{ marginRight: 4 }} />
+              Will provision {POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)?.gpuCount} nodes for multi-GPU setup
+            </Typography>
+          )}
         </Box>
       )}
     </Box>
