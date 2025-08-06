@@ -14,6 +14,9 @@ The system provides default configuration values through the DEFAULT_OPENAI_CONF
 | ----------- | ------------- | ----------------------------------------------------------------------------------- |
 | temperature | 0.7           | Controls randomness in AI responses (0.0 = deterministic, 1.0 = maximum randomness) |
 | maxTokens   | 1000          | Maximum number of tokens the AI model can generate in a single response             |
+| top_p       | 1.0           | Controls nucleus sampling; limits responses to the most probable tokens (0.0–1.0)   |
+| top_k       | 0             | Limits responses to the top k most likely tokens (0 = disabled, higher = more focused) |
+
 
 ## Model Setting Configuration
 
@@ -43,6 +46,27 @@ The max tokens parameter limits the length of AI model responses. The configurat
 
 This parameter directly affects response length and computational resource usage during AI interactions.
 
+#### Top P
+
+The top_p parameter controls nucleus sampling, which limits responses to the most probable tokens. In the ModelSettingsDialog, this is configured via a slider with:
+
+- **Range**: 0.0 to 1.0
+- **Step**: 0.01
+- **Default**: 1.0
+- **UI Implementation**: `src/components/ModelSettingsDialog.tsx` (lines 78-88)
+
+Lower values restrict the model to a smaller set of likely tokens, making responses more focused. Higher values allow for more diverse outputs.
+
+#### Top K
+
+The top_k parameter restricts responses to the top k most likely tokens. The ModelSettingsDialog provides a slider for this setting:
+
+- **Range**: 0 to 100
+- **Step**: 1
+- **Default**: 0 (disabled)
+- **UI Implementation**: `src/components/ModelSettingsDialog.tsx` (lines 89-99)
+
+Increasing top_k focuses the model’s output on the most probable tokens, while a value of 0 disables this restriction for broader responses.
 ## Integration with Chat Interface
 
 Once fine-tuning is complete, your custom model can be used in the chat interface:
