@@ -26,7 +26,6 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A10',
     gpuMemory: '24GB',
     gpuCount: 1,
-    description: 'Cost-effective for inference workloads',
   },
   {
     label: 'A10 Dual (48GB VRAM)',
@@ -34,7 +33,6 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A10',
     gpuMemory: '48GB',
     gpuCount: 2,
-    description: 'Dual A10 for larger models',
   },
   {
     label: 'A100 (80GB VRAM)',
@@ -42,7 +40,6 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A100',
     gpuMemory: '80GB',
     gpuCount: 1,
-    description: 'High performance training and inference',
   },
   {
     label: 'A100 Dual (160GB VRAM)',
@@ -50,7 +47,6 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A100',
     gpuMemory: '160GB',
     gpuCount: 2,
-    description: 'Dual A100 for very large models',
   },
   {
     label: 'A100 Quad (320GB VRAM)',
@@ -58,7 +54,6 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A100',
     gpuMemory: '320GB',
     gpuCount: 4,
-    description: 'Quad A100 for distributed training',
   },
   {
     label: 'H100 (94GB VRAM)',
@@ -66,7 +61,6 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA H100',
     gpuMemory: '94GB',
     gpuCount: 1,
-    description: 'Latest generation, best performance',
   },
   {
     label: 'H100 Dual (188GB VRAM)',
@@ -74,7 +68,6 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA H100',
     gpuMemory: '188GB',
     gpuCount: 2,
-    description: 'Dual H100 for cutting-edge workloads',
   },
 ];
 
