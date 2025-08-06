@@ -301,8 +301,6 @@ inference:
               </Box>
             )}
 
-            
-
             <Divider />
 
             <Box>
