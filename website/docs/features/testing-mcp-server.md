@@ -141,11 +141,10 @@ spec:
       port: 8080
       targetPort: 8080
 ```
-Apply and restart:
+Apply:
 
 ```bash
 kubectl apply -f kubernetes-mcp-server.yaml
-kubectl rollout restart deployment kubernetes-mcp-server
 ```
 
 ## 3. Deploy MCP Inspector
@@ -205,11 +204,10 @@ spec:
       targetPort: 6277
 ```
 
-Apply and restart:
+Apply:
 
 ```bash
 kubectl apply -f mcp-inspector.yaml
-kubectl rollout restart deployment mcp-inspector
 ```
 To see the status of your pod services, run:
 ```
