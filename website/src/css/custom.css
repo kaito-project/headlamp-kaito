@@ -206,7 +206,23 @@ table tr:nth-child(even) {
 }
 
 [data-theme='dark'] .menu__link--active {
+  background: var(--ifm-color-primary);
   color: white;
+}
+
+/* Light mode specific override for better contrast */
+[data-theme='light'] .menu__link--active {
+  background: var(--ifm-color-primary);
+  color: white;
+}
+
+/* Ensure sidebar category headers are visible in light mode */
+.menu__list-item-collapsible > .menu__link {
+  color: var(--ifm-font-color-base);
+}
+
+.menu__list-item-collapsible > .menu__link:hover {
+  color: var(--ifm-color-primary-darker);
 }
 
 .markdown h1 {
