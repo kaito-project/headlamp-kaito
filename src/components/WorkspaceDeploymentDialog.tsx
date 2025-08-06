@@ -63,7 +63,6 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   const [selectedNodeData, setSelectedNodeData] = useState<NodeInfo[]>([]);
   const [labelSelector, setLabelSelector] = useState<string>('');
   const [selectedSKU, setSelectedSKU] = useState<string>('');
-  const [selectedGPUCount, setSelectedGPUCount] = useState<number>(0);
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const [_editorValue, setEditorValue] = useState('');
   const [requiredNodes, setRequiredNodes] = useState<number | ''>('');
@@ -92,8 +91,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
     model: PresetModel,
     preferredNodes: string[],
     nodeData: NodeInfo[],
-    selectedSKU?: string,
-    gpuCount?: number
+    selectedSKU?: string
   ): string => {
     const modelNameCheck = model.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     const isLlama = model.name.toLowerCase().includes('llama');
@@ -126,9 +124,6 @@ resource:`;
     } else if (typeof requiredNodes === 'number' && requiredNodes > 1) {
       yamlString += `
   count: ${requiredNodes}`;
-    } else if (preferredNodes.length === 0 && selectedSKU && gpuCount && gpuCount > 1) {
-      yamlString += `
-  count: ${gpuCount}`;
     }
 
     if (preferredNodes.length > 0) {
@@ -162,7 +157,7 @@ inference:
 
   const handleDeploy = () => {
     if (model) {
-      const yamlString = generateWorkspaceYAML(model, selectedNodes, selectedNodeData, selectedSKU, selectedGPUCount);
+      const yamlString = generateWorkspaceYAML(model, selectedNodes, selectedNodeData, selectedSKU);
 
       console.log('Generated YAML:', yamlString);
 
@@ -184,7 +179,6 @@ inference:
     setSelectedNodeData([]);
     setLabelSelector('');
     setSelectedSKU('');
-    setSelectedGPUCount(0);
     setRequiredNodes('');
     setNodeSelectionExpanded(false);
   };
@@ -199,7 +193,7 @@ inference:
 
   if (!model) return null;
 
-  const yamlPreview = generateWorkspaceYAML(model, selectedNodes, selectedNodeData, selectedSKU, selectedGPUCount);
+  const yamlPreview = generateWorkspaceYAML(model, selectedNodes, selectedNodeData, selectedSKU);
 
   return (
     <>
@@ -300,7 +294,6 @@ inference:
                     <SKUSelector
                       selectedSKU={selectedSKU}
                       onSKUChange={setSelectedSKU}
-                      onGPUCountChange={setSelectedGPUCount}
                       isAutoProvisioningMode={selectedNodes.length === 0}
                     />
                   </AccordionDetails>

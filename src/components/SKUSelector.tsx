@@ -26,6 +26,7 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A10',
     gpuMemory: '24GB',
     gpuCount: 1,
+    description: 'Cost-effective for inference workloads',
   },
   {
     label: 'A10 (2x48GB)',
@@ -33,6 +34,7 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A10',
     gpuMemory: '48GB',
     gpuCount: 2,
+    description: 'Dual A10 for larger models',
   },
   {
     label: 'A100 (1x80GB)',
@@ -40,6 +42,7 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A100',
     gpuMemory: '80GB',
     gpuCount: 1,
+    description: 'High performance training and inference',
   },
   {
     label: 'A100 (2x160GB)',
@@ -47,6 +50,7 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A100',
     gpuMemory: '160GB',
     gpuCount: 2,
+    description: 'Dual A100 for very large models',
   },
   {
     label: 'A100 (4x320GB)',
@@ -54,6 +58,7 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA A100',
     gpuMemory: '320GB',
     gpuCount: 4,
+    description: 'Quad A100 for distributed training',
   },
   {
     label: 'H100 (1x94GB)',
@@ -61,13 +66,15 @@ const POPULAR_GPU_SKUS = [
     gpuModel: 'NVIDIA H100',
     gpuMemory: '94GB',
     gpuCount: 1,
+    description: 'Latest generation, best performance',
   },
   {
-    label: 'H100 Dual (2x188GB)',
+    label: 'H100 (2x188GB)',
     value: 'Standard_NC80adis_H100_v5',
     gpuModel: 'NVIDIA H100',
     gpuMemory: '188GB',
     gpuCount: 2,
+    description: 'Dual H100 for cutting-edge workloads',
   },
 ];
 
@@ -158,13 +165,6 @@ const SKUSelector: React.FC<SKUSelectorProps> = ({
             <Icon icon="mdi:rocket-launch" width={12} height={12} style={{ marginRight: 4 }} />
             Auto-provisioning with {POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)?.label}
           </Typography>
-          {POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)?.gpuCount && 
-           POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)!.gpuCount > 1 && (
-            <Typography variant="caption" color="info.main" display="block" mt={0.5}>
-              <Icon icon="mdi:content-copy" width={12} height={12} style={{ marginRight: 4 }} />
-              Will provision {POPULAR_GPU_SKUS.find(sku => sku.value === selectedSKU)?.gpuCount} nodes for multi-GPU setup
-            </Typography>
-          )}
         </Box>
       )}
     </Box>
