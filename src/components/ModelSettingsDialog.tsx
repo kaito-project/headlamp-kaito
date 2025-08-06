@@ -12,6 +12,8 @@ import React from 'react';
 export interface ModelConfig {
   temperature: number;
   maxTokens: number;
+  topP: number;
+  topK: number;
 }
 
 interface Props {
@@ -22,7 +24,7 @@ interface Props {
 }
 
 const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave }) => {
-  const defaultConfig = { temperature: 0.7, maxTokens: 1000 };
+  const defaultConfig = { temperature: 0.7, maxTokens: 1000, topP: 1.0, topK: 0 };
   const [localConfig, setLocalConfig] = React.useState(config || defaultConfig);
 
   React.useEffect(() => {
@@ -46,6 +48,16 @@ const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave })
     setLocalConfig(prev => ({ ...prev, maxTokens: value }));
   };
 
+  const handleTopPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    setLocalConfig(prev => ({ ...prev, topP: value }));
+  };
+
+  const handleTopKChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setLocalConfig(prev => ({ ...prev, topK: value }));
+  };
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Model Settings</DialogTitle>
@@ -63,7 +75,7 @@ const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave })
               style={{ width: '100%' }}
             />
           </Box>
-          <Box mb={2}>
+          <Box mb={3}>
             <Typography gutterBottom>Max Tokens: {localConfig.maxTokens}</Typography>
             <input
               type="range"
@@ -72,6 +84,30 @@ const ModelSettingsDialog: React.FC<Props> = ({ open, onClose, config, onSave })
               step="50"
               value={localConfig.maxTokens}
               onChange={handleMaxTokensChange}
+              style={{ width: '100%' }}
+            />
+          </Box>
+          <Box mb={3}>
+            <Typography gutterBottom>Top P: {localConfig.topP.toFixed(2)}</Typography>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={localConfig.topP}
+              onChange={handleTopPChange}
+              style={{ width: '100%' }}
+            />
+          </Box>
+          <Box mb={2}>
+            <Typography gutterBottom>Top K: {localConfig.topK}</Typography>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={localConfig.topK}
+              onChange={handleTopKChange}
               style={{ width: '100%' }}
             />
           </Box>

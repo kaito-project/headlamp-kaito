@@ -50,7 +50,7 @@ Headlamp-KAITO provides a comprehensive set of features designed to simplify AI 
 ### Model Configuration
 
 - **Model Selection**: Choose from available deployed models
-- **Parameter Tuning**: Adjust temperature, max tokens, and other model parameters
+- **Parameter Tuning**: Adjust temperature, max tokens, top P, top K
 - **Session Management**: Manage multiple chat sessions with different models
 - **Response Formatting**: Customizable response formatting and display options
 
