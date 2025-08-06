@@ -177,7 +177,7 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
   const theme = themeProp || useTheme();
   const [config, setConfig] = useState<ModelConfig>(DEFAULT_OPENAI_CONFIG);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const { temperature = 0.7, maxTokens = 1000 } = config || {};
+  const { temperature = 0.7, maxTokens = 1000, topP = 1.0, topK = 0 } = config || {};
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -321,6 +321,8 @@ const ChatUI: React.FC<ChatUIProps & { embedded?: boolean }> = ({
         messages: conversationHistory,
         temperature,
         maxTokens,
+        topP,
+        topK,
         maxSteps: 5,
         tools: mcpTools,
       });
