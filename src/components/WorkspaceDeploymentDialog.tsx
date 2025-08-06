@@ -1,6 +1,9 @@
 import { Icon } from '@iconify/react';
 import { EditorDialog } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -61,6 +64,7 @@ const WorkspaceDeploymentDialog: React.FC<WorkspaceDeploymentDialogProps> = ({
   const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   const [_editorValue, setEditorValue] = useState('');
   const [requiredNodes, setRequiredNodes] = useState<number | ''>('');
+  const [nodeSelectionExpanded, setNodeSelectionExpanded] = useState(false);
 
   const itemRef = useRef({});
 
@@ -168,6 +172,7 @@ inference:
     setSelectedNodeData([]);
     setLabelSelector('');
     setRequiredNodes('');
+    setNodeSelectionExpanded(false);
   };
 
   const handleRequiredNodesChange = (
@@ -207,31 +212,6 @@ inference:
 
         <DialogContent>
           <Stack spacing={3}>
-            <Alert severity="info">
-              Optionally select specific nodes for deployment, or leave the selection empty to use
-              KAITO's automatic GPU provisioning.
-            </Alert>
-
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-              >
-                <Icon icon="mdi:server" width={20} height={20} />
-                Node Selection
-              </Typography>
-
-              <NodeSelector
-                selectedNodes={selectedNodes}
-                onNodesChange={handleNodesChange}
-                labelSelector={labelSelector}
-                onLabelSelectorChange={setLabelSelector}
-                onRequiredNodesChange={handleRequiredNodesChange}
-                helperText="Select specific nodes for model deployment. If no nodes are selected, Kaito will automatically provision GPU resources."
-              />
-            </Paper>
-
             {selectedNodes.length > 0 && (
               <Alert severity="success">
                 <Typography variant="body2">
@@ -249,6 +229,41 @@ inference:
                 </Typography>
               </Alert>
             )}
+
+            <Accordion 
+              expanded={nodeSelectionExpanded} 
+              onChange={(_, isExpanded) => setNodeSelectionExpanded(isExpanded)}
+              variant="outlined"
+            >
+              <AccordionSummary
+                expandIcon={<Icon icon="mdi:chevron-down" />}
+                sx={{ 
+                  backgroundColor: theme => theme.palette.background.default,
+                  '&:hover': {
+                    backgroundColor: theme => theme.palette.action.hover,
+                  }
+                }}
+              >
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Icon icon="mdi:server" width={20} height={20} />
+                  <Typography variant="subtitle1">
+                    Node Selection (Optional)
+                  </Typography>
+                </Stack>
+              </AccordionSummary>
+              <AccordionDetails>
+                <NodeSelector
+                  selectedNodes={selectedNodes}
+                  onNodesChange={handleNodesChange}
+                  labelSelector={labelSelector}
+                  onLabelSelectorChange={setLabelSelector}
+                  onRequiredNodesChange={handleRequiredNodesChange}
+                  helperText="Select specific nodes for model deployment. If no nodes are selected, Kaito will automatically provision GPU resources."
+                />
+              </AccordionDetails>
+            </Accordion>
+
+            
 
             <Divider />
 
