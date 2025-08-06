@@ -124,9 +124,11 @@ const SKUSelector: React.FC<SKUSelectorProps> = ({
                       sx={{ fontSize: '0.7rem', height: '20px' }}
                     />
                   </Stack>
-                  <Typography variant="caption" color="text.secondary">
-                    {option.description}
-                  </Typography>
+                  {option.description && (
+                    <Typography variant="caption" color="text.secondary">
+                      {option.description}
+                    </Typography>
+                  )}
                   <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
                     {option.value}
                   </Typography>
