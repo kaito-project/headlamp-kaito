@@ -411,7 +411,7 @@ spec:
 ```
 Changes made: 
 - env: DISABLE_CONFIG_AUTH, NO_AUTH, ALLOWED_ORIGINS
-- Service type: 
+- Service type: LoadBalancer
 
 Apply and restart:
 
