@@ -75,7 +75,7 @@ function generateLabel(sku: string, gpuModel: string, gpuCount: number, gpuMemGB
     const instanceType = instanceMatch ? ` - ${instanceMatch[1]}` : '';
     return `${shortModel} (${memoryDisplay})${instanceType}`;
   } else {
-    let label = `${shortModel} (${memoryDisplay})`;
+    const label = `${shortModel} (${memoryDisplay})`;
     
     return label;
   }
