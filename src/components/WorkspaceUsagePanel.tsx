@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Box, Typography, Paper } from '@mui/material';
 import { request } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
+import { Box, Paper,Typography } from '@mui/material';
+import React, { useEffect, useRef,useState } from 'react';
 import WorkspaceMetricsInline from './WorkspaceMetrics';
 
 interface WSKey {

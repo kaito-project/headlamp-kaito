@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { request } from '@kinvolk/headlamp-plugin/lib/ApiProxy';
 import { LightTooltip } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 import { Box, Typography } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface UsagePoint {
   ts: number;
