@@ -188,21 +188,20 @@ const SKUSelector: React.FC<SKUSelectorProps> = ({
                           {option.gpuModel} {option.gpuCount > 1 ? `x${option.gpuCount}` : ''}
                         </Typography>
                         <Stack direction="row" spacing={0.5}>
+                          {option.nvmeEnabled && (
+                            <Chip
+                              label="NVMe"
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontSize: '0.6rem', height: '20px' }}
+                            />
+                          )}
                           <Chip
                             label={option.gpuMemory}
                             size="small"
                             variant="outlined"
                             sx={{ fontSize: '0.7rem', height: '20px' }}
                           />
-                          {option.nvmeEnabled && (
-                            <Chip
-                              label="NVMe"
-                              size="small"
-                              variant="outlined"
-                              color="secondary"
-                              sx={{ fontSize: '0.6rem', height: '20px' }}
-                            />
-                          )}
                         </Stack>
                       </Stack>
                       {option.description && (
