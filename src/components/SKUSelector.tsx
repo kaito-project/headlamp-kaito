@@ -7,13 +7,13 @@ import {
   FormControl,
   FormHelperText,
   Stack,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
-  TextField,
   Typography,
 } from '@mui/material';
-import React, { useState, useEffect } from 'react';
-import { fetchGPUConfigs, GPUConfig, CloudProvider } from '../utils/skuUtils';
+import React, { useEffect,useState } from 'react';
+import { CloudProvider,fetchGPUConfigs, GPUConfig } from '../utils/skuUtils';
 
 interface SKUSelectorProps {
   selectedSKU: string;

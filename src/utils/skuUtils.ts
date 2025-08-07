@@ -9,15 +9,6 @@ export interface GPUConfig {
 }
 
 export type CloudProvider = 'azure' | 'aws';
-
-interface RawGPUConfig {
-  SKU: string;
-  GPUCount: number;
-  GPUMemGB: number;
-  GPUModel: string;
-  NVMeDiskEnabled?: boolean;
-}
-
 // cache for SKU data, avoid fetching frequently
 const skuCache: Record<CloudProvider, GPUConfig[] | null> = {
   azure: null,
@@ -170,7 +161,6 @@ function getFallbackConfigs(provider: CloudProvider): GPUConfig[] {
 }
 
 // clear cache
-
 export function clearSKUCache(provider?: CloudProvider): void {
   if (provider) {
     skuCache[provider] = null;
