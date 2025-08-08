@@ -51,7 +51,6 @@ The top_p parameter controls nucleus sampling, which limits responses to the mos
 - **Range**: 0.0 to 1.0
 - **Step**: 0.01
 - **Default**: 1.0
-- **UI Implementation**: `src/components/ModelSettingsDialog.tsx` (lines 78-88)
 
 Lower values restrict the model to a smaller set of likely tokens, making responses more focused. Higher values allow for more diverse outputs.
 
@@ -62,7 +61,6 @@ The top_k parameter restricts responses to the top k most likely tokens. The Mod
 - **Range**: 0 to 100
 - **Step**: 1
 - **Default**: 0 (disabled)
-- **UI Implementation**: `src/components/ModelSettingsDialog.tsx` (lines 89-99)
 
 Increasing top_k focuses the model’s output on the most probable tokens, while a value of 0 disables this restriction for broader responses.
 ## Integration with Chat
