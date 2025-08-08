@@ -1,7 +1,7 @@
 {
   "name": "headlamp-kaito",
-  "version": "0.0.6",
-  "description": "This release 0.0.6 is a patch release for 0.0.5 that supports multi-node distributed inference and allows users to choose preferred nodes to deploy their model to.",
+  "version": "0.0.7",
+  "description": "This release 0.0.7 adds a SKU selector for GPU autoprovisioning mode with popular Azure and AWS instance types.",
   "scripts": {
     "start": "headlamp-plugin start",
     "build": "headlamp-plugin build",
