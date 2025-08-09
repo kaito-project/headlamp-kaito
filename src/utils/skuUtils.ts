@@ -67,8 +67,7 @@ function generateLabel(sku: string, gpuModel: string, gpuCount: number, gpuMemGB
     .replace('AMD ', '')
     .replace(' accelerators', '');
   
-  const totalMemory = gpuCount * gpuMemGB;
-  const memoryDisplay = gpuCount > 1 ? `${gpuCount}x${totalMemory}GB` : `1x${gpuMemGB}GB`;
+  const memoryDisplay = gpuCount > 1 ? `${gpuCount}x${gpuMemGB}GB` : `1x${gpuMemGB}GB`;
   
   if (provider === 'aws') {
     const instanceMatch = sku.match(/^([^.]+\.[^.]+)/);

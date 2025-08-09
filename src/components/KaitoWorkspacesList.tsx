@@ -7,6 +7,7 @@ import {
 import { Box } from '@mui/material';
 import React from 'react';
 import { Workspace } from './resources/workspace';
+import WorkspaceUsagePanel from './WorkspaceUsagePanel';
 
 const KaitoWorkspacesList: React.FC = () => {
   const makeConditionStatusLabel = (conditionType: string) => {
@@ -49,44 +50,47 @@ const KaitoWorkspacesList: React.FC = () => {
   };
 
   return (
-    <ResourceListView
-      title="Workspaces"
-      resourceClass={Workspace}
-      columns={[
-        'name',
-        'namespace',
-        {
-          id: 'instanceType',
-          label: 'Instance Type',
-          getValue: item => item.instanceType,
-        },
-        {
-          id: 'resourceReady',
-          label: 'Resource Ready',
-          getValue: item => item.resourceReady,
-          render: makeConditionStatusLabel('ResourceReady'),
-        },
-        {
-          id: 'inferenceReady',
-          label: 'Inference Ready',
-          getValue: item => item.inferenceReady,
-          render: makeConditionStatusLabel('InferenceReady'),
-        },
-        {
-          id: 'jobStarted',
-          label: 'Job Started',
-          getValue: item => item.jobStarted,
-          render: makeConditionStatusLabel('JobStarted'),
-        },
-        {
-          id: 'workspaceSucceeded',
-          label: 'Workspace Succeeded',
-          getValue: item => item.workspaceSucceeded,
-          render: makeConditionStatusLabel('WorkspaceSucceeded'),
-        },
-        'age',
-      ]}
-    />
+    <>
+      <WorkspaceUsagePanel />
+      <ResourceListView
+        title="Workspaces"
+        resourceClass={Workspace}
+        columns={[
+          'name',
+          'namespace',
+          {
+            id: 'instanceType',
+            label: 'Instance Type',
+            getValue: item => item.instanceType,
+          },
+          {
+            id: 'resourceReady',
+            label: 'Resource Ready',
+            getValue: item => item.resourceReady,
+            render: makeConditionStatusLabel('ResourceReady'),
+          },
+          {
+            id: 'inferenceReady',
+            label: 'Inference Ready',
+            getValue: item => item.inferenceReady,
+            render: makeConditionStatusLabel('InferenceReady'),
+          },
+          {
+            id: 'jobStarted',
+            label: 'Job Started',
+            getValue: item => item.jobStarted,
+            render: makeConditionStatusLabel('JobStarted'),
+          },
+            {
+            id: 'workspaceSucceeded',
+            label: 'Workspace Succeeded',
+            getValue: item => item.workspaceSucceeded,
+            render: makeConditionStatusLabel('WorkspaceSucceeded'),
+          },
+          'age',
+        ]}
+      />
+    </>
   );
 };
 
